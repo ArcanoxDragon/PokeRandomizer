@@ -36,7 +36,7 @@ namespace CtrDotNet.Pokemon.Tests
 		public async Task TmHm()
 		{
 			TmsHms tmsHms = await this.config.LoadTmsHms();
-			ushort dragonClawId = tmsHms.TmIds[ 1 ];
+			ushort dragonClawId = tmsHms.TmIds[ 1 ]; // TM02 - Dragon Claw (array is 0-indexed)
 
 			Assert.AreEqual( Moves.DragonClaw, (Moves) dragonClawId, $"TM02 should be Dragon Claw but it is {( (Moves) dragonClawId ).GetDisplayName( this.config )}" );
 		}

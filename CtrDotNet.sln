@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrDotNet", "CtrDotNet\CtrDotNet.csproj", "{A5FACCE0-D32D-4271-A92E-18D01FF4418B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrDotNet.Graphics", "CtrDotNet.Graphics\CtrDotNet.Graphics.csproj", "{C4DEE669-F5F6-431F-9311-37C02CC42DA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrDotNet.Pokemon", "CtrDotNet.Pokemon\CtrDotNet.Pokemon.csproj", "{B3267C79-99BA-4151-AE7F-EE5657FD1C77}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A5FACCE0-D32D-4271-A92E-18D01FF4418B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5FACCE0-D32D-4271-A92E-18D01FF4418B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5FACCE0-D32D-4271-A92E-18D01FF4418B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5FACCE0-D32D-4271-A92E-18D01FF4418B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4DEE669-F5F6-431F-9311-37C02CC42DA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4DEE669-F5F6-431F-9311-37C02CC42DA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4DEE669-F5F6-431F-9311-37C02CC42DA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4DEE669-F5F6-431F-9311-37C02CC42DA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3267C79-99BA-4151-AE7F-EE5657FD1C77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3267C79-99BA-4151-AE7F-EE5657FD1C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3267C79-99BA-4151-AE7F-EE5657FD1C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3267C79-99BA-4151-AE7F-EE5657FD1C77}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

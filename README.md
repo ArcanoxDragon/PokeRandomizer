@@ -1,4 +1,2 @@
-# pk3DS
-pk3DS: A package of Pokémon X/Y/OR/AS ROM Editing Tools by various contributors.
-
-![alt tag](http://i.imgur.com/rRfCNLI.png)
+# CtrDotNet
+A combination of libraries for Nintendo 3DS (CTR) ROMs

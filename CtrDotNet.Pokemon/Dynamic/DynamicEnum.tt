@@ -1,0 +1,40 @@
+﻿<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#+
+void EmitEnum( string enumName ) {
+	var lineRegex = new Regex( @"^(\d+)=(.+)$" );
+	var enumItems = File.ReadAllLines( this.Host.ResolvePath( $"../Data/{enumName}.db" ) );
+	var added = new List<string>();
+
+	Write( $"public enum {enumName}: int {{\n" );
+
+	foreach ( var line in enumItems ) {
+		var match = lineRegex.Match( line );
+		var id = int.Parse( match.Groups[ 1 ].Value );
+		var val = match.Groups[ 2 ].Value;
+		string final;
+	
+		val = val.Replace( '♀', 'F' );
+		val = val.Replace( '♂', 'M' );
+		val = Regex.Replace( val, @"[^a-zA-Z0-9]+", "" );
+
+		if ( Regex.IsMatch( val, @"^\d" ) )
+			val = "_" + val;
+
+		if ( string.IsNullOrWhiteSpace( val ) )
+			continue;
+
+		final = val;
+
+		if ( added.Contains( final ) )
+			final += "_" + ( added.Count( s => s == val ) + 1 );
+
+		Write( $"\t\t{final} = {id},\n" );
+		added.Add( val );
+	}
+
+	Write( "\n}" );
+}
+#>

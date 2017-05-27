@@ -42,44 +42,58 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Game\GameBackup.cs" />
-    <Compile Include="Game\GameConfig.cs" />
-    <Compile Include="Game\GameRNG.cs" />
-    <Compile Include="Game\GameVersion.cs" />
-    <Compile Include="Game\GARCFile.cs" />
-    <Compile Include="Game\GARCReference.cs" />
-    <Compile Include="Game\TextReference.cs" />
-    <Compile Include="Game\TextVariableCode.cs" />
+    <Compile Include="Dynamic\EnumExtensions.cs" />
+    <Compile Include="Dynamic\Enums.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Enums.tt</DependentUpon>
+    </Compile>
+    <Compile Include="GameData\GameConfig.cs" />
+    <Compile Include="GameData\GameGeneration.cs" />
+    <Compile Include="GameData\GameRNG.cs" />
+    <Compile Include="GameData\GameVersion.cs" />
+    <Compile Include="GameData\Language.cs" />
+    <Compile Include="GameData\TextFile.cs" />
+    <Compile Include="GameData\TextFileHelper.cs" />
+    <Compile Include="GARC\GarcFile.cs" />
+    <Compile Include="GARC\GarcReference.cs" />
+    <Compile Include="GameData\TextReference.cs" />
+    <Compile Include="GameData\TextVariableCode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Structures\Common\Evolutions.cs" />
-    <Compile Include="Structures\Common\IDataStructure.cs" />
-    <Compile Include="Structures\Gen7\Learnset.cs" />
-    <Compile Include="Structures\Gen6\Learnset.cs" />
-    <Compile Include="Structures\EggMoves.cs" />
-    <Compile Include="Structures\EncounterStatic.cs" />
-    <Compile Include="Structures\Gen6\EncounterGift.cs" />
-    <Compile Include="Structures\Gen6\EncounterStatic.cs" />
-    <Compile Include="Structures\Gen6\EvolutionSet.cs" />
-    <Compile Include="Structures\Gen6\Item.cs" />
-    <Compile Include="Structures\Gen6\Maison.cs" />
-    <Compile Include="Structures\Common\MegaEvolution.cs" />
-    <Compile Include="Structures\Common\Move.cs" />
-    <Compile Include="Structures\Gen6\TrainerData.cs" />
-    <Compile Include="Structures\Gen7\EncounterGift.cs" />
-    <Compile Include="Structures\Gen7\EncounterStatic.cs" />
-    <Compile Include="Structures\Gen7\EncounterTrade7.cs" />
-    <Compile Include="Structures\Gen7\EvolutionSet.cs" />
-    <Compile Include="Structures\Gen7\Maison.cs" />
-    <Compile Include="Structures\Gen7\TrainerData.cs" />
-    <Compile Include="Structures\Gen7\Pokemon.cs" />
-    <Compile Include="Structures\Gen7\ZoneData.cs" />
-    <Compile Include="Structures\Common\Learnset.cs" />
-    <Compile Include="Structures\PersonalInfo\PersonalInfo.cs" />
-    <Compile Include="Structures\PersonalInfo\PersonalInfoORAS.cs" />
-    <Compile Include="Structures\PersonalInfo\PersonalInfoSM.cs" />
-    <Compile Include="Structures\PersonalInfo\PersonalInfoXY.cs" />
-    <Compile Include="Structures\PersonalInfo\PersonalTable.cs" />
-    <Compile Include="Structures\TypeChart.cs" />
+    <Compile Include="Structures\ExeFS\Common\BaseExeFsStructure.cs" />
+    <Compile Include="Structures\ExeFS\Common\TmsHms.cs" />
+    <Compile Include="Structures\RomFS\Gen7\EggMoves.cs" />
+    <Compile Include="Structures\RomFS\Gen6\EggMoves.cs" />
+    <Compile Include="Structures\RomFS\Common\Evolutions.cs" />
+    <Compile Include="Structures\RomFS\Common\IDataStructure.cs" />
+    <Compile Include="Structures\RomFS\Gen7\Learnset.cs" />
+    <Compile Include="Structures\RomFS\Gen6\Learnset.cs" />
+    <Compile Include="Structures\RomFS\Common\EggMoves.cs" />
+    <Compile Include="Structures\RomFS\Common\EncounterStatic.cs" />
+    <Compile Include="Structures\RomFS\Gen6\EncounterGift.cs" />
+    <Compile Include="Structures\RomFS\Gen6\EncounterStatic.cs" />
+    <Compile Include="Structures\RomFS\Gen6\EvolutionSet.cs" />
+    <Compile Include="Structures\RomFS\Gen6\Item.cs" />
+    <Compile Include="Structures\RomFS\Gen6\Maison.cs" />
+    <Compile Include="Structures\RomFS\Common\MegaEvolution.cs" />
+    <Compile Include="Structures\RomFS\Common\Move.cs" />
+    <Compile Include="Structures\RomFS\Gen6\TrainerData.cs" />
+    <Compile Include="Structures\RomFS\Gen7\EncounterGift.cs" />
+    <Compile Include="Structures\RomFS\Gen7\EncounterStatic.cs" />
+    <Compile Include="Structures\RomFS\Gen7\EncounterTrade.cs" />
+    <Compile Include="Structures\RomFS\Gen7\EvolutionSet.cs" />
+    <Compile Include="Structures\RomFS\Gen7\Maison.cs" />
+    <Compile Include="Structures\RomFS\Gen7\TrainerData.cs" />
+    <Compile Include="Structures\RomFS\Gen7\Pokemon.cs" />
+    <Compile Include="Structures\RomFS\Gen7\ZoneData.cs" />
+    <Compile Include="Structures\RomFS\Common\Learnset.cs" />
+    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfo.cs" />
+    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfoORAS.cs" />
+    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfoSM.cs" />
+    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfoXY.cs" />
+    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfoTable.cs" />
+    <Compile Include="Structures\RomFS\Common\TypeChart.cs" />
+    <Compile Include="Utility\Array.cs" />
     <Compile Include="Utility\Bitwise.cs" />
     <Compile Include="Utility\Random.cs" />
   </ItemGroup>
@@ -88,6 +102,19 @@
       <Project>{a5facce0-d32d-4271-a92e-18d01ff4418b}</Project>
       <Name>CtrDotNet</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Dynamic\DynamicEnum.tt" />
+    <Content Include="Dynamic\Enums.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Enums.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Species.db" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

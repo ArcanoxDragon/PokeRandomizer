@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace CtrDotNet.CTR
 {
@@ -261,7 +262,7 @@ namespace CtrDotNet.CTR
 			return decompressedSize;
 		}
 
-		internal static int Compress( string infile, string outfile )
+		internal static async Task<int> Compress( string infile, string outfile )
 		{
 			// make sure the output directory exists
 			string outDirectory = Path.GetDirectoryName( outfile );
@@ -278,7 +279,7 @@ namespace CtrDotNet.CTR
 					return blank.Length;
 				}
 
-				return Lzss.Compress( inStream, inStream.Length, outStream, true );
+				return await Lzss.Compress( inStream, inStream.Length, outStream, true );
 			}
 		}
 
@@ -289,7 +290,7 @@ namespace CtrDotNet.CTR
 		/// This algorithm should yield files that are the same as those found in the games.
 		/// (delegates to the optimized method if LookAhead is set)
 		/// </summary>
-		internal static unsafe int Compress( Stream instream, long inLength, Stream outstream, bool original )
+		internal static async Task<int> Compress( Stream instream, long inLength, Stream outstream, bool original )
 		{
 			// make sure the decompressed size fits in 3 bytes.
 			// There should be room for four bytes, however I'm not 100% sure if that can be used
@@ -300,7 +301,7 @@ namespace CtrDotNet.CTR
 			// use the other method if lookahead is enabled
 			if ( !original )
 			{
-				return Lzss.CompressWithLA( instream, inLength, outstream );
+				return await Lzss.CompressWithLA( instream, inLength, outstream );
 			}
 
 			// save the input data in an array to prevent having to go back and forth in a file
@@ -310,103 +311,110 @@ namespace CtrDotNet.CTR
 				throw new StreamTooShortException();
 
 			// write the compression header first
-			outstream.WriteByte( 0x11 );
-			outstream.WriteByte( (byte) ( inLength & 0xFF ) );
-			outstream.WriteByte( (byte) ( ( inLength >> 8 ) & 0xFF ) );
-			outstream.WriteByte( (byte) ( ( inLength >> 16 ) & 0xFF ) );
+			byte[] header = {
+				0x11,
+				(byte) ( inLength & 0xFF ),
+				(byte) ( ( inLength >> 8 ) & 0xFF ),
+				(byte) ( ( inLength >> 16 ) & 0xFF )
+			};
+
+			await outstream.WriteAsync( header, 0, header.Length );
 
 			int compressedLength = 4;
+			byte[] outbuffer = new byte[ 8 * 4 + 1 ];
+			outbuffer[ 0 ] = 0;
+			int bufferlength = 1, bufferedBlocks = 0;
+			int readBytes = 0;
 
-			fixed ( byte* instart = &indata[ 0 ] )
+			unsafe
 			{
-				// we do need to buffer the output, as the first byte indicates which blocks are compressed.
-				// this version does not use a look-ahead, so we do not need to buffer more than 8 blocks at a time.
-				// (a block is at most 4 bytes long)
-				byte[] outbuffer = new byte[ 8 * 4 + 1 ];
-				outbuffer[ 0 ] = 0;
-				int bufferlength = 1, bufferedBlocks = 0;
-				int readBytes = 0;
-				while ( readBytes < inLength )
+				fixed ( byte* instart = &indata[ 0 ] )
 				{
-					#region If 8 blocks are bufferd, write them and reset the buffer
-
-					// we can only buffer 8 blocks at a time.
-					if ( bufferedBlocks == 8 )
+					// we do need to buffer the output, as the first byte indicates which blocks are compressed.
+					// this version does not use a look-ahead, so we do not need to buffer more than 8 blocks at a time.
+					// (a block is at most 4 bytes long)
+					while ( readBytes < inLength )
 					{
-						outstream.Write( outbuffer, 0, bufferlength );
-						compressedLength += bufferlength;
-						// reset the buffer
-						outbuffer[ 0 ] = 0;
-						bufferlength = 1;
-						bufferedBlocks = 0;
-					}
+						#region If 8 blocks are bufferd, write them and reset the buffer
 
-					#endregion
-
-					// determine if we're dealing with a compressed or raw block.
-					// it is a compressed block when the next 3 or more bytes can be copied from
-					// somewhere in the set of already compressed bytes.
-					int oldLength = Math.Min( readBytes, 0x1000 );
-					int length = LZUtil.GetOccurrenceLength( instart + readBytes, (int) Math.Min( inLength - readBytes, 0x10110 ),
-															 instart + readBytes - oldLength, oldLength, out int disp );
-
-					// length not 3 or more? next byte is raw data
-					if ( length < 3 )
-					{
-						outbuffer[ bufferlength++ ] = *( instart + readBytes++ );
-					}
-					else
-					{
-						// 3 or more bytes can be copied? next (length) bytes will be compressed into 2 bytes
-						readBytes += length;
-
-						// mark the next block as compressed
-						outbuffer[ 0 ] |= (byte) ( 1 << ( 7 - bufferedBlocks ) );
-
-						if ( length > 0x110 )
+						// we can only buffer 8 blocks at a time.
+						if ( bufferedBlocks == 8 )
 						{
-							// case 1: 1(B CD E)(F GH) + (0x111)(0x1) = (LEN)(DISP)
-							outbuffer[ bufferlength ] = 0x10;
-							outbuffer[ bufferlength ] |= (byte) ( ( ( length - 0x111 ) >> 12 ) & 0x0F );
-							bufferlength++;
-							outbuffer[ bufferlength ] = (byte) ( ( ( length - 0x111 ) >> 4 ) & 0xFF );
-							bufferlength++;
-							outbuffer[ bufferlength ] = (byte) ( ( ( length - 0x111 ) << 4 ) & 0xF0 );
+							outstream.Write( outbuffer, 0, bufferlength );
+							compressedLength += bufferlength;
+							// reset the buffer
+							outbuffer[ 0 ] = 0;
+							bufferlength = 1;
+							bufferedBlocks = 0;
 						}
-						else if ( length > 0x10 )
+
+						#endregion
+
+						// determine if we're dealing with a compressed or raw block.
+						// it is a compressed block when the next 3 or more bytes can be copied from
+						// somewhere in the set of already compressed bytes.
+						int oldLength = Math.Min( readBytes, 0x1000 );
+						int length = LZUtil.GetOccurrenceLength( instart + readBytes, (int) Math.Min( inLength - readBytes, 0x10110 ),
+																 instart + readBytes - oldLength, oldLength, out int disp );
+
+						// length not 3 or more? next byte is raw data
+						if ( length < 3 )
 						{
-							// case 0; 0(B C)(D EF) + (0x11)(0x1) = (LEN)(DISP)
-							outbuffer[ bufferlength ] = 0x00;
-							outbuffer[ bufferlength ] |= (byte) ( ( ( length - 0x111 ) >> 4 ) & 0x0F );
-							bufferlength++;
-							outbuffer[ bufferlength ] = (byte) ( ( ( length - 0x111 ) << 4 ) & 0xF0 );
+							outbuffer[ bufferlength++ ] = *( instart + readBytes++ );
 						}
 						else
 						{
-							// case > 1: (A)(B CD) + (0x1)(0x1) = (LEN)(DISP)
-							outbuffer[ bufferlength ] = (byte) ( ( ( length - 1 ) << 4 ) & 0xF0 );
-						}
-						// the last 1.5 bytes are always the disp
-						outbuffer[ bufferlength ] |= (byte) ( ( ( disp - 1 ) >> 8 ) & 0x0F );
-						bufferlength++;
-						outbuffer[ bufferlength ] = (byte) ( ( disp - 1 ) & 0xFF );
-						bufferlength++;
-					}
-					bufferedBlocks++;
-				}
+							// 3 or more bytes can be copied? next (length) bytes will be compressed into 2 bytes
+							readBytes += length;
 
-				// copy the remaining blocks to the output
-				if ( bufferedBlocks > 0 )
-				{
-					outstream.Write( outbuffer, 0, bufferlength );
-					compressedLength += bufferlength;
-					/*/ make the compressed file 4-byte aligned.
-					while ((compressedLength % 4) != 0)
-					{
-						outstream.WriteByte(0);
-						compressedLength++;
-					}/**/
+							// mark the next block as compressed
+							outbuffer[ 0 ] |= (byte) ( 1 << ( 7 - bufferedBlocks ) );
+
+							if ( length > 0x110 )
+							{
+								// case 1: 1(B CD E)(F GH) + (0x111)(0x1) = (LEN)(DISP)
+								outbuffer[ bufferlength ] = 0x10;
+								outbuffer[ bufferlength ] |= (byte) ( ( ( length - 0x111 ) >> 12 ) & 0x0F );
+								bufferlength++;
+								outbuffer[ bufferlength ] = (byte) ( ( ( length - 0x111 ) >> 4 ) & 0xFF );
+								bufferlength++;
+								outbuffer[ bufferlength ] = (byte) ( ( ( length - 0x111 ) << 4 ) & 0xF0 );
+							}
+							else if ( length > 0x10 )
+							{
+								// case 0; 0(B C)(D EF) + (0x11)(0x1) = (LEN)(DISP)
+								outbuffer[ bufferlength ] = 0x00;
+								outbuffer[ bufferlength ] |= (byte) ( ( ( length - 0x111 ) >> 4 ) & 0x0F );
+								bufferlength++;
+								outbuffer[ bufferlength ] = (byte) ( ( ( length - 0x111 ) << 4 ) & 0xF0 );
+							}
+							else
+							{
+								// case > 1: (A)(B CD) + (0x1)(0x1) = (LEN)(DISP)
+								outbuffer[ bufferlength ] = (byte) ( ( ( length - 1 ) << 4 ) & 0xF0 );
+							}
+							// the last 1.5 bytes are always the disp
+							outbuffer[ bufferlength ] |= (byte) ( ( ( disp - 1 ) >> 8 ) & 0x0F );
+							bufferlength++;
+							outbuffer[ bufferlength ] = (byte) ( ( disp - 1 ) & 0xFF );
+							bufferlength++;
+						}
+						bufferedBlocks++;
+					}
 				}
+			}
+
+			// copy the remaining blocks to the output
+			if ( bufferedBlocks > 0 )
+			{
+				await outstream.WriteAsync( outbuffer, 0, bufferlength );
+				compressedLength += bufferlength;
+				/*/ make the compressed file 4-byte aligned.
+				while ((compressedLength % 4) != 0)
+				{
+					outstream.WriteByte(0);
+					compressedLength++;
+				}/**/
 			}
 
 			return compressedLength;
@@ -419,101 +427,108 @@ namespace CtrDotNet.CTR
 		/// and determine the optimal 'length' values for the compressed blocks. Is not 100% optimal,
 		/// as the flag-bytes are not taken into account.
 		/// </summary>
-		internal static unsafe int CompressWithLA( Stream instream, long inLength, Stream outstream )
+		internal static async Task<int> CompressWithLA( Stream instream, long inLength, Stream outstream )
 		{
 			// save the input data in an array to prevent having to go back and forth in a file
 			byte[] indata = new byte[ inLength ];
-			int numReadBytes = instream.Read( indata, 0, (int) inLength );
+			int numReadBytes = await instream.ReadAsync( indata, 0, (int) inLength );
 			if ( numReadBytes != inLength )
 				throw new StreamTooShortException();
 
 			// write the compression header first
-			outstream.WriteByte( 0x11 );
-			outstream.WriteByte( (byte) ( inLength & 0xFF ) );
-			outstream.WriteByte( (byte) ( ( inLength >> 8 ) & 0xFF ) );
-			outstream.WriteByte( (byte) ( ( inLength >> 16 ) & 0xFF ) );
+			byte[] header = {
+				0x11,
+				(byte) ( inLength & 0xFF ),
+				(byte) ( ( inLength >> 8 ) & 0xFF ),
+				(byte) ( ( inLength >> 16 ) & 0xFF )
+			};
+
+			await outstream.WriteAsync( header, 0, header.Length );
 
 			int compressedLength = 4;
+			byte[] outbuffer = new byte[ 8 * 4 + 1 ];
+			outbuffer[ 0 ] = 0;
+			int bufferlength = 1, bufferedBlocks = 0;
+			int readBytes = 0;
 
-			fixed ( byte* instart = &indata[ 0 ] )
+			unsafe
 			{
-				// we do need to buffer the output, as the first byte indicates which blocks are compressed.
-				// this version does not use a look-ahead, so we do not need to buffer more than 8 blocks at a time.
-				// blocks are at most 4 bytes long.
-				byte[] outbuffer = new byte[ 8 * 4 + 1 ];
-				outbuffer[ 0 ] = 0;
-				int bufferlength = 1, bufferedBlocks = 0;
-				int readBytes = 0;
-				Lzss.GetOptimalCompressionLengths( instart, indata.Length, out int[] lengths, out int[] disps );
-				while ( readBytes < inLength )
+				fixed ( byte* instart = &indata[ 0 ] )
 				{
-					// we can only buffer 8 blocks at a time.
-					if ( bufferedBlocks == 8 )
+					// we do need to buffer the output, as the first byte indicates which blocks are compressed.
+					// this version does not use a look-ahead, so we do not need to buffer more than 8 blocks at a time.
+					// blocks are at most 4 bytes long.
+					Lzss.GetOptimalCompressionLengths( instart, indata.Length, out int[] lengths, out int[] disps );
+					while ( readBytes < inLength )
 					{
-						outstream.Write( outbuffer, 0, bufferlength );
-						compressedLength += bufferlength;
-						// reset the buffer
-						outbuffer[ 0 ] = 0;
-						bufferlength = 1;
-						bufferedBlocks = 0;
-					}
-
-					if ( lengths[ readBytes ] == 1 )
-					{
-						outbuffer[ bufferlength++ ] = *( instart + readBytes++ );
-					}
-					else
-					{
-						// mark the next block as compressed
-						outbuffer[ 0 ] |= (byte) ( 1 << ( 7 - bufferedBlocks ) );
-
-						if ( lengths[ readBytes ] > 0x110 )
+						// we can only buffer 8 blocks at a time.
+						if ( bufferedBlocks == 8 )
 						{
-							// case 1: 1(B CD E)(F GH) + (0x111)(0x1) = (LEN)(DISP)
-							outbuffer[ bufferlength ] = 0x10;
-							outbuffer[ bufferlength ] |= (byte) ( ( ( lengths[ readBytes ] - 0x111 ) >> 12 ) & 0x0F );
-							bufferlength++;
-							outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 0x111 ) >> 4 ) & 0xFF );
-							bufferlength++;
-							outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 0x111 ) << 4 ) & 0xF0 );
+							outstream.Write( outbuffer, 0, bufferlength );
+							compressedLength += bufferlength;
+							// reset the buffer
+							outbuffer[ 0 ] = 0;
+							bufferlength = 1;
+							bufferedBlocks = 0;
 						}
-						else if ( lengths[ readBytes ] > 0x10 )
+
+						if ( lengths[ readBytes ] == 1 )
 						{
-							// case 0; 0(B C)(D EF) + (0x11)(0x1) = (LEN)(DISP)
-							outbuffer[ bufferlength ] = 0x00;
-							outbuffer[ bufferlength ] |= (byte) ( ( ( lengths[ readBytes ] - 0x111 ) >> 4 ) & 0x0F );
-							bufferlength++;
-							outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 0x111 ) << 4 ) & 0xF0 );
+							outbuffer[ bufferlength++ ] = *( instart + readBytes++ );
 						}
 						else
 						{
-							// case > 1: (A)(B CD) + (0x1)(0x1) = (LEN)(DISP)
-							outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 1 ) << 4 ) & 0xF0 );
+							// mark the next block as compressed
+							outbuffer[ 0 ] |= (byte) ( 1 << ( 7 - bufferedBlocks ) );
+
+							if ( lengths[ readBytes ] > 0x110 )
+							{
+								// case 1: 1(B CD E)(F GH) + (0x111)(0x1) = (LEN)(DISP)
+								outbuffer[ bufferlength ] = 0x10;
+								outbuffer[ bufferlength ] |= (byte) ( ( ( lengths[ readBytes ] - 0x111 ) >> 12 ) & 0x0F );
+								bufferlength++;
+								outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 0x111 ) >> 4 ) & 0xFF );
+								bufferlength++;
+								outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 0x111 ) << 4 ) & 0xF0 );
+							}
+							else if ( lengths[ readBytes ] > 0x10 )
+							{
+								// case 0; 0(B C)(D EF) + (0x11)(0x1) = (LEN)(DISP)
+								outbuffer[ bufferlength ] = 0x00;
+								outbuffer[ bufferlength ] |= (byte) ( ( ( lengths[ readBytes ] - 0x111 ) >> 4 ) & 0x0F );
+								bufferlength++;
+								outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 0x111 ) << 4 ) & 0xF0 );
+							}
+							else
+							{
+								// case > 1: (A)(B CD) + (0x1)(0x1) = (LEN)(DISP)
+								outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 1 ) << 4 ) & 0xF0 );
+							}
+							// the last 1.5 bytes are always the disp
+							outbuffer[ bufferlength ] |= (byte) ( ( ( disps[ readBytes ] - 1 ) >> 8 ) & 0x0F );
+							bufferlength++;
+							outbuffer[ bufferlength ] = (byte) ( ( disps[ readBytes ] - 1 ) & 0xFF );
+							bufferlength++;
+
+							readBytes += lengths[ readBytes ];
 						}
-						// the last 1.5 bytes are always the disp
-						outbuffer[ bufferlength ] |= (byte) ( ( ( disps[ readBytes ] - 1 ) >> 8 ) & 0x0F );
-						bufferlength++;
-						outbuffer[ bufferlength ] = (byte) ( ( disps[ readBytes ] - 1 ) & 0xFF );
-						bufferlength++;
 
-						readBytes += lengths[ readBytes ];
+						bufferedBlocks++;
 					}
-
-					bufferedBlocks++;
 				}
+			}
 
-				// copy the remaining blocks to the output
-				if ( bufferedBlocks > 0 )
+			// copy the remaining blocks to the output
+			if ( bufferedBlocks > 0 )
+			{
+				await outstream.WriteAsync( outbuffer, 0, bufferlength );
+				compressedLength += bufferlength;
+				/*/ make the compressed file 4-byte aligned.
+				while ((compressedLength % 4) != 0)
 				{
-					outstream.Write( outbuffer, 0, bufferlength );
-					compressedLength += bufferlength;
-					/*/ make the compressed file 4-byte aligned.
-					while ((compressedLength % 4) != 0)
-					{
-						outstream.WriteByte(0);
-						compressedLength++;
-					}/**/
-				}
+					outstream.WriteByte(0);
+					compressedLength++;
+				}/**/
 			}
 
 			return compressedLength;

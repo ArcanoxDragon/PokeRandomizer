@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CtrDotNet.CTR
 {
@@ -8,10 +9,10 @@ namespace CtrDotNet.CTR
 
 	public static class Garc
 	{
-		public const ushort Ver6 = 0x0600;
-		public const ushort Ver4 = 0x0400;
+		public const ushort Version6 = 0x0600;
+		public const ushort Version4 = 0x0400;
 
-		public static bool GarcPackMS( string folderPath, string garcPath, int version, int bytesPadding )
+		public static async Task<bool> GarcPackMS( string folderPath, string garcPath, int version, int bytesPadding )
 		{
 			// Check to see if our input folder exists.
 			if ( !new DirectoryInfo( folderPath ).Exists )
@@ -19,7 +20,7 @@ namespace CtrDotNet.CTR
 				return false;
 			}
 
-			if ( version != Ver4 && version != Ver6 )
+			if ( version != Version4 && version != Version6 )
 				throw new FormatException( "Invalid GARC Version: 0x" + version.ToString( "X4" ) );
 
 			// Okay some basic proofing is done. Proceed.
@@ -78,7 +79,7 @@ namespace CtrDotNet.CTR
 					FileCount = filectr
 				}
 			};
-			if ( version == Ver6 )
+			if ( version == Version6 )
 			{
 				// Some files have larger bytes-to-pad values (ex/ 0x80 for a109)
 				// Hopefully there's no problems defining this with a constant number.
@@ -114,7 +115,7 @@ namespace CtrDotNet.CTR
 						if ( compressed >= 0 )
 						{
 							string old = packOrder[ i ];
-							Lzss.Compress( packOrder[ i ], packOrder[ i ] = Path.Combine( Path.GetDirectoryName( packOrder[ i ] ), fileNumber.ToString() ) );
+							await Lzss.Compress( packOrder[ i ], packOrder[ i ] = Path.Combine( Path.GetDirectoryName( packOrder[ i ] ), fileNumber.ToString() ) );
 							File.Delete( old );
 						}
 
@@ -153,7 +154,7 @@ namespace CtrDotNet.CTR
 
 							if ( compressed >= 0 )
 							{
-								Lzss.Compress( f, s = Path.Combine( Path.GetDirectoryName( f ), fileNumber.ToString() ) );
+								await Lzss.Compress( f, s = Path.Combine( Path.GetDirectoryName( f ), fileNumber.ToString() ) );
 								File.Delete( f );
 							}
 
@@ -192,13 +193,14 @@ namespace CtrDotNet.CTR
 
 			// Set up the Header Info
 			using ( var newGarc = new FileStream( garcPath, FileMode.Create ) )
-			using ( BinaryWriter gw = new BinaryWriter( newGarc ) )
+			using ( var ms = new MemoryStream() )
+			using ( BinaryWriter gw = new BinaryWriter( ms ) )
 			{
 				#region Write GARC Headers
 
 				// Write GARC
 				gw.Write( (uint) 0x47415243 ); // GARC
-				gw.Write( (uint) ( version == Ver6
+				gw.Write( (uint) ( version == Version6
 									   ? 0x24
 									   : 0x1C ) ); // Header Length
 				gw.Write( (ushort) 0xFEFF ); // Endianness BOM
@@ -208,7 +210,7 @@ namespace CtrDotNet.CTR
 				gw.Write( (uint) 0x00000000 ); // File Length (temp)
 				gw.Write( (uint) 0x00000000 ); // Largest File Size (temp)
 
-				if ( version == Ver6 )
+				if ( version == Version6 )
 				{
 					gw.Write( (uint) 0x0 );
 					gw.Write( (uint) 0x0 );
@@ -249,11 +251,11 @@ namespace CtrDotNet.CTR
 				gw.Write( (uint) 0 ); // Write total GARC Length - TEMP
 
 				// Write Handling information
-				if ( version == Ver4 )
+				if ( version == Version4 )
 				{
 					gw.Write( garc.ContentLargestUnpadded ); // Write Largest File stat
 				}
-				else if ( version == Ver6 )
+				else if ( version == Version6 )
 				{
 					gw.Write( garc.ContentLargestPadded ); // Write Largest With Padding
 					gw.Write( garc.ContentLargestUnpadded ); // Write Largest Without Padding
@@ -313,21 +315,23 @@ namespace CtrDotNet.CTR
 				// Write Handling information
 				switch ( version )
 				{
-					case Ver4:
+					case Version4:
 						gw.Write( garc.ContentLargestUnpadded ); // Write Largest File stat
 						break;
-					case Ver6:
+					case Version6:
 						gw.Write( garc.ContentLargestPadded ); // Write Largest With Padding
 						gw.Write( garc.ContentLargestUnpadded ); // Write Largest Without Padding
 						gw.Write( garc.ContentPadToNearest );
 						break;
 				}
 
+				await ms.CopyToAsync( newGarc );
+
 				return true;
 			}
 		}
 
-		public static bool GarcUnpack( string garcPath, string outPath, bool skipDecompression, bool supress = false )
+		public static async Task<bool> GarcUnpack( string garcPath, string outPath, bool skipDecompression, bool supress = false )
 		{
 			if ( !File.Exists( garcPath ) && !supress )
 			{
@@ -335,7 +339,7 @@ namespace CtrDotNet.CTR
 			}
 
 			// Unpack the GARC
-			GarcFile garc = Garc.UnpackGarc( garcPath );
+			GarcFile garc = await Garc.UnpackGarc( garcPath );
 			const string ext = "bin"; // Default Extension Name
 			int fileCount = garc.Fatb.FileCount;
 			string format = "D" + Math.Ceiling( Math.Log10( fileCount ) );
@@ -440,17 +444,22 @@ namespace CtrDotNet.CTR
 			return true;
 		}
 
-		public static GarcFile UnpackGarc( string path )
+		public static async Task<GarcFile> UnpackGarc( string path )
 		{
-			return Garc.UnpackGarc( File.OpenRead( path ) );
+			using ( var fs = new FileStream( path, FileMode.Open, FileAccess.Read ) )
+			using ( var ms = new MemoryStream() )
+			{
+				await fs.CopyToAsync( ms );
+				return Garc.UnpackGarc( ms );
+			}
 		}
 
 		private static GarcFile UnpackGarc( byte[] data )
 		{
-			GarcFile garc;
-			using ( var gd = new MemoryStream( data ) )
-				garc = Garc.UnpackGarc( gd );
-			return garc;
+			using ( var ms = new MemoryStream( data ) )
+			{
+				return Garc.UnpackGarc( ms );
+			}
 		}
 
 		private static GarcFile UnpackGarc( Stream stream )
@@ -467,12 +476,12 @@ namespace CtrDotNet.CTR
 
 				garc.DataOffset = br.ReadUInt32();
 				garc.FileSize = br.ReadUInt32();
-				if ( garc.Version == Ver4 )
+				if ( garc.Version == Version4 )
 				{
 					garc.ContentLargestUnpadded = br.ReadUInt32();
 					garc.ContentPadToNearest = 4;
 				}
-				else if ( garc.Version == Ver6 )
+				else if ( garc.Version == Version6 )
 				{
 					garc.ContentLargestPadded = br.ReadUInt32();
 					garc.ContentLargestUnpadded = br.ReadUInt32();
@@ -551,7 +560,7 @@ namespace CtrDotNet.CTR
 				}
 			};
 
-			if ( version == Ver6 )
+			if ( version == Version6 )
 				garc.ContentPadToNearest = 4;
 
 			int op = 0;
@@ -589,7 +598,7 @@ namespace CtrDotNet.CTR
 
 				// Write GARC
 				gw.Write( (uint) 0x47415243 ); // GARC
-				gw.Write( (uint) ( version == Ver6
+				gw.Write( (uint) ( version == Version6
 									   ? 0x24
 									   : 0x1C ) ); // Header Length
 				gw.Write( (ushort) 0xFEFF ); // Endianness BOM
@@ -599,7 +608,7 @@ namespace CtrDotNet.CTR
 				gw.Write( (uint) 0x00000000 ); // File Length (temp)
 				gw.Write( (uint) 0x00000000 ); // Largest File Size (temp)
 
-				if ( version == Ver6 )
+				if ( version == Version6 )
 				{
 					gw.Write( (uint) 0x0 );
 					gw.Write( (uint) 0x0 );
@@ -639,11 +648,11 @@ namespace CtrDotNet.CTR
 				gw.Write( (uint) 0 ); // Write total GARC Length - TEMP
 
 				// Write Handling information
-				if ( version == Ver4 )
+				if ( version == Version4 )
 				{
 					gw.Write( garc.ContentLargestUnpadded ); // Write Largest File stat
 				}
-				else if ( version == Ver6 )
+				else if ( version == Version6 )
 				{
 					gw.Write( garc.ContentLargestPadded ); // Write Largest With Padding
 					gw.Write( garc.ContentLargestUnpadded ); // Write Largest Without Padding
@@ -695,10 +704,10 @@ namespace CtrDotNet.CTR
 
 				switch ( version )
 				{
-					case Ver4:
+					case Version4:
 						gw.Write( garc.ContentLargestUnpadded ); // Write Largest File stat
 						break;
-					case Ver6:
+					case Version6:
 						gw.Write( garc.ContentLargestPadded ); // Write Largest With Padding
 						gw.Write( garc.ContentLargestUnpadded ); // Write Largest Without Padding
 						gw.Write( garc.ContentPadToNearest );
@@ -812,7 +821,7 @@ namespace CtrDotNet.CTR
 					}
 				}
 
-				public byte[] Save()
+				public async Task<byte[]> Save()
 				{
 					if ( !this.WasCompressed )
 						return this.Data;
@@ -822,7 +831,7 @@ namespace CtrDotNet.CTR
 					{
 						using ( MemoryStream newMS = new MemoryStream() )
 						{
-							Lzss.Compress( new MemoryStream( this.Data ), this.Data.Length, newMS, original: true );
+							await Lzss.Compress( new MemoryStream( this.Data ), this.Data.Length, newMS, original: true );
 							data = newMS.ToArray();
 						}
 					}
@@ -866,7 +875,7 @@ namespace CtrDotNet.CTR
 				}
 			}
 
-			public byte[] Save()
+			public async Task<byte[]> Save()
 			{
 				byte[][] data = new byte[ this.FileCount ][];
 				for ( int i = 0; i < data.Length; i++ )
@@ -874,7 +883,7 @@ namespace CtrDotNet.CTR
 					if ( this.storage[ i ] == null || !this.storage[ i ].Saved ) // retrieve original
 						data[ i ] = this.GetFile( i );
 					else // use modified
-						data[ i ] = this.storage[ i ].Save();
+						data[ i ] = await this.storage[ i ].Save();
 				}
 
 				var ng = Garc.PackGarc( data, this.garc.Version, (int) this.garc.ContentPadToNearest );

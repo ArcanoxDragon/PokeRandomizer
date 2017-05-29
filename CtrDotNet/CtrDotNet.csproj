@@ -53,8 +53,13 @@
     <Compile Include="CTR\ExeFS.cs" />
     <Compile Include="CTR\Exheader.cs" />
     <Compile Include="CTR\FileFormat.cs" />
-    <Compile Include="CTR\GARC.cs" />
+    <Compile Include="CTR\Garc\BaseGarc.cs" />
+    <Compile Include="CTR\Garc\GarcDef.cs" />
+    <Compile Include="CTR\Garc\GarcFile.cs" />
+    <Compile Include="CTR\Garc\GarcUtil.cs" />
+    <Compile Include="CTR\Garc\LzGarc.cs" />
     <Compile Include="CTR\LZSS.cs" />
+    <Compile Include="CTR\Garc\MemGarc.cs" />
     <Compile Include="CTR\Mini.cs" />
     <Compile Include="CTR\NCCH.cs" />
     <Compile Include="CTR\NCSD.cs" />

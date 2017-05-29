@@ -1,6 +1,6 @@
-﻿using CtrDotNet.CTR;
+﻿using CtrDotNet.CTR.Garc;
 
-namespace CtrDotNet.Pokemon.GameData
+namespace CtrDotNet.Pokemon.Game
 {
 	public enum GameGeneration
 	{
@@ -23,12 +23,12 @@ namespace CtrDotNet.Pokemon.GameData
 			{
 				case GameGeneration.Generation6:
 					return new GenerationInfo {
-						GarcVersion = Garc.Version4,
+						GarcVersion = GarcUtil.Version4,
 						SpeciesCount = 721
 					};
 				case GameGeneration.Generation7:
 					return new GenerationInfo {
-						GarcVersion = Garc.Version6,
+						GarcVersion = GarcUtil.Version6,
 						SpeciesCount = 802
 					};
 				default:

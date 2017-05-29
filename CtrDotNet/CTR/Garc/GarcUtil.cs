@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CtrDotNet.CTR
+namespace CtrDotNet.CTR.Garc
 {
 	#region GARC Class & Struct
 
-	public static class Garc
+	public static class GarcUtil
 	{
 		public const ushort Version6 = 0x0600;
 		public const ushort Version4 = 0x0400;
@@ -64,18 +64,18 @@ namespace CtrDotNet.CTR
 			#endregion
 
 			// Set Up the GARC template.
-			GarcFile garc = new GarcFile {
+			GarcDef garc = new GarcDef {
 				ContentPadToNearest = 4,
 				Fato = {
 					// Magic = new[] { 'O', 'T', 'A', 'F' },
-					Entries = new FatoEntry[ packOrder.Length ],
+					Entries = new GarcDef.FatoEntry[ packOrder.Length ],
 					EntryCount = (ushort) packOrder.Length,
 					HeaderSize = 0xC + packOrder.Length * 4,
 					Padding = 0xFFFF
 				},
 				Fatb = {
 					// Magic = new[] { 'B', 'T', 'A', 'F' },
-					Entries = new FatbEntry[ packOrder.Length ],
+					Entries = new GarcDef.FatbEntry[ packOrder.Length ],
 					FileCount = filectr
 				}
 			};
@@ -95,7 +95,7 @@ namespace CtrDotNet.CTR
 				for ( int i = 0; i < garc.Fatb.Entries.Length; i++ )
 				{
 					garc.Fato.Entries[ i ].Offset = op; // FATO offset
-					garc.Fatb.Entries[ i ].SubEntries = new FatbSubEntry[ 32 ];
+					garc.Fatb.Entries[ i ].SubEntries = new GarcDef.FatbSubEntry[ 32 ];
 					op += 4; // Vector
 					if ( !Directory.Exists( packOrder[ i ] ) ) // is not folder
 					{
@@ -339,7 +339,7 @@ namespace CtrDotNet.CTR
 			}
 
 			// Unpack the GARC
-			GarcFile garc = await Garc.UnpackGarc( garcPath );
+			GarcDef garc = await GarcUtil.UnpackGarc( garcPath );
 			const string ext = "bin"; // Default Extension Name
 			int fileCount = garc.Fatb.FileCount;
 			string format = "D" + Math.Ceiling( Math.Log10( fileCount ) );
@@ -444,27 +444,27 @@ namespace CtrDotNet.CTR
 			return true;
 		}
 
-		public static async Task<GarcFile> UnpackGarc( string path )
+		public static async Task<GarcDef> UnpackGarc( string path )
 		{
 			using ( var fs = new FileStream( path, FileMode.Open, FileAccess.Read ) )
 			using ( var ms = new MemoryStream() )
 			{
 				await fs.CopyToAsync( ms );
-				return Garc.UnpackGarc( ms );
+				return GarcUtil.UnpackGarc( ms );
 			}
 		}
 
-		private static GarcFile UnpackGarc( byte[] data )
+		public static GarcDef UnpackGarc( byte[] data )
 		{
 			using ( var ms = new MemoryStream( data ) )
 			{
-				return Garc.UnpackGarc( ms );
+				return GarcUtil.UnpackGarc( ms );
 			}
 		}
 
-		private static GarcFile UnpackGarc( Stream stream )
+		public static GarcDef UnpackGarc( Stream stream )
 		{
-			GarcFile garc = new GarcFile();
+			GarcDef garc = new GarcDef();
 			using ( BinaryReader br = new BinaryReader( stream ) )
 			{
 				// GARC Header
@@ -476,19 +476,22 @@ namespace CtrDotNet.CTR
 
 				garc.DataOffset = br.ReadUInt32();
 				garc.FileSize = br.ReadUInt32();
-				if ( garc.Version == Version4 )
+
+				switch ( garc.Version )
 				{
-					garc.ContentLargestUnpadded = br.ReadUInt32();
-					garc.ContentPadToNearest = 4;
+					case Version4:
+						garc.ContentLargestUnpadded = br.ReadUInt32();
+						garc.ContentPadToNearest = 4;
+						break;
+					case Version6:
+						garc.ContentLargestPadded = br.ReadUInt32();
+						garc.ContentLargestUnpadded = br.ReadUInt32();
+						garc.ContentPadToNearest = br.ReadUInt32();
+						break;
+					default:
+						throw new FormatException( "Invalid GARC Version: 0x" + garc.Version.ToString( "X4" ) );
 				}
-				else if ( garc.Version == Version6 )
-				{
-					garc.ContentLargestPadded = br.ReadUInt32();
-					garc.ContentLargestUnpadded = br.ReadUInt32();
-					garc.ContentPadToNearest = br.ReadUInt32();
-				}
-				else
-					throw new FormatException( "Invalid GARC Version: 0x" + garc.Version.ToString( "X4" ) );
+
 				if ( garc.ChunkCount != 4 )
 					throw new FormatException( "Invalid GARC Chunk Count: " + garc.ChunkCount );
 
@@ -498,7 +501,7 @@ namespace CtrDotNet.CTR
 				garc.Fato.EntryCount = br.ReadUInt16();
 				garc.Fato.Padding = br.ReadUInt16();
 
-				garc.Fato.Entries = new FatoEntry[ garc.Fato.EntryCount ];
+				garc.Fato.Entries = new GarcDef.FatoEntry[ garc.Fato.EntryCount ];
 				for ( int i = 0; i < garc.Fato.EntryCount; i++ )
 					garc.Fato.Entries[ i ].Offset = br.ReadInt32();
 
@@ -507,11 +510,11 @@ namespace CtrDotNet.CTR
 				garc.Fatb.HeaderSize = br.ReadInt32();
 				garc.Fatb.FileCount = br.ReadInt32();
 
-				garc.Fatb.Entries = new FatbEntry[ garc.Fato.EntryCount ];
+				garc.Fatb.Entries = new GarcDef.FatbEntry[ garc.Fato.EntryCount ];
 				for ( int i = 0; i < garc.Fato.EntryCount; i++ ) // Loop through all FATO entries
 				{
 					garc.Fatb.Entries[ i ].Vector = br.ReadUInt32();
-					garc.Fatb.Entries[ i ].SubEntries = new FatbSubEntry[ 32 ];
+					garc.Fatb.Entries[ i ].SubEntries = new GarcDef.FatbSubEntry[ 32 ];
 					uint bitvector = garc.Fatb.Entries[ i ].Vector;
 					int ctr = 0;
 					for ( int b = 0; b < 32; b++ )
@@ -544,18 +547,18 @@ namespace CtrDotNet.CTR
 			if ( contentpadnearest < 0 )
 				contentpadnearest = 4;
 			// Set Up the GARC template.
-			GarcFile garc = new GarcFile {
+			GarcDef garc = new GarcDef {
 				ContentPadToNearest = (uint) contentpadnearest,
 				Fato = {
 					// Magic = new[] { 'O', 'T', 'A', 'F' },
-					Entries = new FatoEntry[ data.Length ],
+					Entries = new GarcDef.FatoEntry[ data.Length ],
 					EntryCount = (ushort) data.Length,
 					HeaderSize = 0xC + data.Length * 4,
 					Padding = 0xFFFF
 				},
 				Fatb = {
 					// Magic = new[] { 'B', 'T', 'A', 'F' },
-					Entries = new FatbEntry[ data.Length ],
+					Entries = new GarcDef.FatbEntry[ data.Length ],
 					FileCount = data.Length
 				}
 			};
@@ -568,7 +571,7 @@ namespace CtrDotNet.CTR
 			for ( int i = 0; i < garc.Fatb.Entries.Length; i++ )
 			{
 				garc.Fato.Entries[ i ].Offset = op; // FATO offset
-				garc.Fatb.Entries[ i ].SubEntries = new FatbSubEntry[ 32 ];
+				garc.Fatb.Entries[ i ].SubEntries = new GarcDef.FatbSubEntry[ 32 ];
 				op += 4; // Vector
 				garc.Fatb.Entries[ i ].IsFolder = false;
 				garc.Fatb.Entries[ i ].SubEntries[ 0 ].Exists = true;
@@ -619,8 +622,9 @@ namespace CtrDotNet.CTR
 				gw.Write( garc.Fato.HeaderSize ); // Header Size 
 				gw.Write( garc.Fato.EntryCount ); // Entry Count
 				gw.Write( garc.Fato.Padding ); // Padding
-				for ( int i = 0; i < garc.Fato.Entries.Length; i++ )
-					gw.Write( (uint) garc.Fato.Entries[ i ].Offset );
+
+				foreach ( GarcDef.FatoEntry entry in garc.Fato.Entries )
+					gw.Write( (uint) entry.Offset );
 
 				// Write FATB
 				gw.Write( (uint) 0x46415442 ); // FATB
@@ -718,248 +722,6 @@ namespace CtrDotNet.CTR
 			byte[] garCdata = File.ReadAllBytes( tempFile );
 			File.Delete( tempFile );
 			return new MemGarc( garCdata );
-		}
-
-		public class MemGarc
-		{
-			internal GarcFile garc;
-			public int FileCount => this.garc.Fato.EntryCount;
-
-			public MemGarc( byte[] data )
-			{
-				this.Data = data;
-				this.garc = Garc.UnpackGarc( data );
-			}
-
-			internal byte[] Data { get; set; }
-
-			// Returns an individual file
-			public byte[] GetFile( int file, int subfile = 0 )
-			{
-				var entry = this.garc.Fatb.Entries[ file ];
-				var subEntry = entry.SubEntries[ subfile ];
-				if ( !subEntry.Exists )
-					throw new ArgumentException( "SubFile does not exist." );
-				var offset = subEntry.Start + this.garc.DataOffset;
-				byte[] data = new byte[ subEntry.Length ];
-				Array.Copy( this.Data, offset, data, 0, data.Length );
-				return data;
-			}
-
-			// Returns all files (excluding language vectorized)
-			public byte[][] Files
-			{
-				get
-				{
-					byte[][] data = new byte[ this.FileCount ][];
-					for ( int i = 0; i < data.Length; i++ )
-						data[ i ] = this.GetFile( i );
-					return data;
-				}
-				set
-				{
-					if ( value == null || value.Length != this.FileCount )
-						throw new ArgumentException();
-
-					var ng = Garc.PackGarc( value, this.garc.Version, (int) this.garc.ContentPadToNearest );
-					this.garc = ng.garc;
-					this.Data = ng.Data;
-				}
-			}
-		}
-
-		/// <summary>
-		/// GARC Class that is heavier on OOP to allow for compression tracking for faster edits
-		/// </summary>
-		public class LzGarc
-		{
-			private readonly GarcEntry[] storage;
-			private GarcFile garc;
-			public int FileCount => this.garc.Fato.EntryCount;
-
-			public LzGarc( byte[] data )
-			{
-				this.Data = data;
-				this.garc = Garc.UnpackGarc( data );
-				this.storage = new GarcEntry[ this.FileCount ];
-			}
-
-			public byte[] Data { get; private set; }
-
-			private class GarcEntry
-			{
-				public bool Accessed { get; }
-				public bool Saved { get; set; }
-				public byte[] Data { get; set; }
-				public bool WasCompressed { get; }
-
-				public GarcEntry() { }
-
-				public GarcEntry( byte[] data )
-				{
-					this.Data = data;
-					this.Accessed = true;
-
-					if ( data.Length == 0 )
-						return;
-
-					if ( data[ 0 ] != 0x11 )
-						return;
-
-					try
-					{
-						using ( MemoryStream newMS = new MemoryStream() )
-						{
-							Lzss.Decompress( new MemoryStream( data ), data.Length, newMS );
-							this.Data = newMS.ToArray();
-						}
-						this.WasCompressed = true;
-					}
-					catch
-					{
-						// ignored
-					}
-				}
-
-				public async Task<byte[]> Save()
-				{
-					if ( !this.WasCompressed )
-						return this.Data;
-
-					byte[] data;
-					try
-					{
-						using ( MemoryStream newMS = new MemoryStream() )
-						{
-							await Lzss.Compress( new MemoryStream( this.Data ), this.Data.Length, newMS, original: true );
-							data = newMS.ToArray();
-						}
-					}
-					catch
-					{
-						data = new byte[ 0 ];
-					}
-					return data;
-				}
-			}
-
-			private byte[] GetFile( int file, int subfile = 0 )
-			{
-				var entry = this.garc.Fatb.Entries[ file ];
-				var subEntry = entry.SubEntries[ subfile ];
-				if ( !subEntry.Exists )
-					throw new ArgumentException( "SubFile does not exist." );
-				var offset = subEntry.Start + this.garc.DataOffset;
-				byte[] data = new byte[ subEntry.Length ];
-				Array.Copy( this.Data, offset, data, 0, data.Length );
-				return data;
-			}
-
-			public byte[] this[ int file ]
-			{
-				get
-				{
-					if ( file > this.FileCount )
-						throw new ArgumentException();
-
-					if ( this.storage[ file ] == null )
-						this.storage[ file ] = new GarcEntry( this.GetFile( file ) );
-					return this.storage[ file ].Data;
-				}
-				set
-				{
-					if ( this.storage[ file ] == null )
-						this.storage[ file ] = new GarcEntry( value );
-					this.storage[ file ].Data = value;
-					this.storage[ file ].Saved = true;
-				}
-			}
-
-			public async Task<byte[]> Save()
-			{
-				byte[][] data = new byte[ this.FileCount ][];
-				for ( int i = 0; i < data.Length; i++ )
-				{
-					if ( this.storage[ i ] == null || !this.storage[ i ].Saved ) // retrieve original
-						data[ i ] = this.GetFile( i );
-					else // use modified
-						data[ i ] = await this.storage[ i ].Save();
-				}
-
-				var ng = Garc.PackGarc( data, this.garc.Version, (int) this.garc.ContentPadToNearest );
-				this.garc = ng.garc;
-				this.Data = ng.Data;
-				return this.Data;
-			}
-		}
-
-		public struct GarcFile
-		{
-			public char[] Magic; // Always GARC = 0x4E415243
-			public uint HeaderSize; // Always 0x001C
-			public ushort Endianess; // 0xFFFE
-			public ushort Version; // 4: gen6, 6: gen7
-			public uint ChunkCount; // Always 0x0400 chunk count
-
-			public uint DataOffset;
-			public uint FileSize;
-
-			public uint ContentLargestPadded; // Format 6 Only
-			public uint ContentLargestUnpadded;
-			public uint ContentPadToNearest; // Format 6 Only (4 bytes is standard in VER_4, and is not stored)
-
-			public Fato Fato;
-			public Fatb Fatb;
-			public Fimg Fimg;
-		}
-
-		public struct Fato
-		{
-			public char[] Magic;
-			public int HeaderSize;
-			public ushort EntryCount;
-			public ushort Padding;
-
-			public FatoEntry[] Entries;
-		}
-
-		public struct FatoEntry
-		{
-			public int Offset;
-		}
-
-		public struct Fatb
-		{
-			public char[] Magic;
-			public int HeaderSize;
-			public int FileCount;
-
-			public FatbEntry[] Entries;
-		}
-
-		public struct FatbEntry
-		{
-			public uint Vector;
-			public bool IsFolder;
-			public FatbSubEntry[] SubEntries;
-		}
-
-		public struct FatbSubEntry
-		{
-			public bool Exists;
-			public int Start;
-			public int End;
-			public int Length;
-
-			// Unsaved Properties
-			public int Padding { get; set; }
-		}
-
-		public struct Fimg
-		{
-			public char[] Magic;
-			public int HeaderSize;
-			public int DataSize;
 		}
 	}
 

@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CtrDotNet.Pokemon.Structures.RomFS.Common;
 
-namespace CtrDotNet.Pokemon.GameData
+namespace CtrDotNet.Pokemon.Utility
 {
 	public class TextFileHelper
 	{

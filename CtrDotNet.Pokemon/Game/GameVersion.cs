@@ -1,4 +1,4 @@
-﻿namespace CtrDotNet.Pokemon.GameData
+﻿namespace CtrDotNet.Pokemon.Game
 {
 	public enum GameVersion
 	{
@@ -32,5 +32,7 @@
 		public static bool IsXY( this GameVersion game ) => game == GameVersion.XY;
 		public static bool IsORAS( this GameVersion game ) => game == GameVersion.ORAS || game == GameVersion.ORASDemo;
 		public static bool IsSunMoon( this GameVersion game ) => game == GameVersion.SunMoon || game == GameVersion.SunMoonDemo;
+		public static bool IsGen6( this GameVersion game ) => game.GetGeneration() == GameGeneration.Generation6;
+		public static bool IsGen7( this GameVersion game ) => game.GetGeneration() == GameGeneration.Generation7;
 	}
 }

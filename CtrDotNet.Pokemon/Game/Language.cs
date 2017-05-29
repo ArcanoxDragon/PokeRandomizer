@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CtrDotNet.Pokemon.GameData
+﻿namespace CtrDotNet.Pokemon.Game
 {
 	public enum Language
 	{

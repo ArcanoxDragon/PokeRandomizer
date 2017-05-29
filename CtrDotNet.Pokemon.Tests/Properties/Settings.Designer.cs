@@ -23,21 +23,15 @@ namespace CtrDotNet.Pokemon.Tests.Properties {
             }
         }
         
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ORAS")]
-        public string GameType {
-            get {
-                return ((string)(this["GameType"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Arcanox\\Documents\\3DS\\OmegaRuby\\Unpacked\\Vanilla")]
-        public string RomPath {
+        public string RomPathORAS {
             get {
-                return ((string)(this["RomPath"]));
+                return ((string)(this["RomPathORAS"]));
+            }
+            set {
+                this["RomPathORAS"] = value;
             }
         }
     }

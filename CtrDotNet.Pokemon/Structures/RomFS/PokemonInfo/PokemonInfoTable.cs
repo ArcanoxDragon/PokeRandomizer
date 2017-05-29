@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using CtrDotNet.Pokemon.Dynamic;
-using CtrDotNet.Pokemon.GameData;
+using CtrDotNet.Pokemon.Data;
+using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Structures.RomFS.Common;
 using CtrDotNet.Pokemon.Utility;
 
@@ -91,7 +91,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			}
 		}
 
-		public PokemonInfo this[ Species species ] => this[ (int) species ];
+		public PokemonInfo this[ BaseSpeciesType species ] => this[ species.Id ];
 
 		public int[] GetAbilities( int species, int forme )
 		{

@@ -1,6 +1,6 @@
-﻿namespace CtrDotNet.Pokemon.GameData
+﻿namespace CtrDotNet.Pokemon.Game
 {
-	public static class Lcrng32
+	public static class GameRng
 	{
 		public static uint Advance( uint seed, int ctr )
 		{

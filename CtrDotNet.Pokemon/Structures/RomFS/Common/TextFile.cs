@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CtrDotNet.Pokemon.Structures.RomFS.Common;
+using CtrDotNet.Pokemon.Game;
+using CtrDotNet.Pokemon.Utility;
 
-namespace CtrDotNet.Pokemon.GameData
+namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 {
 	public class TextFile : IDataStructure
 	{

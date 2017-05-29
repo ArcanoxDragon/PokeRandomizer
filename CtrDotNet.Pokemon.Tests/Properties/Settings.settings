@@ -2,10 +2,7 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="CtrDotNet.Pokemon.Tests.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="GameType" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">ORAS</Value>
-    </Setting>
-    <Setting Name="RomPath" Type="System.String" Scope="Application">
+    <Setting Name="RomPathORAS" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\Users\Arcanox\Documents\3DS\OmegaRuby\Unpacked\Vanilla</Value>
     </Setting>
   </Settings>

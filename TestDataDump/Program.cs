@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using CtrDotNet.Pokemon.GameData;
+using CtrDotNet.Pokemon.Game;
+using CtrDotNet.Pokemon.Reference;
+using CtrDotNet.Pokemon.Structures.RomFS.Common;
 
 namespace TestDataDump
 {
@@ -48,7 +50,7 @@ namespace TestDataDump
 			DumpMoveNames();
 		}
 
-		private static void DumpStringTable( TextName tableName, string fileName )
+		private static void DumpStringTable( TextNames tableName, string fileName )
 		{
 			TextReference textRef = Config.GameText.FirstOrDefault( tr => tr.Name == tableName );
 
@@ -66,9 +68,9 @@ namespace TestDataDump
 												  .Where( s => !BlankLineRegex.IsMatch( s ) ) );
 		}
 
-		private static void DumpSpeciesNames() => DumpStringTable( TextName.SpeciesNames, "Species" );
-		private static void DumpAbilityNames() => DumpStringTable( TextName.AbilityNames, "Abilities" );
-		private static void DumpItemNames() => DumpStringTable( TextName.ItemNames, "Items" );
-		private static void DumpMoveNames() => DumpStringTable( TextName.MoveNames, "Moves" );
+		private static void DumpSpeciesNames() => DumpStringTable( TextNames.SpeciesNames, "Species" );
+		private static void DumpAbilityNames() => DumpStringTable( TextNames.AbilityNames, "Abilities" );
+		private static void DumpItemNames() => DumpStringTable( TextNames.ItemNames, "Items" );
+		private static void DumpMoveNames() => DumpStringTable( TextNames.MoveNames, "Moves" );
 	}
 }

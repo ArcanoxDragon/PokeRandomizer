@@ -1,14 +1,15 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CtrDotNet.Pokemon")]
+[assembly: AssemblyTitle("CtrDotNet.Pokemon.Data")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CtrDotNet.Pokemon")]
+[assembly: AssemblyProduct("CtrDotNet.Pokemon.Data")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b3267c79-99ba-4151-ae7f-ee5657fd1c77")]
+[assembly: Guid("85f7a691-d093-48d8-9a57-d8f3494bf931")]
 
 // Version information for an assembly consists of the following four values:
 //

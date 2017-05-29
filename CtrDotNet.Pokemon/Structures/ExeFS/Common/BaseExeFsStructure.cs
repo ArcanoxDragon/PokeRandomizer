@@ -1,19 +1,19 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using CtrDotNet.Pokemon.GameData;
+using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.ExeFS.Common
 {
 	public abstract class BaseExeFsStructure
 	{
-		protected BaseExeFsStructure( GameConfig gameConfig )
+		protected BaseExeFsStructure( GameVersion gameVersion )
 		{
-			this.GameConfig = gameConfig;
+			this.GameVersion = gameVersion;
 		}
 
-		protected GameConfig GameConfig { get; }
+		public GameVersion GameVersion { get; }
 		protected abstract byte[] Signature { get; }
 		protected abstract int Length { get; }
 		protected virtual bool IncludeSignature => true;

@@ -1,39 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CtrDotNet.Pokemon.Game;
+using CtrDotNet.Pokemon.Structures.ExeFS.Common;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 {
-	public abstract class Learnset : IDataStructure
+	public abstract class Learnset : BaseDataStructure
 	{
-		#region Static
-
-		public static T[] GetArray<T>( byte[][] entries ) where T : Learnset, new()
-		{
-			T[] data = new T[ entries.Length ];
-
-			for ( int i = 0; i < data.Length; i++ )
-			{
-				T learnset = new T();
-				learnset.Read( entries[ i ] );
-				data[ i ] = learnset;
-			}
-
-			return data;
-		}
-
-		#endregion
-
 		public int Count { get; set; }
 		public int[] Moves { get; set; }
 		public int[] Levels { get; set; }
 
-		protected Learnset() { }
-
-		protected Learnset( byte[] data )
-		{
-			this.Read( data );
-		}
+		protected Learnset( GameVersion gameVersion ) : base( gameVersion ) { }
 
 		public IEnumerable<int> GetMoves( int level )
 		{
@@ -45,7 +24,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 			return this.GetMoves( level ).Reverse().Take( 4 ).Reverse().ToArray();
 		}
 
-		public void Read( byte[] data )
+		public override void Read( byte[] data )
 		{
 			if ( data.Length < 4 || data.Length % 4 != 0 )
 			{
@@ -59,31 +38,29 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 			this.Moves = new int[ this.Count ];
 			this.Levels = new int[ this.Count ];
 
-			using ( var ms = new MemoryStream( data ) )
-			using ( var br = new BinaryReader( ms ) )
+			base.Read( data );
+		}
+
+		protected override void ReadData( BinaryReader br )
+		{
+			for ( int i = 0; i < this.Count; i++ )
 			{
-				for ( int i = 0; i < this.Count; i++ )
-				{
-					this.Moves[ i ] = br.ReadInt16();
-					this.Levels[ i ] = br.ReadInt16();
-				}
+				this.Moves[ i ] = br.ReadInt16();
+				this.Levels[ i ] = br.ReadInt16();
 			}
 		}
 
-		public byte[] Write()
+		protected override void WriteData( BinaryWriter bw )
 		{
 			this.Count = (ushort) this.Moves.Length;
-			using ( MemoryStream ms = new MemoryStream() )
-			using ( BinaryWriter bw = new BinaryWriter( ms ) )
+
+			for ( int i = 0; i < this.Count; i++ )
 			{
-				for ( int i = 0; i < this.Count; i++ )
-				{
-					bw.Write( (short) this.Moves[ i ] );
-					bw.Write( (short) this.Levels[ i ] );
-				}
-				bw.Write( -1 );
-				return ms.ToArray();
+				bw.Write( (short) this.Moves[ i ] );
+				bw.Write( (short) this.Levels[ i ] );
 			}
+
+			bw.Write( -1 );
 		}
 	}
 }

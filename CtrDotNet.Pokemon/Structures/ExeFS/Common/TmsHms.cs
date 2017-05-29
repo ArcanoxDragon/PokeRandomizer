@@ -19,12 +19,12 @@ namespace CtrDotNet.Pokemon.Structures.ExeFS.Common
 			this.HmIds = new ushort[ numHms + 1 ];
 		}
 
-		protected override byte[] Signature => this.GameVersion.IsGen6()
-												   ? new byte[] { 0xD4, 0x00, 0xAE, 0x02, 0xAF, 0x02, 0xB0, 0x02 }
-												   : new byte[] { 0x03, 0x40, 0x03, 0x41, 0x03, 0x42, 0x03, 0x43, 0x03 };
+		public override byte[] Signature => this.GameVersion.IsGen6()
+												? new byte[] { 0xD4, 0x00, 0xAE, 0x02, 0xAF, 0x02, 0xB0, 0x02 }
+												: new byte[] { 0x03, 0x40, 0x03, 0x41, 0x03, 0x42, 0x03, 0x43, 0x03 };
 
-		protected override int Length => ( this.TmIds.Length + this.HmIds.Length ) * TmHmIdSize;
-		protected override bool IncludeSignature => false;
+		public override int Length => ( this.TmIds.Length + this.HmIds.Length ) * TmHmIdSize;
+		public override bool IncludeSignature => false;
 
 		public ushort[] TmIds { get; private set; }
 		public ushort[] HmIds { get; private set; }

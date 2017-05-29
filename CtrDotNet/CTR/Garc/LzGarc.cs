@@ -70,10 +70,11 @@ namespace CtrDotNet.CTR.Garc
 
 		#endregion
 
-		private readonly Entry[] storage;
+		private Entry[] storage;
 
-		public LzGarc( byte[] data ) : base( data )
+		public override void Read( byte[] data )
 		{
+			base.Read( data );
 			this.storage = new Entry[ this.FileCount ];
 		}
 
@@ -106,7 +107,7 @@ namespace CtrDotNet.CTR.Garc
 			return files;
 		}
 
-		public override void SetFiles( byte[][] files )
+		public override Task SetFiles( byte[][] files )
 		{
 			for ( int file = 0; file < files.Length; file++ )
 			{
@@ -116,6 +117,8 @@ namespace CtrDotNet.CTR.Garc
 				this.storage[ file ].Data = files[ file ];
 				this.storage[ file ].Saved = true;
 			}
+
+			return Task.CompletedTask;
 		}
 
 		//}

@@ -1,22 +1,20 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Game;
-using CtrDotNet.Pokemon.Structures.RomFS.Common;
+using CtrDotNet.Pokemon.Structures.ExeFS.Common;
 using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 {
-	public class PokemonInfoTable : IDataStructure
+	public class PokemonInfoTable : BaseDataStructure
 	{
-		private readonly GameVersion gameVersion;
 		private readonly int entrySize;
 
-		public PokemonInfoTable( GameVersion gameVersion )
+		public PokemonInfoTable( GameVersion gameVersion ) : base( gameVersion )
 		{
-			this.gameVersion = gameVersion;
-
-			switch ( this.gameVersion )
+			switch ( gameVersion )
 			{
 				case GameVersion.XY:
 					this.entrySize = PokemonInfoXY.Size;
@@ -32,50 +30,48 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			}
 		}
 
-		public void Read( byte[] data )
+		protected override void ReadData( BinaryReader br )
 		{
-			if ( this.entrySize == 0 )
+			if ( br.BaseStream.Length == 0 )
 			{
-				this.Table = null;
+				this.Table = new PokemonInfo[ 0 ];
+				return;
 			}
-			else
+
+			this.Table = new PokemonInfo[ br.BaseStream.Length / this.entrySize ];
+
+			switch ( this.GameVersion )
 			{
-				byte[][] entries = data.Partition( this.entrySize );
-				PokemonInfo[] d = new PokemonInfo[ data.Length / this.entrySize ];
+				case GameVersion.XY:
+					this.Table.Fill( () => new PokemonInfoXY() );
+					break;
+				case GameVersion.ORASDemo:
+				case GameVersion.ORAS:
+					this.Table.Fill( () => new PokemonInfoORAS() );
+					break;
+				case GameVersion.SunMoonDemo:
+				case GameVersion.SunMoon:
+					this.Table.Fill( () => new PokemonInfoSM() );
+					break;
+			}
 
-				switch ( this.gameVersion )
-				{
-					case GameVersion.XY:
-						d.Fill( () => new PokemonInfoXY() );
-						break;
-					case GameVersion.ORASDemo:
-					case GameVersion.ORAS:
-						d.Fill( () => new PokemonInfoORAS() );
-						break;
-					case GameVersion.SunMoonDemo:
-					case GameVersion.SunMoon:
-						d.Fill( () => new PokemonInfoSM() );
-						break;
-				}
-
-				for ( int i = 0; i < d.Length; i++ )
-					d[ i ].Read( entries[ i ] );
-
-				this.Table = d;
+			foreach ( PokemonInfo info in this.Table )
+			{
+				byte[] subData = new byte[ this.entrySize ];
+				br.Read( subData, 0, this.entrySize );
+				info.Read( subData );
 			}
 		}
 
-		public byte[] Write()
+		protected override void WriteData( BinaryWriter bw )
 		{
 			if ( this.Table == null )
-				return new byte[ 0 ];
+				return;
 
-			byte[][] entries = new byte[ this.Table.Length ][];
-
-			for ( int i = 0; i < this.Table.Length; i++ )
-				entries[ i ] = this.Table[ i ].Write();
-
-			return entries.SelectMany( e => e ).ToArray();
+			foreach ( byte[] data in this.Table.Select( info => info.Write() ) )
+			{
+				bw.Write( data, 0, data.Length );
+			}
 		}
 
 		public PokemonInfo[] Table { get; private set; }
@@ -163,7 +159,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 
 		public int[] GetSpeciesForm( int personalEntry )
 		{
-			int maxSpecies = this.gameVersion.GetGeneration().GetInfo().SpeciesCount;
+			int maxSpecies = this.GameVersion.GetGeneration().GetInfo().SpeciesCount;
 
 			if ( personalEntry < maxSpecies )
 				return new[] { personalEntry, 0 };

@@ -6,15 +6,17 @@ namespace CtrDotNet.CTR.Garc
 {
 	public abstract class BaseGarc
 	{
-		protected BaseGarc( byte[] data )
-		{
-			this.Data = data;
-			this.Def = CTR.Garc.GarcUtil.UnpackGarc( data );
-		}
+		protected BaseGarc() { }
 
 		public byte[] Data { get; protected set; }
 		public GarcDef Def { get; protected set; }
 		public int FileCount => this.Def.Fato.EntryCount;
+
+		public virtual void Read( byte[] data )
+		{
+			this.Data = data;
+			this.Def = CTR.Garc.GarcUtil.UnpackGarc( data );
+		}
 
 		public virtual async Task<byte[][]> GetFiles()
 		{
@@ -26,14 +28,14 @@ namespace CtrDotNet.CTR.Garc
 			return data;
 		}
 
-		public virtual void SetFiles( byte[][] files )
+		public virtual async Task SetFiles( byte[][] files )
 		{
 			if ( files == null || files.Length != this.FileCount )
 				throw new ArgumentException();
 
-			var ng = CTR.Garc.GarcUtil.PackGarc( files, this.Def.Version, (int) this.Def.ContentPadToNearest );
-			this.Def = ng.Def;
-			this.Data = ng.Data;
+			var memGarc = await CTR.Garc.GarcUtil.PackGarc( files, this.Def.Version, (int) this.Def.ContentPadToNearest );
+			this.Def = memGarc.Def;
+			this.Data = memGarc.Data;
 		}
 
 		protected virtual async Task<byte[]> GetFile( int file, int subfile = 0 )
@@ -65,9 +67,9 @@ namespace CtrDotNet.CTR.Garc
 				data[ i ] = await this.GetFile( i );
 			}
 
-			var ng = GarcUtil.PackGarc( data, this.Def.Version, (int) this.Def.ContentPadToNearest );
-			this.Def = ng.Def;
-			this.Data = ng.Data;
+			var memGarc = await GarcUtil.PackGarc( data, this.Def.Version, (int) this.Def.ContentPadToNearest );
+			this.Def = memGarc.Def;
+			this.Data = memGarc.Data;
 			return this.Data;
 		}
 	}

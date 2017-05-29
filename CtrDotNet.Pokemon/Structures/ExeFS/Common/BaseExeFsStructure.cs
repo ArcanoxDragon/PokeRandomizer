@@ -1,69 +1,22 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using CtrDotNet.Pokemon.Game;
-using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.ExeFS.Common
 {
-	public abstract class BaseExeFsStructure
+	public abstract class BaseExeFsStructure : BaseDataStructure
 	{
-		protected BaseExeFsStructure( GameVersion gameVersion )
+		protected BaseExeFsStructure( GameVersion gameVersion ) : base( gameVersion ) { }
+
+		public abstract byte[] Signature { get; }
+		public abstract int Length { get; }
+		public virtual bool IncludeSignature => true;
+
+		public override void Read( byte[] data )
 		{
-			this.GameVersion = gameVersion;
+			if ( data.Length != this.Length )
+				throw new ArgumentOutOfRangeException( nameof(data), $"Wrong data length. Expected {this.Length} bytes, but got {data.Length}." );
+
+			base.Read( data );
 		}
-
-		public GameVersion GameVersion { get; }
-		protected abstract byte[] Signature { get; }
-		protected abstract int Length { get; }
-		protected virtual bool IncludeSignature => true;
-
-		public void Read( byte[] exeData )
-		{
-			var matches = exeData.Find( this.Signature, 0x400000 ).ToList();
-
-			if ( !matches.Any() )
-				throw new InvalidOperationException( "Could not find signature in binary file" );
-
-			int offset = matches.First();
-
-			if ( !this.IncludeSignature )
-				offset += this.Signature.Length;
-
-			byte[] data = exeData.Skip( offset ).Take( this.Length ).ToArray();
-
-			using ( var ms = new MemoryStream( data ) )
-			using ( var br = new BinaryReader( ms ) )
-			{
-				this.ReadData( br );
-			}
-		}
-
-		public void Write( byte[] exeData )
-		{
-			var matches = exeData.Find( this.Signature, 0x400000 ).ToList();
-
-			if ( !matches.Any() )
-				throw new InvalidOperationException( "Could not find signature in binary file" );
-
-			int offset = matches.First();
-
-			if ( !this.IncludeSignature )
-				offset += this.Signature.Length;
-
-			byte[] data;
-
-			using ( var ms = new MemoryStream() )
-			using ( var bw = new BinaryWriter( ms ) )
-			{
-				this.WriteData( bw );
-				data = ms.ToArray();
-			}
-
-			Array.Copy( data, 0, exeData, offset, data.Length );
-		}
-
-		protected abstract void ReadData( BinaryReader br );
-		protected abstract void WriteData( BinaryWriter bw );
 	}
 }

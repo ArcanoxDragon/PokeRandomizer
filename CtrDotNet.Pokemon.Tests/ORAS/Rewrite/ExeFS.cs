@@ -21,14 +21,21 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 		}
 
 		[ Test ]
-		public async Task CopyCodeBin()
+		public async Task RewriteCodeBin()
 		{
+			CodeBin origCodeBin = new CodeBin( Path.Combine( this.path, "code.orig.bin" ) )
+			{
+				Data = (byte[]) ORASConfig.GameConfig.CodeBin.Data.Clone()
+			};
+
+			await origCodeBin.Save();
+
 			CodeBin newCodeBin = new CodeBin( Path.Combine( this.path, "code.bin" ) ) {
 				Data = (byte[]) ORASConfig.GameConfig.CodeBin.Data.Clone()
 			};
 
 			TmsHms tmsHms = ORASConfig.GameConfig.GetTmsHms();
-			tmsHms.Write( newCodeBin.Data );
+			newCodeBin.WriteStructure( tmsHms );
 
 			await newCodeBin.Save();
 

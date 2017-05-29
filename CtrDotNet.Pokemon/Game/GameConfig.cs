@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 using CtrDotNet.CTR;
 using CtrDotNet.CTR.Garc;
 using CtrDotNet.Pokemon.ExeFS;
+using CtrDotNet.Pokemon.Garc;
 using CtrDotNet.Pokemon.Reference;
 using CtrDotNet.Pokemon.Structures.ExeFS.Common;
 using CtrDotNet.Pokemon.Structures.RomFS.Common;
 using CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo;
+using Gen6 = CtrDotNet.Pokemon.Structures.RomFS.Gen6;
+using Gen7 = CtrDotNet.Pokemon.Structures.RomFS.Gen7;
 
 namespace CtrDotNet.Pokemon.Game
 {
@@ -55,10 +58,11 @@ namespace CtrDotNet.Pokemon.Game
 			this.Version = game;
 		}
 
+		#region Properties
+
 		public GameVersion Version { get; }
 		public CodeBin CodeBin { get; private set; }
 		public GarcReference[] Files { get; private set; }
-		public GarcFile<MemGarc> GarcPersonal, GarcLearnsets, GarcMoves, GarcGameText;
 		public TextVariableCode[] Variables { get; private set; }
 		public TextReference[] GameText { get; private set; }
 		public string[][] GameTextStrings { get; private set; }
@@ -67,6 +71,19 @@ namespace CtrDotNet.Pokemon.Game
 		public string RomFS { get; private set; }
 		public string ExeFS { get; private set; }
 		public Language Language { get; set; }
+
+		#region Files
+
+		//public async Task<ReferencedGarc<MemGarc>> GetGarcPersonal() => this.garcPersonal ?? ( this.garcPersonal = await this.GetGarcData<MemGarc>( "personal" ) );
+		//public async Task<ReferencedGarc<MemGarc>> GetGarcLearnsets() => this.garcLearnsets ?? ( this.garcLearnsets = await this.GetGarcData<MemGarc>( "levelup" ) );
+		//public async Task<ReferencedGarc<MemGarc>> GetGarcMoves() => this.garcMoves ?? ( this.garcMoves = await this.GetGarcData<MemGarc>( "move" ) );
+		//public async Task<ReferencedGarc<MemGarc>> GetGarcGameText() => this.garcGameText ?? ( this.garcGameText = await this.GetGarcData<MemGarc>( "gametext" ) );
+
+		#endregion
+
+		#endregion
+
+		#region Initialization
 
 		private void GetGameData( GameVersion game )
 		{
@@ -92,15 +109,13 @@ namespace CtrDotNet.Pokemon.Game
 					break;
 				case GameVersion.SunMoon:
 					this.Files = ReferenceLists.Garc.Sun;
-					if ( new FileInfo( Path.Combine( this.RomFS, this.GetGarcFileName( "encdata" ) ) ).Length == 0 )
+					if ( new FileInfo( Path.Combine( this.RomFS, this.GetGarcFileName( GarcNames.EncounterData ) ) ).Length == 0 )
 						this.Files = ReferenceLists.Garc.Moon;
 					this.Variables = ReferenceLists.Variables.SunMoon;
 					this.GameText = ReferenceLists.Text.SunMoon;
 					break;
 			}
 		}
-
-		#region Initialization
 
 		public async Task Initialize( string romFSpath, string exeFSpath, Language lang )
 		{
@@ -111,44 +126,12 @@ namespace CtrDotNet.Pokemon.Game
 			this.GetGameData( this.Version );
 
 			await this.GetCodeBin();
-			await this.InitializeAll();
-		}
-
-		private async Task InitializeAll()
-		{
-			await Task.WhenAll( this.InitializeLearnset(),
-								this.InitializeGameText(),
-								this.InitializeMoves() );
-		}
-
-		private async Task InitializeLearnset()
-		{
-			this.GarcLearnsets = await this.GetMemGarcData( "levelup" );
-			byte[][] files = await this.GarcLearnsets.GetFiles();
-
-			switch ( this.Version.GetGeneration() )
-			{
-				case GameGeneration.Generation6:
-					this.Learnsets = files.Select( file => new Structures.RomFS.Gen6.Learnset( file ) );
-					break;
-				case GameGeneration.Generation7:
-					this.Learnsets = files.Select( file => new Structures.RomFS.Gen7.Learnset( file ) );
-					break;
-			}
-		}
-
-		private async Task InitializeGameText()
-		{
-			this.GarcGameText = await this.GetMemGarcData( "gametext" );
-			byte[][] files = await this.GarcGameText.GetFiles();
-
-			this.GameTextStrings = files.Select( file => new TextFile( file, this.Variables ).Lines.ToArray() ).ToArray();
 		}
 
 		private async Task InitializeMoves()
 		{
-			this.GarcMoves = await this.GetMemGarcData( "move" );
-			byte[][] files = await this.GarcMoves.GetFiles();
+			var garcMoves = await this.GetGarcData( GarcNames.Moves );
+			byte[][] files = await garcMoves.GetFiles();
 
 			switch ( this.Version.GetGeneration() )
 			{
@@ -172,10 +155,102 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<PokemonInfoTable> GetPokemonInfo()
 		{
-			this.GarcPersonal = await this.GetMemGarcData( "personal" );
 			PokemonInfoTable table = new PokemonInfoTable( this.Version );
-			table.Read( await this.GarcPersonal.GetFile( this.GarcPersonal.FileCount - 1 ) );
+			var garcPersonal = await this.GetGarcData( GarcNames.PokemonInfo );
+			byte[] data = await garcPersonal.GetFile( garcPersonal.Garc.FileCount - 1 );
+			table.Read( data );
 			return table;
+		}
+
+		public async Task SavePokemonInfo( PokemonInfoTable table )
+		{
+			this.AssertVersion( table.GameVersion );
+
+			var garcPersonal = await this.GetGarcData( GarcNames.PokemonInfo );
+			byte[][] files = await garcPersonal.GetFiles();
+
+			files[ garcPersonal.Garc.FileCount - 1 ] = table.Write();
+
+			await garcPersonal.SetFiles( files );
+			await garcPersonal.Save();
+		}
+
+		#endregion
+
+		#region Learnsets
+
+		public async Task<IEnumerable<Learnset>> GetLearnsets()
+		{
+			var garcLearnsets = await this.GetGarcData( GarcNames.Learnsets );
+			byte[][] files = await garcLearnsets.GetFiles();
+			return files.Select( f => {
+				Learnset l;
+
+				if ( this.Version.IsGen6() )
+					l = new Gen6.Learnset( this.Version );
+				else
+					l = new Gen7.Learnset( this.Version );
+
+				l.Read( f );
+				return l;
+			} );
+		}
+
+		public async Task SaveLearnsets( IEnumerable<Learnset> learnsets )
+		{
+			var garcLearnsets = await this.GetGarcData( GarcNames.Learnsets );
+			IList<Learnset> list = learnsets.ToList();
+
+			foreach ( Learnset l in list )
+				this.AssertVersion( l.GameVersion );
+
+			byte[][] files = list.Select( l => l.Write() ).ToArray();
+
+			await garcLearnsets.SetFiles( files );
+			await garcLearnsets.Save();
+		}
+
+		#endregion
+
+		#region Game Text
+
+		public async Task<TextFile[]> GetGameText()
+		{
+			var garcGameText = await this.GetGarcData( GarcNames.GameText );
+			byte[][] files = await garcGameText.GetFiles();
+
+			return files.Select( file => {
+				TextFile tf = new TextFile( this.Version, this.Variables );
+				tf.Read( file );
+				return tf;
+			} ).ToArray();
+		}
+
+		public async Task<TextFile> GetGameText( int textFile )
+		{
+			var garcGameText = await this.GetGarcData( GarcNames.GameText );
+			byte[] file = await garcGameText.GetFile( textFile );
+
+			TextFile tf = new TextFile( this.Version, this.Variables );
+			tf.Read( file );
+			return tf;
+		}
+
+		public async Task SaveGameText( IEnumerable<TextFile> textFiles )
+		{
+			var garcGameText = await this.GetGarcData( GarcNames.GameText );
+			byte[][] files = textFiles.Select( tf => tf.Write() ).ToArray();
+
+			await garcGameText.SetFiles( files );
+			await garcGameText.Save();
+		}
+
+		public async Task SaveGameText( int fileNum, TextFile textFile )
+		{
+			var garcGameText = await this.GetGarcData( GarcNames.GameText );
+
+			await garcGameText.SetFile( fileNum, textFile.Write() );
+			await garcGameText.Save();
 		}
 
 		#endregion
@@ -185,16 +260,15 @@ namespace CtrDotNet.Pokemon.Game
 		public TmsHms GetTmsHms()
 		{
 			TmsHms tmsHms = new TmsHms( this.Version );
-			tmsHms.Read( this.CodeBin.Data );
+			tmsHms.ReadFromCodeBin( this.CodeBin );
 			return tmsHms;
 		}
 
 		public async Task SaveTmsHms( TmsHms tmsHms )
 		{
-			if ( tmsHms.GameVersion != this.Version )
-				throw new ArgumentException( $"Version mismatch. Expected version {this.Version} but got {tmsHms.GameVersion}.", nameof(tmsHms) );
+			this.AssertVersion( tmsHms.GameVersion );
 
-			tmsHms.Write( this.CodeBin.Data );
+			this.CodeBin.WriteStructure( tmsHms );
 
 			await this.CodeBin.Save();
 		}
@@ -220,79 +294,62 @@ namespace CtrDotNet.Pokemon.Game
 
 		#region Garc
 
-		public string GetGarcFileName( string garc )
+		public string GetGarcFileName( GarcNames garcName )
 		{
-			var garcRef = this.GetGarcReference( garc );
+			var garcRef = this.GetGarcReference( garcName );
 
 			if ( garcRef.HasLanguageVariant )
 				garcRef = garcRef.GetRelativeGarc( (int) this.Language );
 
-			return garcRef.Reference;
+			return garcRef.RomFsPath;
 		}
 
-		public GarcReference GetGarcReference( string name ) => this.Files.FirstOrDefault( f => f.Name == name );
+		public GarcReference GetGarcReference( GarcNames garcName ) => this.Files.FirstOrDefault( f => f.Name == garcName );
 
-		private string GetGarcPath( string file )
+		private string GetGarcPath( GarcNames garcName )
 		{
-			var gr = this.GetGarcReference( file );
-			gr = gr.HasLanguageVariant ? gr.GetRelativeGarc( (int) this.Language, gr.Name ) : gr;
-			string subloc = gr.Reference;
+			var gr = this.GetGarcReference( garcName );
+			gr = gr.HasLanguageVariant ? gr.GetRelativeGarc( (int) this.Language ) : gr;
+			string subloc = gr.RomFsPath;
 			return Path.Combine( this.RomFS, subloc );
 		}
 
-		#region MemGarc
-
-		private async Task<MemGarc> GetMemGarc( string file )
+		private async Task<T> GetGarc<T>( GarcNames garcName ) where T : BaseGarc, new()
 		{
-			string path = this.GetGarcPath( file );
+			string path = this.GetGarcPath( garcName );
 			using ( var fs = new FileStream( path, FileMode.Open ) )
 			{
 				byte[] buffer = new byte[ fs.Length ];
 				await fs.ReadAsync( buffer, 0, buffer.Length );
-				return new MemGarc( buffer );
+				T garc = new T();
+				garc.Read( buffer );
+				return garc;
 			}
 		}
 
-		public async Task<GarcFile<MemGarc>> GetMemGarcByReference( GarcReference gr )
-			=> new GarcFile<MemGarc>( await this.GetMemGarc( gr.Name ), this.GetGarcPath( gr.Name ) );
-
-		public async Task<GarcFile<MemGarc>> GetMemGarcData( string file, bool skipRelative = false )
+		public async Task<ReferencedGarc<T>> GetGarcByReference<T>( GarcReference gr ) where T : BaseGarc, new()
 		{
-			var gr = this.GetGarcReference( file );
+			GarcFile<T> file = new GarcFile<T>( await this.GetGarc<T>( gr.Name ), this.GetGarcPath( gr.Name ) );
+			return new ReferencedGarc<T>( file, gr );
+		}
+
+		public async Task<ReferencedGarc<T>> GetGarcData<T>( GarcNames garcName, bool skipRelative = false ) where T : BaseGarc, new()
+		{
+			var gr = this.GetGarcReference( garcName );
 			if ( gr.HasLanguageVariant && !skipRelative )
-				gr = gr.GetRelativeGarc( (int) this.Language, gr.Name );
-			return await this.GetMemGarcByReference( gr );
+				gr = gr.GetRelativeGarc( (int) this.Language );
+			return await this.GetGarcByReference<T>( gr );
 		}
+
+		public Task<ReferencedGarc<MemGarc>> GetGarcData( GarcNames garcName, bool skipRelative = false ) => this.GetGarcData<MemGarc>( garcName, skipRelative );
 
 		#endregion
 
-		#region LzGarc
-
-		private async Task<LzGarc> GetLzGarc( string file )
+		private void AssertVersion( GameVersion check )
 		{
-			string path = this.GetGarcPath( file );
-			using ( var fs = new FileStream( path, FileMode.Open ) )
-			{
-				byte[] buffer = new byte[ fs.Length ];
-				await fs.ReadAsync( buffer, 0, buffer.Length );
-				return new LzGarc( buffer );
-			}
+			if ( check != this.Version )
+				throw new ArgumentException( $"Version mismatch. Expected version {this.Version} but got {check}." );
 		}
-
-		public async Task<GarcFile<LzGarc>> GetLzGarcByReference( GarcReference gr )
-			=> new GarcFile<LzGarc>( await this.GetLzGarc( gr.Name ), this.GetGarcPath( gr.Name ) );
-
-		public async Task<GarcFile<LzGarc>> GetLzGarcData( string file )
-		{
-			var gr = this.GetGarcReference( file );
-			if ( gr.HasLanguageVariant )
-				gr = gr.GetRelativeGarc( (int) this.Language, gr.Name );
-			return await this.GetLzGarcByReference( gr );
-		}
-
-		#endregion
-
-		#endregion
 
 		public TextVariableCode GetVariableCode( string name ) => this.Variables.FirstOrDefault( v => v.Name == name );
 

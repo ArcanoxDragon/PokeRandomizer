@@ -30,7 +30,7 @@ namespace CtrDotNet.Pokemon.Utility
 
 		public static void Fill<T>( this T[] array, T value ) => array.Fill( () => value );
 
-		public static IEnumerable<int> Find<T>( this T[] collection, T[] pattern, int startIndex = 0 ) where T : IEquatable<T>
+		public static IEnumerable<int> FindSequence<T>( this T[] collection, T[] pattern, int startIndex = 0 ) where T : IEquatable<T>
 		{
 			IEnumerable<int> index = Enumerable.Range( startIndex, collection.Length - startIndex - pattern.Length + 1 );
 

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Structures.RomFS.Common;
 
 namespace CtrDotNet.Pokemon.Utility
 {
-	public class TextFileHelper
+	public static class TextFileHelper
 	{
 		#region Text Formatting Config
 
@@ -44,7 +45,7 @@ namespace CtrDotNet.Pokemon.Utility
 
 			for ( int i = 0; i < lines.Length; i++ )
 			{
-				string text = ( lines[ i ] ?? "" ).Trim();
+				string text = ( lines[ i ] ?? "" );
 
 				// ReSharper disable once ConditionIsAlwaysTrueOrFalse
 				if ( text.Length == 0 && TextFileHelper.SetEmptyText )
@@ -140,8 +141,8 @@ namespace CtrDotNet.Pokemon.Utility
 			while ( i < data.Length )
 			{
 				ushort val = BitConverter.ToUInt16( data, i );
-				if ( val == KeyTerminator )
-					break;
+//				if ( val == KeyTerminator )
+//					break;
 				i += 2;
 
 				switch ( val )
@@ -246,12 +247,13 @@ namespace CtrDotNet.Pokemon.Utility
 		}
 
 		// Exposed Methods
-		internal static string[] GetStrings( byte[] data )
+		internal static string[] GetStrings( GameVersion gameVersion, byte[] data )
 		{
 			TextFile t;
 			try
 			{
-				t = new TextFile( data );
+				t = new TextFile( gameVersion );
+				t.Read( data );
 			}
 			catch
 			{
@@ -260,9 +262,9 @@ namespace CtrDotNet.Pokemon.Utility
 			return t.Lines.ToArray();
 		}
 
-		internal static byte[] GetBytes( string[] lines )
+		internal static byte[] GetBytes( GameVersion gameVersion, string[] lines )
 		{
-			TextFile textFile = new TextFile();
+			TextFile textFile = new TextFile( gameVersion );
 
 			textFile.SetLines( lines );
 

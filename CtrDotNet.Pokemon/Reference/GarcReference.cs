@@ -4,24 +4,26 @@ namespace CtrDotNet.Pokemon.Reference
 {
 	public class GarcReference
 	{
-		public readonly int FileNumber;
-		public readonly string Name;
-		private int A => ( this.FileNumber / 100 ) % 10;
-		private int B => ( this.FileNumber / 10 ) % 10;
-		private int C => ( this.FileNumber / 1 ) % 10;
-		public readonly bool HasLanguageVariant;
-		public string Reference => Path.Combine( "a", this.A.ToString(), this.B.ToString(), this.C.ToString() );
-
-		internal GarcReference( int file, string name, bool lv = false )
+		internal GarcReference( int file, GarcNames name, bool lv = false, int offset = 0 )
 		{
 			this.Name = name;
 			this.FileNumber = file;
+			this.Offset = offset;
 			this.HasLanguageVariant = lv;
 		}
 
-		public GarcReference GetRelativeGarc( int offset, string name = "" )
+		public int FileNumber { get; }
+		public int Offset { get; }
+		public GarcNames Name { get; }
+		public bool HasLanguageVariant { get; }
+		private int A => ( this.FileNumber / 100 ) % 10;
+		private int B => ( this.FileNumber / 10 ) % 10;
+		private int C => ( this.FileNumber / 1 ) % 10;
+		public string RomFsPath => Path.Combine( "a", this.A.ToString(), this.B.ToString(), this.C.ToString() );
+
+		public GarcReference GetRelativeGarc( int offset )
 		{
-			return new GarcReference( this.FileNumber + offset, name );
+			return new GarcReference( this.FileNumber + offset, this.Name, offset: offset );
 		}
 	}
 }

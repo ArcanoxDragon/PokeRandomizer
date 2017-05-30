@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
-using CtrDotNet.CTR.Garc;
+using CtrDotNet.CTR;
+using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Garc;
 using CtrDotNet.Pokemon.Reference;
-using CtrDotNet.Pokemon.Structures.RomFS.Common;
 using NUnit.Framework;
 
 namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 {
 	[ TestFixture ]
-	public class RomFS
+	public partial class RomFS
 	{
 		private readonly string path;
 
@@ -39,7 +37,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 			return (outPath, outDir);
 		}
 
-		private async Task TestGarcStructure<T>( ReferencedGarc<T> garc, Func<Task> saveAction, bool failOnBadHash = true ) where T : BaseGarc
+		private async Task TestGarcStructure( ReferencedGarc garc, Func<Task> saveAction, bool failOnBadHash = true )
 		{
 			var (outPath, outDir) = this.GetAndCreateGarcPath( garc );
 			var fname = Path.GetFileName( outPath );
@@ -82,60 +80,43 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 
 			await this.TestGarcStructure( garcPersonal, async () => {
 				var pokeInfo = await ORASConfig.GameConfig.GetPokemonInfo();
-				byte[][] files = await garcPersonal.GetFiles();
 
-				files[ garcPersonal.Garc.FileCount - 1 ] = pokeInfo.Write();
-
-				await garcPersonal.SetFiles( files );
+				await garcPersonal.SetFile( garcPersonal.Garc.FileCount - 1, pokeInfo.Write() );
 			} );
 		}
 
 		[ Test ]
-		public async Task RewriteGameText()
+		public async Task RewriteLearnsets()
 		{
-			var garcGameText = await ORASConfig.GameConfig.GetGarcData( GarcNames.GameText );
-			var gameText = await ORASConfig.GameConfig.GetGameText();
-			var outDir = Path.Combine( this.path, "GameText" );
+			var garcLearnsets = await ORASConfig.GameConfig.GetGarcData( GarcNames.Learnsets );
 
-			if ( !Directory.Exists( outDir ) )
-				Directory.CreateDirectory( outDir );
+			await this.TestGarcStructure( garcLearnsets, async () => {
+				var learnsets = await ORASConfig.GameConfig.GetLearnsets();
+				byte[][] files = learnsets.Select( l => l.Write() ).ToArray();
 
-			for ( int i = 0; i < gameText.Length; i++ )
-			{
-				var path = Path.Combine( outDir, $"TextFile-{i}.orig.txt" );
-				File.WriteAllLines( path, gameText[ i ].Lines );
-			}
+				await garcLearnsets.SetFiles( files );
+			} );
+		}
 
-			InconclusiveException ex = null;
+		[ Test ]
+		public async Task RewriteMoves()
+		{
+			var garcMoves = await ORASConfig.GameConfig.GetGarcData( GarcNames.Moves );
 
-			for ( int i = 0; i < gameText.Length; i++ )
-			{
-				try
+			await this.TestGarcStructure( garcMoves, async () => {
+				var moves = await ORASConfig.GameConfig.GetMoves();
+
+				byte[][] orig = Mini.UnpackMini( await garcMoves.GetFile( 0 ), "WD" );
+				byte[][] files = moves.Select( l => l.Write() ).ToArray();
+
+				for ( int i = 0; i < files.Length; i++ )
 				{
-					TestContext.Progress.WriteLine( $"Testing text file #{i}" );
-					int file = i;
-					await this.TestGarcStructure( garcGameText, async () => {
-						byte[] data = gameText[ file ].Write();
-
-						TextFile test = new TextFile( ORASConfig.GameConfig.Version, ORASConfig.GameConfig.Variables );
-						test.Read( data );
-						var path = Path.Combine( this.path, "GameText", $"TextFile-{file}.txt" );
-						Encoding testEncoding = Encoding.GetEncoding( "UTF-8", new EncoderReplacementFallback( "?" ), new DecoderExceptionFallback() );
-						File.WriteAllLines( path, test.Lines, testEncoding );
-
-						Assert.AreEqual( gameText[ file ].Lines, test.Lines, $"Strings did not match for file {file}" );
-
-						await garcGameText.SetFile( file, data );
-					}, false );
+					string moveName = Moves.GetValue( i )?.Name ?? "NULL";
+					Assert.AreEqual( orig[ i ], files[ i ], $"Rewritten data for move {i} ({moveName}) did not match" );
 				}
-				catch ( InconclusiveException e )
-				{
-					ex = e;
-				}
-			}
 
-			if ( ex != null )
-				throw ex;
+				await garcMoves.SetFile( 0, Mini.PackMini( files, "WD" ) );
+			} );
 		}
 	}
 }

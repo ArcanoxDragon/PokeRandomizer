@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CtrDotNet.Pokemon.Game;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Gen7
 {
@@ -11,7 +12,8 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen7
 		public int ID { get; set; }
 		public string Name { get; set; }
 
-		public TrainerData( byte[] data = null, byte[] pokeData = null )
+		// TODO: refactor this class to use BaseDataStructure
+		public TrainerData( GameVersion gameVersion, byte[] data = null, byte[] pokeData = null )
 		{
 			data = data ?? new byte[ 0x14 ];
 			pokeData = pokeData ?? new byte[ 0x20 ];
@@ -22,7 +24,9 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen7
 			{
 				byte[] poke = new byte[ 0x20 ];
 				Array.Copy( pokeData, i * 0x20, poke, 0, 0x20 );
-				this.Pokemon.Add( new Pokemon( poke ) );
+				Pokemon pkm = new Pokemon( gameVersion );
+				pkm.Read( poke );
+				this.Pokemon.Add( pkm );
 			}
 		}
 

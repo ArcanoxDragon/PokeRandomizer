@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace CtrDotNet.Pokemon.Utility
@@ -36,6 +37,20 @@ namespace CtrDotNet.Pokemon.Utility
 
 			return pattern.Select( ( t, i ) => i )
 						  .Aggregate( index, ( current, i ) => current.Where( n => collection[ n + i ].Equals( pattern[ i ] ) ) );
+		}
+
+		public static void WithReader( this byte[] array, Action<BinaryReader> action )
+		{
+			using ( var ms = new MemoryStream( array ) )
+			using ( var br = new BinaryReader( ms ) )
+				action( br );
+		}
+
+		public static void WithWriter( this byte[] array, Action<BinaryWriter> action )
+		{
+			using ( var ms = new MemoryStream( array ) )
+			using ( var bw = new BinaryWriter( ms ) )
+				action( bw );
 		}
 	}
 }

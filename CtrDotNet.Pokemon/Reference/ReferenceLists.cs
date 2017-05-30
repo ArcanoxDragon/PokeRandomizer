@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using CtrDotNet.Pokemon.Game;
 
 namespace CtrDotNet.Pokemon.Reference
 {

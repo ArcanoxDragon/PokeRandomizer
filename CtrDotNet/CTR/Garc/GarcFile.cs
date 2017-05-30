@@ -3,17 +3,39 @@ using System.Threading.Tasks;
 
 namespace CtrDotNet.CTR.Garc
 {
-	public class GarcFile<T> : IGarcFile where T : BaseGarc
+	public class GarcFile : IGarcFile
 	{
-		public GarcFile( T g, string p )
+		#region Static
+
+		public static async Task<GarcFile> FromFile( string path, bool useLz = false )
 		{
-			this.GarcData = g;
+			using ( var fs = new FileStream( path, FileMode.Open, FileAccess.Read, FileShare.Read ) )
+			{
+				byte[] buffer = new byte[ fs.Length ];
+				await fs.ReadAsync( buffer, 0, buffer.Length );
+				GarcFile file = new GarcFile( path, useLz );
+				file.Read( buffer );
+				return file;
+			}
+		}
+
+		#endregion
+
+		internal GarcFile( string p, bool useLz = false )
+		{
+			if ( useLz )
+				this.GarcData = new LzGarc();
+			else
+				this.GarcData = new MemGarc();
+
 			this.Path = p;
 		}
 
 		public int FileCount => this.GarcData.FileCount;
-		public T GarcData { get; }
+		public BaseGarc GarcData { get; }
 		public string Path { get; }
+
+		public void Read( byte[] data ) => this.GarcData.Read( data );
 
 		public Task<byte[][]> GetFiles() => this.GarcData.GetFiles();
 

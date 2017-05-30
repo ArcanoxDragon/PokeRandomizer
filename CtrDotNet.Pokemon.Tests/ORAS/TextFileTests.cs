@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Reference;
 using CtrDotNet.Pokemon.Structures.RomFS.Common;
 using CtrDotNet.Pokemon.Utility;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 
 namespace CtrDotNet.Pokemon.Tests.ORAS
 {
@@ -33,16 +29,20 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 				{
 					TextFile.LineInfo next = tf0.LineInfos[ i + 1 ];
 					long padding = next.Offset - ( lineInfo.Offset + lineInfo.Length * 2 );
-					TestContext.Progress.WriteLine( $"\tPadding for line {i}: {padding}" );
-					TestContext.Progress.WriteLine( $"\tLength: {lineInfo.Length}" );
-					TestContext.Progress.WriteLine( $"\tLength % 4: {lineInfo.Length % 4}" );
+					TestContext.Progress.WriteLine( $"               Length: {lineInfo.Length * 2}" );
+					TestContext.Progress.WriteLine( $"              Padding: {padding}" );
+					TestContext.Progress.WriteLine( $"                 Flag: {lineInfo.Flag}" );
+					TestContext.Progress.WriteLine( $"    Length w/ padding: {lineInfo.Length * 2 + padding}" );
+					TestContext.Progress.WriteLine( $"         Char Len % 2: {lineInfo.Length % 2}" );
+					TestContext.Progress.WriteLine( $"       Len w/ pad % 2: {( lineInfo.Length + ( padding / 2 ) ) % 2}" );
 				}
 
 				string tfhString = TextFileHelper.GetLineString( tf0, TextFileHelper.CryptLineData( lineData, key ) );
 
 				Assert.AreEqual( tf0.Lines[ i ], tfhString, "Directly decoded string not equal" );
 
-				byte[] tfhData = TextFileHelper.CryptLineData( TextFileHelper.GetLineData( tf0, tf0.Lines[ i ] ), key );
+				var newData = TextFileHelper.GetLineData( tf0, tf0.Lines[ i ] );
+				byte[] tfhData = TextFileHelper.CryptLineData( newData, key );
 
 				if ( lineData.Length == tfhData.Length + 2
 					 && lineData[ lineData.Length - 1 ] == 0
@@ -61,28 +61,26 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 			var garcGameText = await ORASConfig.GameConfig.GetGarcData( GarcNames.GameText );
 			byte[] tf0Data = await garcGameText.GetFile( 0 );
 			TextFile tf0 = await ORASConfig.GameConfig.GetGameText( 0 );
-			byte[] textData = tf0Data.Skip( 0x10 /* SectionDataOffset */ + 0x4 /* Section length */ + ( 8 * tf0.Lines.Count /* LineInfo[] size */ ) ).ToArray();
+			byte[][] encData = TextFileHelper.EncryptLines( tf0, tf0.Lines ).Select( el => el.Item2 ).ToArray();
+			byte[][] oriData = new byte[ tf0.Lines.Count ][];
 
-			byte[][] tfhData = TextFileHelper.EncryptLines( tf0, tf0.Lines.ToArray() );
-			byte[][] actual = new byte[ tf0.Lines.Count ][];
+			Assert.AreEqual( tf0.Lines.Count, encData.Length, "Number of data blobs returned does not equal number of lines" );
 
-			Assert.AreEqual( tf0.Lines.Count, tfhData.Length, "Number of data blobs returned does not equal number of lines" );
-
-			for ( int l = 0; l < tfhData.Length; l++ )
+			for ( int l = 0; l < encData.Length; l++ )
 			{
-				byte[] testData = tfhData[ l ];
+				byte[] testData = encData[ l ];
 				TextFile.LineInfo lineInfo = tf0.LineInfos[ l ];
-				actual[ l ] = tf0Data.Skip( (int) lineInfo.Offset + 0x10 ).Take( lineInfo.Length * 2 ).ToArray();
+				oriData[ l ] = tf0Data.Skip( (int) lineInfo.Offset + 0x10 ).Take( lineInfo.Length * 2 ).ToArray();
 
-				if ( testData.Length == actual[ l ].Length + 2
+				if ( testData.Length == oriData[ l ].Length + 2
 					 && testData[ testData.Length - 1 ] == 0
 					 && testData[ testData.Length - 2 ] == 0 )
 					testData = testData.Take( testData.Length - 2 ).ToArray(); // don't compare the padding thing
 
-				Assert.AreEqual( actual[ l ], testData, $"Blob for line {l} does not match original file" );
+				Assert.AreEqual( oriData[ l ], testData, $"Blob for line {l} does not match original file" );
 			}
 
-			string[] tfhText = TextFileHelper.DecryptLines( tf0, actual );
+			string[] tfhText = TextFileHelper.DecryptLines( tf0, oriData );
 
 			Assert.AreEqual( tf0.Lines.Count, tfhText.Length, "Number of strings returned does not equal number of lines" );
 

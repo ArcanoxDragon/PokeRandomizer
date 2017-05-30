@@ -1,48 +1,36 @@
 ﻿using System;
 using System.IO;
+using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Structures.RomFS.Common;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 {
 	public class EvolutionSet : BaseEvolutionSet
 	{
+		public EvolutionSet( GameVersion gameVersion ) : base( gameVersion ) { }
+
 		protected override int EntrySize => 6;
 		protected override int EntryCount => 8;
 
-		public EvolutionSet( byte[] data )
-		{
-			this.Read( data );
-		}
-
-		public sealed override void Read( byte[] data )
+		public override void Read( byte[] data )
 		{
 			if ( data.Length != this.Size )
 				throw new ArgumentOutOfRangeException( nameof(data), $"Data array length must be {this.Size}, but was {data.Length}" );
 
-			this.PossibleEvolutions = new EvolutionMethod[ this.EntryCount ];
-
-			using ( var ms = new MemoryStream( data ) )
-			using ( var br = new BinaryReader( ms ) )
-			{
-				for ( int i = 0; i < this.PossibleEvolutions.Length; i++ )
-					this.PossibleEvolutions[ i ] = this.ReadMethod( br );
-			}
+			base.Read( data );
 		}
 
-		public override byte[] Write()
+		protected override void ReadData( BinaryReader br )
 		{
-			byte[] data;
+			this.PossibleEvolutions = new EvolutionMethod[ this.EntryCount ];
+			for ( int i = 0; i < this.PossibleEvolutions.Length; i++ )
+				this.PossibleEvolutions[ i ] = this.ReadMethod( br );
+		}
 
-			using ( MemoryStream ms = new MemoryStream() )
-			using ( BinaryWriter bw = new BinaryWriter( ms ) )
-			{
-				foreach ( EvolutionMethod evo in this.PossibleEvolutions )
-					this.WriteMethod( evo, bw );
-
-				data = ms.ToArray();
-			}
-
-			return data;
+		protected override void WriteData( BinaryWriter bw )
+		{
+			foreach ( EvolutionMethod evo in this.PossibleEvolutions )
+				this.WriteMethod( evo, bw );
 		}
 
 		protected virtual EvolutionMethod ReadMethod( BinaryReader r )

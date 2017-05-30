@@ -1,26 +1,15 @@
 ﻿using System;
 using System.IO;
-using CtrDotNet.Pokemon.Structures.RomFS.Common;
+using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Gen7
 {
-	public class Pokemon : IDataStructure
+	public class Pokemon : BaseDataStructure
 	{
 		public const int Size = 32;
 
-		public Pokemon( byte[] data )
-		{
-			if ( data.Length != 32 )
-				throw new ArgumentException( "Invalid Pokemon!" );
-
-			this.Read( data );
-		}
-
-		public Pokemon Clone()
-		{
-			return new Pokemon( this.Write() );
-		}
+		public Pokemon( GameVersion gameVersion ) : base( gameVersion ) { }
 
 		public byte Flag0 { get; set; }
 		public byte Gender { get; set; }
@@ -100,89 +89,87 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen7
 			}
 		}
 
-		public void Read( byte[] data )
+		public override void Read( byte[] data )
 		{
-			using ( var ms = new MemoryStream( data ) )
-			using ( var br = new BinaryReader( ms ) )
-			{
-				uint flag0 = br.ReadByte();
-				this.Flag0 = (byte) flag0;
-				this.Gender = (byte) flag0.GetBitfield( 2, 0 );
-				this.Ability = (byte) flag0.GetBitfield( 2, 4 );
+			if ( data.Length != 32 )
+				throw new ArgumentException( "Invalid Pokemon!" );
 
-				this.Nature = br.ReadByte();
-				this.EvHp = br.ReadByte();
-				this.EvAttack = br.ReadByte();
-				this.EvDefense = br.ReadByte();
-				this.EvSpecialAttack = br.ReadByte();
-				this.EvSpecialDefense = br.ReadByte();
-				this.EvSpeed = br.ReadByte();
-
-				uint ivs = br.ReadUInt32();
-				this.Ivs = ivs;
-				this.IvHp /*            */ = (ushort) ivs.GetBitfield( 5, 00 );
-				this.IvAttack /*        */ = (ushort) ivs.GetBitfield( 5, 05 );
-				this.IvDefense /*       */ = (ushort) ivs.GetBitfield( 5, 10 );
-				this.IvSpecialAttack /* */ = (ushort) ivs.GetBitfield( 5, 15 );
-				this.IvSpecialDefense /**/ = (ushort) ivs.GetBitfield( 5, 20 );
-				this.IvSpeed /*         */ = (ushort) ivs.GetBitfield( 5, 25 );
-				this.Shiny /*           */ = (ushort) ivs.GetBitfield( 1, 30 ) > 0;
-
-				this.UnusedC = br.ReadUInt16();
-				this.Level = br.ReadByte();
-				this.UnusedF = br.ReadByte();
-				this.Species = br.ReadUInt16();
-				this.Form = br.ReadByte();
-				this.Item = br.ReadUInt16();
-				this.Unused16 = br.ReadUInt16();
-				this.Move1 = br.ReadUInt16();
-				this.Move2 = br.ReadUInt16();
-				this.Move3 = br.ReadUInt16();
-				this.Move4 = br.ReadUInt16();
-			}
+			base.Read( data );
 		}
 
-		public byte[] Write()
+		protected override void ReadData( BinaryReader br )
 		{
-			using ( var ms = new MemoryStream() )
-			using ( var bw = new BinaryWriter( ms ) )
-			{
-				uint flag0 = this.Flag0;
-				flag0 = flag0.SetBitfield( this.Gender, 2, 0 );
-				flag0 = flag0.SetBitfield( this.Ability, 2, 4 );
-				bw.Write( (byte) flag0 );
+			uint flag0 = br.ReadByte();
+			this.Flag0 = (byte) flag0;
+			this.Gender = (byte) flag0.GetBitfield( 2, 0 );
+			this.Ability = (byte) flag0.GetBitfield( 2, 4 );
 
-				bw.Write( this.Nature );
-				bw.Write( this.EvHp );
-				bw.Write( this.EvAttack );
-				bw.Write( this.EvDefense );
-				bw.Write( this.EvSpecialAttack );
-				bw.Write( this.EvSpecialDefense );
-				bw.Write( this.EvSpeed );
+			this.Nature = br.ReadByte();
+			this.EvHp = br.ReadByte();
+			this.EvAttack = br.ReadByte();
+			this.EvDefense = br.ReadByte();
+			this.EvSpecialAttack = br.ReadByte();
+			this.EvSpecialDefense = br.ReadByte();
+			this.EvSpeed = br.ReadByte();
 
-				uint ivs = this.Ivs;
-				ivs.SetBitfield( this.IvHp /*            */, 5, 00 );
-				ivs.SetBitfield( this.IvAttack /*        */, 5, 05 );
-				ivs.SetBitfield( this.IvDefense /*       */, 5, 10 );
-				ivs.SetBitfield( this.IvSpecialAttack /* */, 5, 15 );
-				ivs.SetBitfield( this.IvSpecialDefense /**/, 5, 20 );
-				ivs.SetBitfield( this.IvSpeed /*         */, 5, 25 );
-				ivs.SetBitfield( this.Shiny ? 1 : 0 /*   */, 1, 30 );
+			uint ivs = br.ReadUInt32();
+			this.Ivs = ivs;
+			this.IvHp /*            */ = (ushort) ivs.GetBitfield( 5, 00 );
+			this.IvAttack /*        */ = (ushort) ivs.GetBitfield( 5, 05 );
+			this.IvDefense /*       */ = (ushort) ivs.GetBitfield( 5, 10 );
+			this.IvSpecialAttack /* */ = (ushort) ivs.GetBitfield( 5, 15 );
+			this.IvSpecialDefense /**/ = (ushort) ivs.GetBitfield( 5, 20 );
+			this.IvSpeed /*         */ = (ushort) ivs.GetBitfield( 5, 25 );
+			this.Shiny /*           */ = (ushort) ivs.GetBitfield( 1, 30 ) > 0;
 
-				bw.Write( this.UnusedC );
-				bw.Write( this.Level );
-				bw.Write( this.UnusedF );
-				bw.Write( this.Species );
-				bw.Write( this.Form );
-				bw.Write( this.Item );
-				bw.Write( this.Unused16 );
-				bw.Write( this.Move1 );
-				bw.Write( this.Move2 );
-				bw.Write( this.Move3 );
-				bw.Write( this.Move4 );
+			this.UnusedC = br.ReadUInt16();
+			this.Level = br.ReadByte();
+			this.UnusedF = br.ReadByte();
+			this.Species = br.ReadUInt16();
+			this.Form = br.ReadByte();
+			this.Item = br.ReadUInt16();
+			this.Unused16 = br.ReadUInt16();
+			this.Move1 = br.ReadUInt16();
+			this.Move2 = br.ReadUInt16();
+			this.Move3 = br.ReadUInt16();
+			this.Move4 = br.ReadUInt16();
+		}
 
-				return ms.ToArray();
-			}
+		protected override void WriteData( BinaryWriter bw )
+		{
+			uint flag0 = this.Flag0;
+			flag0 = flag0.SetBitfield( this.Gender, 2, 0 );
+			flag0 = flag0.SetBitfield( this.Ability, 2, 4 );
+			bw.Write( (byte) flag0 );
+
+			bw.Write( this.Nature );
+			bw.Write( this.EvHp );
+			bw.Write( this.EvAttack );
+			bw.Write( this.EvDefense );
+			bw.Write( this.EvSpecialAttack );
+			bw.Write( this.EvSpecialDefense );
+			bw.Write( this.EvSpeed );
+
+			uint ivs = this.Ivs;
+			ivs.SetBitfield( this.IvHp /*            */, 5, 00 );
+			ivs.SetBitfield( this.IvAttack /*        */, 5, 05 );
+			ivs.SetBitfield( this.IvDefense /*       */, 5, 10 );
+			ivs.SetBitfield( this.IvSpecialAttack /* */, 5, 15 );
+			ivs.SetBitfield( this.IvSpecialDefense /**/, 5, 20 );
+			ivs.SetBitfield( this.IvSpeed /*         */, 5, 25 );
+			ivs.SetBitfield( this.Shiny ? 1 : 0 /*   */, 1, 30 );
+
+			bw.Write( this.UnusedC );
+			bw.Write( this.Level );
+			bw.Write( this.UnusedF );
+			bw.Write( this.Species );
+			bw.Write( this.Form );
+			bw.Write( this.Item );
+			bw.Write( this.Unused16 );
+			bw.Write( this.Move1 );
+			bw.Write( this.Move2 );
+			bw.Write( this.Move3 );
+			bw.Write( this.Move4 );
 		}
 	}
 }

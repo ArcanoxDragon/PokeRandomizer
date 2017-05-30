@@ -52,9 +52,14 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ORAS\Rewrite\Cro.cs" />
     <Compile Include="ORAS\Rewrite\ExeFS.cs" />
     <Compile Include="ORAS\Rewrite\RomFS.cs" />
+    <Compile Include="ORAS\Rewrite\RomFS.GameText.cs">
+      <DependentUpon>RomFS.cs</DependentUpon>
+    </Compile>
     <Compile Include="ORAS\SpeciesTests.cs" />
+    <Compile Include="ORAS\StartersTest.cs" />
     <Compile Include="ORAS\TextFileTests.cs" />
     <Compile Include="ORAS\TmHmTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -64,6 +69,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="ORAS\ORASConfig.cs" />
+    <Compile Include="Utility\StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

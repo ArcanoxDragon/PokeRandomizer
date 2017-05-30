@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using CtrDotNet.Pokemon.Structures.RomFS.Common;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 {

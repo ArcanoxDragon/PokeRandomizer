@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Structures.RomFS.Common;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Gen7
@@ -8,7 +9,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen7
 		protected override int EntrySize => 8;
 		protected override int EntryCount => 8;
 
-		public EvolutionSet( byte[] data ) : base( data ) { }
+		public EvolutionSet( GameVersion gameVersion ) : base( gameVersion ) { }
 
 		protected override EvolutionMethod ReadMethod( BinaryReader r )
 		{

@@ -1,4 +1,7 @@
 namespace CtrDotNet.CTR.Garc
 {
-	public class MemGarc : BaseGarc { }
+	public class MemGarc : BaseGarc
+	{
+		internal MemGarc() { }
+	}
 }

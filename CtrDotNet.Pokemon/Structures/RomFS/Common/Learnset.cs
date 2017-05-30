@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using CtrDotNet.Pokemon.Game;
-using CtrDotNet.Pokemon.Structures.ExeFS.Common;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 {

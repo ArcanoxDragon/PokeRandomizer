@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cro\CroFile.cs" />
     <Compile Include="Data\BaseTypes.cs" />
     <Compile Include="Dynamic\DynamicHelpers.cs" />
     <Compile Include="Dynamic\DynamicType.cs" />
@@ -53,10 +54,20 @@
     <Compile Include="Game\GameVersion.cs" />
     <Compile Include="Game\Language.cs" />
     <Compile Include="Garc\ReferencedGarc.cs" />
+    <Compile Include="Reference\CroNames.cs" />
     <Compile Include="Reference\GarcNames.cs" />
-    <Compile Include="Structures\ExeFS\Common\BaseDataStructure.cs" />
+    <Compile Include="Structures\BaseDataStructure.cs" />
+    <Compile Include="Structures\CRO\Common\BaseCroDataStructure.cs" />
+    <Compile Include="Structures\CRO\Gen6\Starters\BaseStarters.cs" />
+    <Compile Include="Structures\CRO\Gen6\Starters\Starters.cs" />
+    <Compile Include="Structures\CRO\Gen6\Starters\StartersPokeSelect.cs" />
+    <Compile Include="Structures\CRO\Gen6\Starters\StartersField.cs" />
     <Compile Include="Structures\RomFS\Common\TextFile.cs" />
     <Compile Include="Reference\TextNames.cs" />
+    <Compile Include="Utility\Assertions.cs" />
+    <Compile Include="Utility\Enumerable.cs" />
+    <Compile Include="Utility\Number.cs" />
+    <Compile Include="Utility\String.cs" />
     <Compile Include="Utility\TextFileHelper.cs" />
     <Compile Include="Reference\GarcReference.cs" />
     <Compile Include="Reference\TextReference.cs" />

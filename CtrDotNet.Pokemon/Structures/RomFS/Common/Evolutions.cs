@@ -1,4 +1,6 @@
-﻿namespace CtrDotNet.Pokemon.Structures.RomFS.Common
+﻿using CtrDotNet.Pokemon.Game;
+
+namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 {
 	public class EvolutionMethod
 	{
@@ -9,7 +11,7 @@
 		public int Level { get; set; }
 	}
 
-	public abstract class BaseEvolutionSet : IDataStructure
+	public abstract class BaseEvolutionSet : BaseDataStructure
 	{
 		public EvolutionMethod[] PossibleEvolutions { get; protected set; }
 		public int Size => this.EntrySize * this.EntryCount;
@@ -17,7 +19,6 @@
 		protected abstract int EntryCount { get; }
 		protected abstract int EntrySize { get; }
 
-		public abstract void Read( byte[] data );
-		public abstract byte[] Write();
+		protected BaseEvolutionSet( GameVersion gameVersion ) : base( gameVersion ) { }
 	}
 }

@@ -72,6 +72,8 @@ namespace CtrDotNet.CTR.Garc
 
 		private Entry[] storage;
 
+		internal LzGarc() { }
+
 		public override void Read( byte[] data )
 		{
 			base.Read( data );

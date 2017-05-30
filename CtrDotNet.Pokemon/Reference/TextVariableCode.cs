@@ -1,4 +1,4 @@
-﻿namespace CtrDotNet.Pokemon.Game
+﻿namespace CtrDotNet.Pokemon.Reference
 {
 	public class TextVariableCode
 	{

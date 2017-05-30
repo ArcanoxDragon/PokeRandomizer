@@ -1,23 +1,13 @@
 ﻿using System.IO;
-using CtrDotNet.Pokemon.Structures.RomFS.Common;
+using CtrDotNet.Pokemon.Game;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 {
-	public class EncounterStatic : Common.EncounterStatic, IDataStructure
+	public class EncounterStatic : Common.EncounterStatic
 	{
-		private int heldItem;
+		public EncounterStatic( GameVersion gameVersion ) : base( gameVersion ) { }
 
-		public EncounterStatic( byte[] data )
-		{
-			this.Read( data );
-		}
-
-		public override int HeldItem
-		{
-			get => this.heldItem < 0 ? 0 : this.heldItem;
-			set => this.heldItem = value == 0 ? -1 : value;
-		}
-
+		public override short HeldItem { get; set; }
 		public override ushort Species { get; set; }
 		public byte Form { get; set; }
 		public byte Level { get; set; }
@@ -27,53 +17,33 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 		public bool IVLower { get; set; }
 		public bool IVUpper { get; set; }
 
-		public void Read( byte[] data )
+		protected override void ReadData( BinaryReader br )
 		{
-			using ( var ms = new MemoryStream( data ) )
-			using ( var br = new BinaryReader( ms ) )
-			{
-				this.Read( br );
-			}
-		}
+			this.Species = br.ReadUInt16();
+			this.Form = br.ReadByte();
+			this.Level = br.ReadByte();
 
-		public byte[] Write()
-		{
-			byte[] data;
+			short heldItem = br.ReadInt16();
+			if ( heldItem <= 0 )
+				heldItem = 0;
+			this.HeldItem = heldItem;
 
-			using ( var ms = new MemoryStream() )
-			using ( var bw = new BinaryWriter( ms ) )
-			{
-				this.Write( bw );
-
-				data = ms.ToArray();
-			}
-
-			return data;
-		}
-
-		protected virtual void Read( BinaryReader r )
-		{
-			this.Species = r.ReadUInt16();
-			this.Form = r.ReadByte();
-			this.Level = r.ReadByte();
-			this.HeldItem = r.ReadInt16();
-
-			byte flag6 = r.ReadByte();
+			byte flag6 = br.ReadByte();
 			this.Gender = ( flag6 & 0b1100 ) >> 2;
 			this.Ability = ( flag6 & 0b1110000 ) >> 4;
 			this.ShinyLock = ( flag6 & 0b10 ) > 0;
 
-			byte flag7 = r.ReadByte();
+			byte flag7 = br.ReadByte();
 			this.IVLower = ( flag7 & 0b01 ) > 0;
 			this.IVUpper = ( flag7 & 0b10 ) > 0;
 		}
 
-		protected virtual void Write( BinaryWriter w )
+		protected override void WriteData( BinaryWriter bw )
 		{
-			w.Write( this.Species );
-			w.Write( this.Form );
-			w.Write( this.Level );
-			w.Write( (short) this.HeldItem );
+			bw.Write( this.Species );
+			bw.Write( this.Form );
+			bw.Write( this.Level );
+			bw.Write( (short) ( this.HeldItem == 0 ? -1 : this.HeldItem ) );
 
 			int flag6 = 0;
 			flag6 |= ( this.Gender & 0b11 ) << 2;
@@ -84,8 +54,8 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 			flag7 |= this.IVUpper ? 0b10 : 0;
 			flag7 |= this.IVLower ? 0b01 : 0;
 
-			w.Write( (byte) flag6 );
-			w.Write( (byte) flag7 );
+			bw.Write( (byte) flag6 );
+			bw.Write( (byte) flag7 );
 		}
 	}
 }

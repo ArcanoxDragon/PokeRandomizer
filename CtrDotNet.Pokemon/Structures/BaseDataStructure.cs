@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using CtrDotNet.Pokemon.Game;
-using CtrDotNet.Pokemon.Structures.RomFS.Common;
+using CtrDotNet.Pokemon.Utility;
 
-namespace CtrDotNet.Pokemon.Structures.ExeFS.Common
+namespace CtrDotNet.Pokemon.Structures
 {
 	public abstract class BaseDataStructure : IDataStructure
 	{
@@ -15,11 +15,7 @@ namespace CtrDotNet.Pokemon.Structures.ExeFS.Common
 
 		public virtual void Read( byte[] data )
 		{
-			using ( var ms = new MemoryStream( data ) )
-			using ( var br = new BinaryReader( ms ) )
-			{
-				this.ReadData( br );
-			}
+			data.WithReader( this.ReadData );
 		}
 
 		public virtual byte[] Write()

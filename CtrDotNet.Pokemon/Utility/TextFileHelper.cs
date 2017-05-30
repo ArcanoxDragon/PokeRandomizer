@@ -23,40 +23,54 @@ namespace CtrDotNet.Pokemon.Utility
 
 		#endregion
 
-		internal static string[] DecryptLines( TextFile textFile, byte[][] encryptedLines )
+		internal static string[] DecryptLines( TextFile textFile, IEnumerable<byte[]> encryptedLines )
 		{
 			ushort key = KeyBase;
-			string[] lines = new string[ encryptedLines.Length ];
+			var encryptedList = encryptedLines.ToList();
+			string[] lines = new string[ encryptedList.Count ];
 
-			for ( int line = 0; line < encryptedLines.Length; line++ )
+			for ( int line = 0; line < encryptedList.Count; line++ )
 			{
-				byte[] lineData = TextFileHelper.CryptLineData( encryptedLines[ line ], key );
-				lines[ line ] = TextFileHelper.GetLineString( textFile, lineData );
+				byte[] encryptedLineData = encryptedList[ line ];
+				byte[] decryptedLineData = TextFileHelper.CryptLineData( encryptedLineData, key );
+				lines[ line ] = TextFileHelper.GetLineString( textFile, decryptedLineData );
 				key += KeyAdvance;
 			}
 
 			return lines;
 		}
 
-		internal static byte[][] EncryptLines( TextFile textFile, string[] lines )
+		internal static (TextFile.LineInfo, byte[])[] EncryptLines( TextFile textFile, IEnumerable<string> lines )
 		{
 			ushort key = KeyBase;
-			byte[][] lineData = new byte[ lines.Length ][];
+			var list = lines.ToList();
+			(TextFile.LineInfo, byte[])[] lineData = new (TextFile.LineInfo, byte[])[ list.Count ];
+			uint curOffset = (uint) textFile.LineInfoSectionLength;
 
-			for ( int i = 0; i < lines.Length; i++ )
+			for ( int i = 0; i < list.Count; i++ )
 			{
-				string text = ( lines[ i ] ?? "" );
+				string text = ( list[ i ] ?? "" );
 
 				// ReSharper disable once ConditionIsAlwaysTrueOrFalse
 				if ( text.Length == 0 && TextFileHelper.SetEmptyText )
 					text = $"[~ {i}]";
 
 				byte[] decryptedLineData = TextFileHelper.GetLineData( textFile, text );
-				lineData[ i ] = TextFileHelper.CryptLineData( decryptedLineData, key );
+				byte[] encryptedLineData = TextFileHelper.CryptLineData( decryptedLineData, key );
+				bool startsWithVowel = text.Length > 0 && text[ 0 ].IsVowel();
 
-				if ( lineData[ i ].Length % 4 == 2 )
-					Array.Resize( ref lineData[ i ], lineData[ i ].Length + 2 );
+				TextFile.LineInfo lineInfo = new TextFile.LineInfo {
+					Length = (ushort) ( encryptedLineData.Length / TextFile.BytesPerCharacter ),
+					Offset = curOffset,
+					Flag = startsWithVowel ? TextFile.FlagVowel : TextFile.FlagNone
+				};
 
+				if ( lineInfo.Length % 2 != 0 ) // String length needs to be divisible by 2
+					Array.Resize( ref encryptedLineData, encryptedLineData.Length + 2 );
+
+				lineData[ i ] = (lineInfo, encryptedLineData);
+
+				curOffset += (uint) encryptedLineData.Length;
 				key += TextFileHelper.KeyAdvance;
 			}
 
@@ -141,8 +155,8 @@ namespace CtrDotNet.Pokemon.Utility
 			while ( i < data.Length )
 			{
 				ushort val = BitConverter.ToUInt16( data, i );
-//				if ( val == KeyTerminator )
-//					break;
+				if ( val == KeyTerminator )
+					break;
 				i += 2;
 
 				switch ( val )
@@ -177,7 +191,7 @@ namespace CtrDotNet.Pokemon.Utility
 						break;
 				}
 			}
-			return s; // Shouldn't get hit if the string is properly terminated.
+			return s;
 		}
 
 		internal static string GetVariableString( TextFile textFile, byte[] data, ref int i )

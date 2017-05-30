@@ -1,10 +1,13 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using CtrDotNet.Pokemon.Game;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 {
-	public class Move : IDataStructure
+	public class Move : BaseDataStructure
 	{
+		public Move( GameVersion gameVersion ) : base( gameVersion ) { }
+
 		public byte Type { get; set; }
 		public byte Quality { get; set; }
 		public byte Category { get; set; }
@@ -38,115 +41,114 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 		public byte Unused1F { get; set; }
 		public byte Unused20 { get; set; }
 		public byte Unused21 { get; set; }
+		public byte Unused22 { get; set; }
+		public byte Unused23 { get; set; }
 
-		public Move( byte[] data )
+		protected override void ReadData( BinaryReader br )
 		{
-			this.Read( data );
+			this.Type = br.ReadByte();
+			this.Quality = br.ReadByte();
+			this.Category = br.ReadByte();
+			this.Power = br.ReadByte();
+			this.Accuracy = br.ReadByte();
+			this.PP = br.ReadByte();
+			this.Priority = br.ReadByte();
+
+			byte f7 = br.ReadByte();
+			this.HitMin = (byte) ( f7 & 0b1111 );
+			this.HitMax = (byte) ( f7 >> 4 );
+
+			this.Inflict = br.ReadUInt16();
+			this.InflictPercent = br.ReadByte();
+			this.UnusedB = br.ReadByte();
+			this.TurnMin = br.ReadByte();
+			this.TurnMax = br.ReadByte();
+			this.CritStage = br.ReadByte();
+			this.Flinch = br.ReadByte();
+			this.Effect = br.ReadUInt16();
+			this.Recoil = br.ReadByte();
+			this.Healing = new Heal( br.ReadByte() );
+			this.Targeting = br.ReadByte();
+			this.Stat1 = br.ReadByte();
+			this.Stat2 = br.ReadByte();
+			this.Stat3 = br.ReadByte();
+			this.Stat1Stage = br.ReadByte();
+			this.Stat2Stage = br.ReadByte();
+			this.Stat3Stage = br.ReadByte();
+			this.Stat1Percent = br.ReadByte();
+			this.Stat2Percent = br.ReadByte();
+			this.Stat3Percent = br.ReadByte();
+			this.Unused1E = br.ReadByte();
+			this.Unused1F = br.ReadByte();
+			this.Unused20 = br.ReadByte();
+			this.Unused21 = br.ReadByte();
+			this.Unused22 = br.ReadByte();
+			this.Unused23 = br.ReadByte();
 		}
 
-		public void Read( byte[] data )
+		protected override void WriteData( BinaryWriter bw )
 		{
-			this.Type = data[ 0 ];
-			this.Quality = data[ 1 ];
-			this.Category = data[ 2 ];
-			this.Power = data[ 3 ];
-			this.Accuracy = data[ 4 ];
-			this.PP = data[ 5 ];
-			this.Priority = data[ 6 ];
-			this.HitMin = (byte) ( data[ 7 ] & 0xF );
-			this.HitMax = (byte) ( data[ 7 ] >> 4 );
-			this.Inflict = BitConverter.ToUInt16( data, 0x8 );
-			this.InflictPercent = data[ 0xA ];
-			this.UnusedB = data[ 0xB ];
-			this.TurnMin = data[ 0xC ];
-			this.TurnMax = data[ 0xD ];
-			this.CritStage = data[ 0xE ];
-			this.Flinch = data[ 0xF ];
-			this.Effect = BitConverter.ToUInt16( data, 0x10 );
-			this.Recoil = data[ 0x12 ];
-			this.Healing = new Heal( data[ 0x13 ] );
-			this.Targeting = data[ 0x14 ];
-			this.Stat1 = data[ 0x15 ];
-			this.Stat2 = data[ 0x16 ];
-			this.Stat3 = data[ 0x17 ];
-			this.Stat1Stage = data[ 0x18 ];
-			this.Stat2Stage = data[ 0x19 ];
-			this.Stat3Stage = data[ 0x1A ];
-			this.Stat1Percent = data[ 0x1B ];
-			this.Stat2Percent = data[ 0x1C ];
-			this.Stat3Percent = data[ 0x1D ];
-			this.Unused1E = data[ 0x1E ];
-			this.Unused1F = data[ 0x1F ];
-			this.Unused20 = data[ 0x20 ];
-			this.Unused21 = data[ 0x21 ];
-		}
-
-		public byte[] Write()
-		{
-			using ( MemoryStream ms = new MemoryStream() )
-			using ( BinaryWriter bw = new BinaryWriter( ms ) )
-			{
-				bw.Write( this.Type );
-				bw.Write( this.Quality );
-				bw.Write( this.Category );
-				bw.Write( this.Power );
-				bw.Write( this.Accuracy );
-				bw.Write( this.PP );
-				bw.Write( this.Priority );
-				bw.Write( (byte) ( this.HitMin | ( this.HitMax << 4 ) ) );
-				bw.Write( this.Inflict );
-				bw.Write( this.InflictPercent );
-				bw.Write( this.UnusedB );
-				bw.Write( this.TurnMin );
-				bw.Write( this.TurnMax );
-				bw.Write( this.CritStage );
-				bw.Write( this.Flinch );
-				bw.Write( this.Effect );
-				bw.Write( this.Recoil );
-				bw.Write( this.Healing.Write() );
-				bw.Write( this.Targeting );
-				bw.Write( this.Stat1 );
-				bw.Write( this.Stat2 );
-				bw.Write( this.Stat3 );
-				bw.Write( this.Stat1Stage );
-				bw.Write( this.Stat2Stage );
-				bw.Write( this.Stat3Stage );
-				bw.Write( this.Stat1Percent );
-				bw.Write( this.Stat2Percent );
-				bw.Write( this.Stat3Percent );
-				bw.Write( this.Unused1E );
-				bw.Write( this.Unused1F );
-				bw.Write( this.Unused20 );
-				bw.Write( this.Unused21 );
-				return ms.ToArray();
-			}
+			bw.Write( this.Type );
+			bw.Write( this.Quality );
+			bw.Write( this.Category );
+			bw.Write( this.Power );
+			bw.Write( this.Accuracy );
+			bw.Write( this.PP );
+			bw.Write( this.Priority );
+			bw.Write( (byte) ( this.HitMin | ( this.HitMax << 4 ) ) );
+			bw.Write( this.Inflict );
+			bw.Write( this.InflictPercent );
+			bw.Write( this.UnusedB );
+			bw.Write( this.TurnMin );
+			bw.Write( this.TurnMax );
+			bw.Write( this.CritStage );
+			bw.Write( this.Flinch );
+			bw.Write( this.Effect );
+			bw.Write( this.Recoil );
+			bw.Write( this.Healing.Write() );
+			bw.Write( this.Targeting );
+			bw.Write( this.Stat1 );
+			bw.Write( this.Stat2 );
+			bw.Write( this.Stat3 );
+			bw.Write( this.Stat1Stage );
+			bw.Write( this.Stat2Stage );
+			bw.Write( this.Stat3Stage );
+			bw.Write( this.Stat1Percent );
+			bw.Write( this.Stat2Percent );
+			bw.Write( this.Stat3Percent );
+			bw.Write( this.Unused1E );
+			bw.Write( this.Unused1F );
+			bw.Write( this.Unused20 );
+			bw.Write( this.Unused21 );
+			bw.Write( this.Unused22 );
+			bw.Write( this.Unused23 );
 		}
 
 		public class Heal
 		{
-			public byte Val { get; set; }
-			public bool Full, Half, Quarter, Value;
+			public byte Raw { get; set; }
+			public bool Full => this.Raw == 0xFF;
+			public bool Half => this.Raw == 0xFE;
+			public bool Quarter => this.Raw == 0xFD;
+			public bool Value => this.Raw < 0xFD;
 
-			public Heal( byte val )
+			public Heal( byte raw )
 			{
-				this.Val = val;
-				this.Full = this.Val == 0xFF;
-				this.Half = this.Val == 0xFE;
-				this.Quarter = this.Val == 0xFD;
-				this.Value = this.Val < 0xFD;
+				this.Raw = raw;
 			}
 
+			[ SuppressMessage( "ReSharper", "ConvertIfStatementToReturnStatement" ) ]
 			public byte Write()
 			{
 				if ( this.Value )
-					return this.Val;
+					return this.Raw;
 				if ( this.Full )
 					return 0xFF;
 				if ( this.Half )
 					return 0xFE;
 				if ( this.Quarter )
 					return 0xFD;
-				return this.Val;
+				return this.Raw;
 			}
 		}
 	}

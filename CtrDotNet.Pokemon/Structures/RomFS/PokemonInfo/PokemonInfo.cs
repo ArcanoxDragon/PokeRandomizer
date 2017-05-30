@@ -1,5 +1,4 @@
-﻿using CtrDotNet.Pokemon.Structures.RomFS.Common;
-using CtrDotNet.Pokemon.Utility;
+﻿using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CtrDotNet.Pokemon.Game;
-using CtrDotNet.Pokemon.Structures.ExeFS.Common;
+using CtrDotNet.Pokemon.Reference;
 using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Common
@@ -16,12 +16,15 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 		{
 			public uint Offset { get; set; }
 			public ushort Length { get; set; }
-			public ushort Unused { get; set; }
+			public ushort Flag { get; set; }
 		}
 
-		private const ushort LineInfoSize = 8; // Int32(4) Offset + Int16(2) Length + Int16(2) Unknown
-		private const byte BytesPerCharacter = 2;
-		private static readonly byte[] EmptyTextFile = { 0x01, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00 };
+		internal const ushort LineInfoSize = 8; // Int32(4) Offset + Int16(2) Length + Int16(2) Unknown
+		internal const byte BytesPerCharacter = 2;
+		internal static readonly byte[] EmptyTextFile = { 0x01, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00 };
+
+		internal const ushort FlagVowel = 4;
+		internal const ushort FlagNone = 0;
 
 		#endregion
 
@@ -38,12 +41,12 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 			this.Read( EmptyTextFile );
 		}
 
-		private int DataLength => (int) ( this.SectionDataOffset + this.TotalLength );
-		private int LineInfoSectionLength => this.LineInfos.Length * LineInfoSize + 4; // + 4 because of UInt32(4) SectionLength
-		private int RawTextLength => this.lineData.Sum( ld => ld.Length );
-		private ushort LineCount => (ushort) this.Lines.Count;
-		private uint TotalLength => (uint) ( this.LineInfoSectionLength + this.RawTextLength );
-		private uint SectionLength => this.TotalLength;
+		public int DataLength => (int) ( this.SectionDataOffset + this.TotalLength );
+		public int LineInfoSectionLength => this.LineInfos.Length * LineInfoSize + 4; // + 4 because of UInt32(4) SectionLength
+		public int RawTextLength => this.lineData.Sum( ld => ld.Length );
+		public ushort LineCount => (ushort) this.Lines.Count;
+		public uint TotalLength => (uint) ( this.LineInfoSectionLength + this.RawTextLength );
+		public uint SectionLength => this.TotalLength;
 		internal LineInfo[] LineInfos { get; set; }
 
 		/// Always 0x0001
@@ -84,7 +87,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 				this.LineInfos[ i ] = new LineInfo {
 					Offset = br.ReadUInt32(),
 					Length = br.ReadUInt16(),
-					Unused = br.ReadUInt16() // something
+					Flag = br.ReadUInt16() // something
 				};
 			}
 
@@ -98,17 +101,14 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 			}
 
 			this.SetLines( TextFileHelper.DecryptLines( this, this.lineData ) );
-
-//			if ( sectionLength != totalLength )
-//				throw new InvalidDataException( "File-specified totalLength and sectionLength did not match" );
-//
-//			if ( this.TotalLength != totalLength )
-//				throw new InvalidDataException( $"File specified total length should be {totalLength}, but it was {this.TotalLength}" );
 		}
 
 		protected override void WriteData( BinaryWriter bw )
 		{
-			this.lineData = TextFileHelper.EncryptLines( this, this.lineArray );
+			var encryptedLines = TextFileHelper.EncryptLines( this, this.lineArray );
+
+			this.LineInfos = encryptedLines.Select( el => el.Item1 ).ToArray();
+			this.lineData = encryptedLines.Select( el => el.Item2 ).ToArray();
 
 			bw.Write( this.TextSections );
 			bw.Write( this.LineCount );
@@ -121,7 +121,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 			{
 				bw.Write( lineInfo.Offset );
 				bw.Write( lineInfo.Length );
-				bw.Write( lineInfo.Unused );
+				bw.Write( lineInfo.Flag );
 			}
 
 			byte[] aggregateLineData = this.lineData.SelectMany( i => i ).ToArray();
@@ -132,18 +132,10 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 		{
 			lines = lines ?? new string[ 0 ];
 
-			this.lineData = TextFileHelper.EncryptLines( this, lines );
-			this.LineInfos = new LineInfo[ lines.Length ];
+			var encryptedLines = TextFileHelper.EncryptLines( this, lines );
 
-			for ( var (i, curOffset) = (0, 0); i < this.LineInfos.Length; i++ )
-			{
-				this.LineInfos[ i ] = new LineInfo {
-					Offset = (uint) ( this.LineInfoSectionLength + curOffset ),
-					Length = (ushort) ( this.lineData[ i ].Length / BytesPerCharacter )
-				};
-				curOffset += this.lineData[ i ].Length;
-			}
-
+			this.LineInfos = encryptedLines.Select( el => el.Item1 ).ToArray();
+			this.lineData = encryptedLines.Select( el => el.Item2 ).ToArray();
 			this.lineArray = lines;
 		}
 

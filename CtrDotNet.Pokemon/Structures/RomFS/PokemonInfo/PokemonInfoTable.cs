@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Game;
-using CtrDotNet.Pokemon.Structures.ExeFS.Common;
 using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo

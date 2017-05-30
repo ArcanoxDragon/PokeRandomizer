@@ -65,7 +65,7 @@ namespace CtrDotNet.Pokemon.Dynamic
 
 			sb.AppendLine( $"public sealed class {singleName} : Base{singleName} {{" );
 			sb.AppendLine( $"    public {singleName}( int id, string name ) : base( id, name ) {{ }}" );
-			sb.AppendLine( $"    public static explicit operator {singleName}( int id ) => {pluralName}.GetValue( id );" );
+			sb.AppendLine( $"    public static explicit operator {singleName}( int id ) => {pluralName}.GetValueFrom( id );" );
 			sb.AppendLine( $"    public static explicit operator int( {singleName} val ) => val.Id;" );
 			sb.AppendLine( $"}}" );
 
@@ -76,8 +76,9 @@ namespace CtrDotNet.Pokemon.Dynamic
 				sb.AppendLine( $"public static {singleName} {item.SafeName} = new {singleName}( {item.Id}, \"{item.Name}\" );" );
 			}
 
-			sb.AppendLine( $"public static {singleName} GetValue( int id ) => staticValues[ id ];" );
-			sb.AppendLine( $"private static {singleName}[] staticValues = {{ {string.Join( ",\n\t", items.Select( i => i.Id >= 0 ? i.SafeName : "null" ) )} }};" );
+			sb.AppendLine( $"public static {singleName} GetValueFrom( int id ) => staticValues[ id ];" );
+			sb.AppendLine( $"private static readonly {singleName}[] staticValues = {{ {string.Join( ",\n\t", items.Select( i => i.Id >= 0 ? i.SafeName : "null" ) )} }};" );
+			sb.AppendLine( $"public static IEnumerable<{singleName}> All{pluralName} => staticValues.AsEnumerable();" );
 			sb.AppendLine( $"}}" );
 
 			return sb.ToString();

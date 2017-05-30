@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrDotNet", "CtrDotNet\CtrDotNet.csproj", "{A5FACCE0-D32D-4271-A92E-18D01FF4418B}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrDotNet.Pokemon.Tests", "CtrDotNet.Pokemon.Tests\CtrDotNet.Pokemon.Tests.csproj", "{1C78479A-8A21-49E4-BDB1-8D2576A0C376}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrDotNet.Pokemon.Data", "CtrDotNet.Pokemon.Data\CtrDotNet.Pokemon.Data.csproj", "{85F7A691-D093-48D8-9A57-D8F3494BF931}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrDotNet.Pokemon.Randomizer", "CtrDotNet.Pokemon.Randomizer\CtrDotNet.Pokemon.Randomizer.csproj", "{BADF91D2-7B50-4314-A26E-F71F32380613}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,11 @@ Global
 		{85F7A691-D093-48D8-9A57-D8F3494BF931}.DebugNoDynamic|Any CPU.ActiveCfg = Debug|Any CPU
 		{85F7A691-D093-48D8-9A57-D8F3494BF931}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85F7A691-D093-48D8-9A57-D8F3494BF931}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BADF91D2-7B50-4314-A26E-F71F32380613}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BADF91D2-7B50-4314-A26E-F71F32380613}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BADF91D2-7B50-4314-A26E-F71F32380613}.DebugNoDynamic|Any CPU.ActiveCfg = Debug|Any CPU
+		{BADF91D2-7B50-4314-A26E-F71F32380613}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BADF91D2-7B50-4314-A26E-F71F32380613}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

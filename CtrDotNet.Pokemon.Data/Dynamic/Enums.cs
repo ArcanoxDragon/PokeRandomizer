@@ -1,10 +1,13 @@
 ﻿// ReSharper disable All
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace CtrDotNet.Pokemon.Data
 {
 public sealed class Ability : BaseAbility {
     public Ability( int id, string name ) : base( id, name ) { }
-    public static explicit operator Ability( int id ) => Abilities.GetValue( id );
+    public static explicit operator Ability( int id ) => Abilities.GetValueFrom( id );
     public static explicit operator int( Ability val ) => val.Id;
 }
 public static class Abilities {
@@ -199,8 +202,8 @@ public static Ability AuraBreak = new Ability( 188, "Aura Break" );
 public static Ability PrimordialSea = new Ability( 189, "Primordial Sea" );
 public static Ability DesolateLand = new Ability( 190, "Desolate Land" );
 public static Ability DeltaStream = new Ability( 191, "Delta Stream" );
-public static Ability GetValue( int id ) => staticValues[ id ];
-private static Ability[] staticValues = { null,
+public static Ability GetValueFrom( int id ) => staticValues[ id ];
+private static readonly Ability[] staticValues = { null,
 	Stench,
 	Drizzle,
 	SpeedBoost,
@@ -392,11 +395,12 @@ private static Ability[] staticValues = { null,
 	PrimordialSea,
 	DesolateLand,
 	DeltaStream };
+public static IEnumerable<Ability> AllAbilities => staticValues.AsEnumerable();
 }
 
 public sealed class Item : BaseItem {
     public Item( int id, string name ) : base( id, name ) { }
-    public static explicit operator Item( int id ) => Items.GetValue( id );
+    public static explicit operator Item( int id ) => Items.GetValueFrom( id );
     public static explicit operator int( Item val ) => val.Id;
 }
 public static class Items {
@@ -1155,8 +1159,8 @@ public static Item Meteorite_4 = new Item( 772, "Meteorite" );
 public static Item KeyStone = new Item( 773, "Key Stone" );
 public static Item MeteoriteShard = new Item( 774, "Meteorite Shard" );
 public static Item EonFlute = new Item( 775, "Eon Flute" );
-public static Item GetValue( int id ) => staticValues[ id ];
-private static Item[] staticValues = { null,
+public static Item GetValueFrom( int id ) => staticValues[ id ];
+private static readonly Item[] staticValues = { null,
 	MasterBall,
 	UltraBall,
 	GreatBall,
@@ -1932,11 +1936,12 @@ private static Item[] staticValues = { null,
 	KeyStone,
 	MeteoriteShard,
 	EonFlute };
+public static IEnumerable<Item> AllItems => staticValues.AsEnumerable();
 }
 
 public sealed class Move : BaseMove {
     public Move( int id, string name ) : base( id, name ) { }
-    public static explicit operator Move( int id ) => Moves.GetValue( id );
+    public static explicit operator Move( int id ) => Moves.GetValueFrom( id );
     public static explicit operator int( Move val ) => val.Id;
 }
 public static class Moves {
@@ -2561,8 +2566,8 @@ public static Move OriginPulse = new Move( 618, "Origin Pulse" );
 public static Move PrecipiceBlades = new Move( 619, "Precipice Blades" );
 public static Move DragonAscent = new Move( 620, "Dragon Ascent" );
 public static Move HyperspaceFury = new Move( 621, "Hyperspace Fury" );
-public static Move GetValue( int id ) => staticValues[ id ];
-private static Move[] staticValues = { null,
+public static Move GetValueFrom( int id ) => staticValues[ id ];
+private static readonly Move[] staticValues = { null,
 	Pound,
 	KarateChop,
 	DoubleSlap,
@@ -3184,11 +3189,12 @@ private static Move[] staticValues = { null,
 	PrecipiceBlades,
 	DragonAscent,
 	HyperspaceFury };
+public static IEnumerable<Move> AllMoves => staticValues.AsEnumerable();
 }
 
 public sealed class SpeciesType : BaseSpeciesType {
     public SpeciesType( int id, string name ) : base( id, name ) { }
-    public static explicit operator SpeciesType( int id ) => Species.GetValue( id );
+    public static explicit operator SpeciesType( int id ) => Species.GetValueFrom( id );
     public static explicit operator int( SpeciesType val ) => val.Id;
 }
 public static class Species {
@@ -3914,8 +3920,8 @@ public static SpeciesType Zygarde = new SpeciesType( 718, "Zygarde" );
 public static SpeciesType Diancie = new SpeciesType( 719, "Diancie" );
 public static SpeciesType Hoopa = new SpeciesType( 720, "Hoopa" );
 public static SpeciesType Volcanion = new SpeciesType( 721, "Volcanion" );
-public static SpeciesType GetValue( int id ) => staticValues[ id ];
-private static SpeciesType[] staticValues = { Egg,
+public static SpeciesType GetValueFrom( int id ) => staticValues[ id ];
+private static readonly SpeciesType[] staticValues = { Egg,
 	Bulbasaur,
 	Ivysaur,
 	Venusaur,
@@ -4637,6 +4643,7 @@ private static SpeciesType[] staticValues = { Egg,
 	Diancie,
 	Hoopa,
 	Volcanion };
+public static IEnumerable<SpeciesType> AllSpecies => staticValues.AsEnumerable();
 }
 
 }

@@ -19,5 +19,11 @@ namespace CtrDotNet.Pokemon.Utility
 			if ( array.Length < expected )
 				throw new InvalidDataException( $"Data too short. Expected at least {expected}" );
 		}
+
+		public static void AssertIn<T>( T min, T max, T actual ) where T : IComparable
+		{
+			if ( actual.CompareTo( min ) < 0 || actual.CompareTo( max ) > 0 )
+				throw new ArgumentOutOfRangeException( $"Argument out of range. Expected [{min}, {max}] but got {actual}" );
+		}
 	}
 }

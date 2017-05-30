@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using IO = System.IO;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace CtrDotNet.CTR.Garc
@@ -50,13 +51,18 @@ namespace CtrDotNet.CTR.Garc
 			await this.SetFiles( files );
 		}
 
-		public async Task Save()
+		public Task<byte[]> Write() => this.GarcData.Save();
+
+		public Task SaveFile() => this.SaveFileTo( IO.Path.GetDirectoryName( this.Path ) );
+
+		public async Task SaveFileTo( string path )
 		{
-			using ( var fs = new FileStream( this.Path, FileMode.Create, FileAccess.Write, FileShare.None ) )
-			{
-				byte[] data = await this.GarcData.Save();
+			string filename = IO.Path.GetFileName( this.Path );
+
+			byte[] data = await this.GarcData.Save();
+
+			using ( var fs = new FileStream( IO.Path.Combine( path, filename ), FileMode.Create, FileAccess.Write, FileShare.None ) )
 				await fs.WriteAsync( data, 0, data.Length );
-			}
 		}
 	}
 }

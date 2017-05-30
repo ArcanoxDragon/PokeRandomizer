@@ -24,7 +24,7 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 		public GameVersion GameVersion { get; }
 		public ushort[][] StarterSpecies { get; }
 
-		protected IEnumerable<int> Generations => this.GameVersion.IsORAS()
+		public IEnumerable<int> Generations => this.GameVersion.IsORAS()
 													  ? new[] { 3, 2, 4, 5 }
 													  : new[] { 6, 1 };
 

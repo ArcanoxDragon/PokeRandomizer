@@ -24,30 +24,17 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 		[ Test ]
 		public async Task TestEditStarters()
 		{
-			CroFile dllField = await ORASConfig.GameConfig.GetCroFile( CroNames.Field );
-			CroFile dllPokeSelect = await ORASConfig.GameConfig.GetCroFile( CroNames.Poke3Select );
 			Starters starters = await ORASConfig.GameConfig.GetStarters();
 
 			starters[ 3 ][ 0 ] = (ushort) Species.Bulbasaur.Id;
 			starters[ 3 ][ 1 ] = (ushort) Species.Charmander.Id;
 			starters[ 3 ][ 2 ] = (ushort) Species.Squirtle.Id;
 
-			await starters.Write( dllField, dllPokeSelect );
+			ORASConfig.GameConfig.OutputPathOverride = this.path;
 
-			var fieldPath = Path.Combine( this.path, Path.GetFileName( dllField.Path ) );
-			var pokePath = Path.Combine( this.path, Path.GetFileName( dllPokeSelect.Path ) );
+			await ORASConfig.GameConfig.SaveStarters( starters );
 
-			using ( var fs = new FileStream( fieldPath, FileMode.Create, FileAccess.Write, FileShare.None ) )
-			{
-				byte[] data = dllField.Write();
-				await fs.WriteAsync( data, 0, data.Length );
-			}
-
-			using ( var fs = new FileStream( pokePath, FileMode.Create, FileAccess.Write, FileShare.None ) )
-			{
-				byte[] data = dllPokeSelect.Write();
-				await fs.WriteAsync( data, 0, data.Length );
-			}
+			ORASConfig.GameConfig.OutputPathOverride = null;
 		}
 	}
 }

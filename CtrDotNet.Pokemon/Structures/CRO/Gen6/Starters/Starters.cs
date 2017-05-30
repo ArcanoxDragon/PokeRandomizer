@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Cro;
 using CtrDotNet.Pokemon.Game;
@@ -23,6 +25,8 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 		/// </summary>
 		/// <param name="generation">The 1-indexed game generation to get starters for</param>
 		public ushort[] this[ int generation ] => this.StarterSpecies[ generation - 1 ];
+
+		public IEnumerable<int> Generations => this.startersPokeSelect.Generations;
 
 		public GameVersion GameVersion { get; }
 

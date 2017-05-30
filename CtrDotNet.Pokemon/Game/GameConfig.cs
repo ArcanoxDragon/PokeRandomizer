@@ -72,6 +72,8 @@ namespace CtrDotNet.Pokemon.Game
 		public string RomFS { get; private set; }
 		public string ExeFS { get; private set; }
 		public Language Language { get; set; }
+		public string OutputPathOverride { get; set; }
+		public bool IsOverridingOutPath => !string.IsNullOrEmpty( this.OutputPathOverride );
 
 		#endregion
 
@@ -124,6 +126,10 @@ namespace CtrDotNet.Pokemon.Game
 
 		#region Game Data
 
+		public Task SaveFile( IWritableFile file ) => this.IsOverridingOutPath
+														  ? file.SaveFileTo( this.OutputPathOverride )
+														  : file.SaveFile();
+
 		#region Pokemon Species Info
 
 		public async Task<PokemonInfoTable> GetPokemonInfo()
@@ -145,7 +151,7 @@ namespace CtrDotNet.Pokemon.Game
 			files[ garcPersonal.Garc.FileCount - 1 ] = table.Write();
 
 			await garcPersonal.SetFiles( files );
-			await garcPersonal.Save();
+			await this.SaveFile( garcPersonal );
 		}
 
 		#endregion
@@ -179,7 +185,7 @@ namespace CtrDotNet.Pokemon.Game
 			byte[][] files = learnsets.Select( l => l.Write() ).ToArray();
 
 			await garcLearnsets.SetFiles( files );
-			await garcLearnsets.Save();
+			await this.SaveFile( garcLearnsets );
 		}
 
 		#endregion
@@ -214,7 +220,7 @@ namespace CtrDotNet.Pokemon.Game
 			byte[][] files = textFiles.Select( tf => tf.Write() ).ToArray();
 
 			await garcGameText.SetFiles( files );
-			await garcGameText.Save();
+			await this.SaveFile( garcGameText );
 		}
 
 		public async Task SaveGameText( int fileNum, TextFile textFile )
@@ -222,7 +228,7 @@ namespace CtrDotNet.Pokemon.Game
 			var garcGameText = await this.GetGarcData( GarcNames.GameText );
 
 			await garcGameText.SetFile( fileNum, textFile.Write() );
-			await garcGameText.Save();
+			await this.SaveFile( garcGameText );
 		}
 
 		#endregion
@@ -262,6 +268,8 @@ namespace CtrDotNet.Pokemon.Game
 			{
 				await garcMoves.SetFiles( moves.Select( m => m.Write() ).ToArray() );
 			}
+
+			await this.SaveFile( garcMoves );
 		}
 
 		#endregion
@@ -281,7 +289,7 @@ namespace CtrDotNet.Pokemon.Game
 
 			this.CodeBin.WriteStructure( tmsHms );
 
-			await this.CodeBin.Save();
+			await this.SaveFile( this.CodeBin );
 		}
 
 		#endregion
@@ -305,8 +313,9 @@ namespace CtrDotNet.Pokemon.Game
 			CroFile dllPokeSelect = await this.GetCroFile( CroNames.Poke3Select );
 
 			await starters.Write( dllField, dllPokeSelect );
-			await dllField.SaveFile();
-			await dllPokeSelect.SaveFile();
+
+			await this.SaveFile( dllField );
+			await this.SaveFile( dllPokeSelect );
 		}
 
 		#endregion

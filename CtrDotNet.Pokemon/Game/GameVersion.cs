@@ -29,6 +29,8 @@
 			}
 		}
 
+		public static GenerationInfo GetInfo( this GameVersion game ) => game.GetGeneration().GetInfo();
+
 		public static bool IsXY( this GameVersion game ) => game == GameVersion.XY;
 		public static bool IsORAS( this GameVersion game ) => game == GameVersion.ORAS || game == GameVersion.ORASDemo;
 		public static bool IsSunMoon( this GameVersion game ) => game == GameVersion.SunMoon || game == GameVersion.SunMoonDemo;

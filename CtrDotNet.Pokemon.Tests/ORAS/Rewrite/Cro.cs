@@ -27,11 +27,11 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 			var fname = Path.GetFileName( cro.Path );
 			var outPath = Path.Combine( this.path, fname );
 			var origPath = Path.Combine( this.path, $"{Path.GetFileNameWithoutExtension( outPath )}.orig.cro" );
-			byte[] origData = cro.Write();
+			byte[] origData = await cro.Write();
 
 			await saveAction();
 
-			byte[] newData = cro.Write();
+			byte[] newData = await cro.Write();
 
 			using ( var md5 = MD5.Create() )
 			using ( var origFs = new FileStream( origPath, FileMode.Create, FileAccess.Write, FileShare.None ) )

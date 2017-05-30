@@ -8,6 +8,9 @@ var enumHelper = new DynamicEnumHelper( this.Host.ResolvePath(".") );
 #>
 // ReSharper disable All
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace CtrDotNet.Pokemon.Data
 {
 <#= enumHelper.EmitEnum( "Ability", "Abilities" ) #>

@@ -1,12 +1,14 @@
 ﻿using System;
+using IO = System.IO;
 using System.IO;
 using System.Threading.Tasks;
+using CtrDotNet.CTR;
 
 namespace CtrDotNet.Pokemon.ExeFS
 {
-	public class CodeBin
+	public class CodeBin : IWritableFile
 	{
-		private byte[] data;
+		private byte[] buffer;
 		private bool loaded;
 
 		internal CodeBin( string path )
@@ -15,6 +17,7 @@ namespace CtrDotNet.Pokemon.ExeFS
 		}
 
 		public string Path { get; }
+
 		public byte[] Data
 		{
 			get
@@ -22,11 +25,11 @@ namespace CtrDotNet.Pokemon.ExeFS
 				if ( !this.loaded )
 					throw new InvalidOperationException( "File has not been loaded yet" );
 
-				return this.data;
+				return this.buffer;
 			}
 			set
 			{
-				this.data = value;
+				this.buffer = value;
 				this.loaded = ( value != null );
 			}
 		}
@@ -35,20 +38,26 @@ namespace CtrDotNet.Pokemon.ExeFS
 		{
 			using ( var fs = new FileStream( this.Path, FileMode.Open, FileAccess.Read, FileShare.Read ) )
 			{
-				this.data = new byte[ fs.Length ];
-				await fs.ReadAsync( this.data, 0, this.data.Length );
+				this.buffer = new byte[ fs.Length ];
+				await fs.ReadAsync( this.buffer, 0, this.buffer.Length );
 			}
 
 			this.loaded = true;
 		}
 
-		public async Task Save()
-		{
-			if ( !this.loaded )
-				return;
+		public Task<byte[]> Write() => Task.FromResult( this.Data );
 
-			using ( var fs = new FileStream( this.Path, FileMode.Create, FileAccess.Write, FileShare.None ) )
-				await fs.WriteAsync( this.data, 0, this.data.Length );
+		public async Task SaveFileTo( string path )
+		{
+			if ( IO.Path.GetExtension( path )?.ToLower() != ".bin" )
+				path = IO.Path.Combine( path, IO.Path.GetFileName( this.Path ) );
+
+			byte[] data = this.Data;
+
+			using ( var fs = new FileStream( path, FileMode.Create, FileAccess.Write, FileShare.None ) )
+				await fs.WriteAsync( data, 0, data.Length );
 		}
+
+		public Task SaveFile() => this.SaveFileTo( this.Path );
 	}
 }

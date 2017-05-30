@@ -59,6 +59,7 @@
     <Compile Include="CTR\Garc\GarcUtil.cs" />
     <Compile Include="CTR\Garc\IGarcFile.cs" />
     <Compile Include="CTR\Garc\LzGarc.cs" />
+    <Compile Include="CTR\IWritableFile.cs" />
     <Compile Include="CTR\LZSS.cs" />
     <Compile Include="CTR\Garc\MemGarc.cs" />
     <Compile Include="CTR\Mini.cs" />

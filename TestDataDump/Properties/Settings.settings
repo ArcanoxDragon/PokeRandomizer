@@ -9,7 +9,7 @@
       <Value Profile="(Default)">..\..\..\CtrDotNet.Pokemon\Data</Value>
     </Setting>
     <Setting Name="RomPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">C:\Users\Brian\Documents\3DS\Unpacked\Pokemon OmegaRuby\Vanilla</Value>
     </Setting>
   </Settings>
 </SettingsFile>

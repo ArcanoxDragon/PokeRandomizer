@@ -28,7 +28,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 				Data = (byte[]) ORASConfig.GameConfig.CodeBin.Data.Clone()
 			};
 
-			await origCodeBin.Save();
+			await origCodeBin.SaveFile();
 
 			CodeBin newCodeBin = new CodeBin( Path.Combine( this.path, "code.bin" ) ) {
 				Data = (byte[]) ORASConfig.GameConfig.CodeBin.Data.Clone()
@@ -37,7 +37,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 			TmsHms tmsHms = ORASConfig.GameConfig.GetTmsHms();
 			newCodeBin.WriteStructure( tmsHms );
 
-			await newCodeBin.Save();
+			await newCodeBin.SaveFile();
 
 			using ( var md5 = MD5.Create() )
 			using ( var strOriginal = File.OpenRead( ORASConfig.GameConfig.CodeBin.Path ) )

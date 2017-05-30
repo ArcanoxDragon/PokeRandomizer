@@ -19,6 +19,8 @@ namespace CtrDotNet.Pokemon.Garc
 		public Task<byte[]> GetFile( int file ) => this.Garc.GetFile( file );
 		public Task SetFiles( byte[][] files ) => this.Garc.SetFiles( files );
 		public Task SetFile( int file, byte[] data ) => this.Garc.SetFile( file, data );
-		public Task Save() => this.Garc.Save();
+		public Task<byte[]> Write() => this.Garc.Write();
+		public Task SaveFile() => this.Garc.SaveFile();
+		public Task SaveFileTo( string path ) => this.Garc.SaveFileTo( path );
 	}
 }

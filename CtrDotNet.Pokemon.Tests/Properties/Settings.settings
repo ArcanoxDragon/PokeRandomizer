@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="RomPathORAS" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Users\Arcanox\Documents\3DS\OmegaRuby\Unpacked\Vanilla</Value>
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

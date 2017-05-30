@@ -32,15 +32,6 @@ namespace TestDataDump.Properties {
             }
         }
         
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Arcanox\\Documents\\3DS\\OmegaRuby\\Unpacked\\Vanilla")]
-        public string RomPath {
-            get {
-                return ((string)(this["RomPath"]));
-            }
-        }
-        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("..\\..\\..\\CtrDotNet.Pokemon\\Data")]
@@ -50,6 +41,15 @@ namespace TestDataDump.Properties {
             }
             set {
                 this["OutputPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RomPath {
+            get {
+                return ((string)(this["RomPath"]));
             }
         }
     }

@@ -13,7 +13,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 		[ Test ]
 		public async Task TestEachLine()
 		{
-			var garcGameText = await ORASConfig.GameConfig.GetGarcData( GarcNames.GameText );
+			var garcGameText = await ORASConfig.GameConfig.GetGarc( GarcNames.GameText );
 			byte[] tf0Data = await garcGameText.GetFile( 0 );
 			TextFile tf0 = await ORASConfig.GameConfig.GetGameText( 0 );
 			byte[] textData = tf0Data.Skip( 0x10 /* SectionDataOffset */ ).ToArray();
@@ -58,7 +58,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 		[ Test ]
 		public async Task TestAllLines()
 		{
-			var garcGameText = await ORASConfig.GameConfig.GetGarcData( GarcNames.GameText );
+			var garcGameText = await ORASConfig.GameConfig.GetGarc( GarcNames.GameText );
 			byte[] tf0Data = await garcGameText.GetFile( 0 );
 			TextFile tf0 = await ORASConfig.GameConfig.GetGameText( 0 );
 			byte[][] encData = TextFileHelper.EncryptLines( tf0, tf0.Lines ).Select( el => el.Item2 ).ToArray();

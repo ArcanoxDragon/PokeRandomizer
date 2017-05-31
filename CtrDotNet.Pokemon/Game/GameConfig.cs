@@ -135,7 +135,7 @@ namespace CtrDotNet.Pokemon.Game
 		public async Task<PokemonInfoTable> GetPokemonInfo()
 		{
 			PokemonInfoTable table = new PokemonInfoTable( this.Version );
-			var garcPersonal = await this.GetGarcData( GarcNames.PokemonInfo );
+			var garcPersonal = await this.GetGarc( GarcNames.PokemonInfo );
 			byte[] data = await garcPersonal.GetFile( garcPersonal.Garc.FileCount - 1 );
 			table.Read( data );
 			return table;
@@ -145,7 +145,7 @@ namespace CtrDotNet.Pokemon.Game
 		{
 			Assertions.AssertVersion( this.Version, table.GameVersion );
 
-			var garcPersonal = await this.GetGarcData( GarcNames.PokemonInfo );
+			var garcPersonal = await this.GetGarc( GarcNames.PokemonInfo );
 			byte[][] files = await garcPersonal.GetFiles();
 
 			files[ garcPersonal.Garc.FileCount - 1 ] = table.Write();
@@ -160,7 +160,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<IEnumerable<Learnset>> GetLearnsets()
 		{
-			var garcLearnsets = await this.GetGarcData( GarcNames.Learnsets );
+			var garcLearnsets = await this.GetGarc( GarcNames.Learnsets );
 			byte[][] files = await garcLearnsets.GetFiles();
 			return files.Select( f => {
 				Learnset l;
@@ -177,7 +177,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task SaveLearnsets( IList<Learnset> learnsets )
 		{
-			var garcLearnsets = await this.GetGarcData( GarcNames.Learnsets );
+			var garcLearnsets = await this.GetGarc( GarcNames.Learnsets );
 
 			foreach ( Learnset l in learnsets )
 				Assertions.AssertVersion( this.Version, l.GameVersion );
@@ -194,7 +194,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<TextFile[]> GetGameText()
 		{
-			var garcGameText = await this.GetGarcData( GarcNames.GameText );
+			var garcGameText = await this.GetGarc( GarcNames.GameText );
 			byte[][] files = await garcGameText.GetFiles();
 
 			return files.Select( file => {
@@ -206,7 +206,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<TextFile> GetGameText( int textFile )
 		{
-			var garcGameText = await this.GetGarcData( GarcNames.GameText );
+			var garcGameText = await this.GetGarc( GarcNames.GameText );
 			byte[] file = await garcGameText.GetFile( textFile );
 
 			TextFile tf = new TextFile( this.Version, this.Variables );
@@ -216,7 +216,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task SaveGameText( IEnumerable<TextFile> textFiles )
 		{
-			var garcGameText = await this.GetGarcData( GarcNames.GameText );
+			var garcGameText = await this.GetGarc( GarcNames.GameText );
 			byte[][] files = textFiles.Select( tf => tf.Write() ).ToArray();
 
 			await garcGameText.SetFiles( files );
@@ -225,7 +225,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task SaveGameText( int fileNum, TextFile textFile )
 		{
-			var garcGameText = await this.GetGarcData( GarcNames.GameText );
+			var garcGameText = await this.GetGarc( GarcNames.GameText );
 
 			await garcGameText.SetFile( fileNum, textFile.Write() );
 			await this.SaveFile( garcGameText );
@@ -237,7 +237,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<IEnumerable<Move>> GetMoves()
 		{
-			var garcMoves = await this.GetGarcData( GarcNames.Moves );
+			var garcMoves = await this.GetGarc( GarcNames.Moves );
 			IList<byte[]> files = await garcMoves.GetFiles();
 
 			if ( this.Version.IsORAS() || this.Version.IsGen7() )
@@ -254,7 +254,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task SaveMoves( IList<Move> moves )
 		{
-			var garcMoves = await this.GetGarcData( GarcNames.Moves );
+			var garcMoves = await this.GetGarc( GarcNames.Moves );
 
 			foreach ( var move in moves )
 				Assertions.AssertVersion( this.Version, move.GameVersion );
@@ -270,6 +270,61 @@ namespace CtrDotNet.Pokemon.Game
 			}
 
 			await this.SaveFile( garcMoves );
+		}
+
+		#endregion
+
+		#region Encounter Data
+
+		public async Task<IEnumerable<Gen6.EncounterWild>> GetEncounterData()
+		{
+			var encounterGarc = await this.GetGarc( GarcNames.EncounterData, useLz: true );
+
+			// All but last two files are the encounter data
+			byte[][] encounterBuffers = ( await encounterGarc.GetFiles() ).Take( encounterGarc.Garc.FileCount - 2 ).ToArray();
+
+			// Second-to-last file is zone data
+			byte[] zoneDataBuffer = await encounterGarc.GetFile( encounterGarc.Garc.FileCount - 2 );
+			Gen6.ZoneData zoneData = new Gen6.ZoneData( this.Version );
+			zoneData.Read( zoneDataBuffer );
+
+			if ( zoneData.Entries.Length != encounterBuffers.Length )
+				throw new InvalidDataException( $"Zone data and encounter data mismatch. Zone data had {zoneData.Entries.Length} entries, but encounter data only had {encounterBuffers.Length}" );
+
+			return encounterBuffers.Zip( zoneData.Entries, ( b, e ) => {
+				var encounter = Gen6.EncounterWild.New( this.Version, e.ZoneId );
+				encounter.Read( b );
+				return encounter;
+			} );
+		}
+
+		public async Task SaveEncounterData( IEnumerable<Gen6.EncounterWild> encounters )
+		{
+			var encounterGarc = await this.GetGarc( GarcNames.EncounterData, useLz: true );
+			Gen6.EncounterWild[] array = encounters.ToArray();
+			byte[][] files = await encounterGarc.GetFiles();
+
+			Assertions.AssertLength( encounterGarc.Garc.FileCount - 2, array, exact: true );
+
+			for ( int i = 0; i < array.Length; i++ )
+			{
+				byte[] encounterBuffer = array[ i ].Write();
+
+				if ( this.Version.IsORAS() ) // Not really sure why this is necessary, but pk3DS does it
+				{
+					// Last file is decStorage
+					const int offset = 0xE;
+					byte[] decStorageData = files[ files.Length - 1 ];
+					int entryPointer = BitConverter.ToInt32( decStorageData, ( i + 1 ) * sizeof( int ) ) + offset;
+
+					Array.Copy( encounterBuffer, 0, decStorageData, entryPointer, encounterBuffer.Length - offset );
+				}
+
+				files[ i ] = encounterBuffer;
+			}
+
+			await encounterGarc.SetFiles( files );
+			await this.SaveFile( encounterGarc );
 		}
 
 		#endregion
@@ -353,48 +408,37 @@ namespace CtrDotNet.Pokemon.Game
 
 		#region Garc
 
-		public string GetGarcFileName( GarcNames garcName )
+		public GarcReference GetGarcReference( GarcNames garcName )
 		{
-			var garcRef = this.GetGarcReference( garcName );
+			var garcRef = this.Files.FirstOrDefault( f => f.Name == garcName );
+
+			if ( garcRef == null )
+				throw new FileNotFoundException( $"GARC file not found: {garcName}" );
 
 			if ( garcRef.HasLanguageVariant )
 				garcRef = garcRef.GetRelativeGarc( (int) this.Language );
 
-			return garcRef.RomFsPath;
+			return garcRef;
 		}
 
-		public GarcReference GetGarcReference( GarcNames garcName )
-		{
-			var gr = this.Files.FirstOrDefault( f => f.Name == garcName );
-
-			if ( gr == null )
-				throw new FileNotFoundException( $"GARC file not found: {garcName}" );
-
-			if ( gr.HasLanguageVariant )
-				gr = gr.GetRelativeGarc( (int) this.Language );
-
-			return gr;
-		}
+		public string GetGarcFileName( GarcNames garcName )
+			=> this.GetGarcReference( garcName ).RomFsPath;
 
 		private string GetGarcPath( GarcNames garcName )
-		{
-			var gr = this.GetGarcReference( garcName );
-			gr = gr.HasLanguageVariant ? gr.GetRelativeGarc( (int) this.Language ) : gr;
-			string subloc = gr.RomFsPath;
-			return Path.Combine( this.RomFS, subloc );
-		}
+			=> Path.Combine( this.RomFS,
+							 this.GetGarcReference( garcName ).RomFsPath );
 
-		public async Task<ReferencedGarc> GetGarcByReference( GarcReference gr )
+		public async Task<ReferencedGarc> GetGarc( GarcReference gr, bool useLz = false )
 		{
 			string path = this.GetGarcPath( gr.Name );
-			GarcFile file = await GarcFile.FromFile( path );
+			GarcFile file = await GarcFile.FromFile( path, useLz );
 			return new ReferencedGarc( file, gr );
 		}
 
-		public async Task<ReferencedGarc> GetGarcData( GarcNames garcName )
+		public async Task<ReferencedGarc> GetGarc( GarcNames garcName, bool useLz = false )
 		{
 			var gr = this.GetGarcReference( garcName );
-			return await this.GetGarcByReference( gr );
+			return await this.GetGarc( gr, useLz );
 		}
 
 		#endregion

@@ -17,7 +17,7 @@ namespace CtrDotNet.Pokemon.Reference
 		TrainerNames,
 		TrainerClasses,
 		TrainerText,
-		Metlist000000,
+		EncounterZoneNames,
 		OPowerFlavor,
 		MaisonTrainerNames,
 		SuperTrainerNames,

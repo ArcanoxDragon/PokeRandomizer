@@ -1,13 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using CtrDotNet.Utility;
 
 namespace CtrDotNet.CTR
 {
 	// LZSS (de)compression, heavily taken from dsdecmp
 	public static class Lzss
 	{
-		internal static long Decompress( string infile, string outfile )
+		internal static async Task<long> Decompress( string infile, string outfile )
 		{
 			// make sure the output directory exists
 			string outDirectory = Path.GetDirectoryName( outfile );
@@ -17,7 +18,7 @@ namespace CtrDotNet.CTR
 			using ( FileStream inStream = new FileStream( infile, FileMode.Open ),
 							   outStream = new FileStream( outfile, FileMode.Create ) )
 			{
-				return Lzss.Decompress( inStream, inStream.Length, outStream );
+				return await Lzss.Decompress( inStream, inStream.Length, outStream );
 			}
 		}
 
@@ -36,7 +37,7 @@ namespace CtrDotNet.CTR
 		/// <returns>The length of the output data.</returns>
 		/// <exception cref="NotEnoughDataException">When the given length of the input data
 		/// is not enough to properly decompress the input.</exception>
-		internal static long Decompress( Stream instream, long inLength, Stream outstream )
+		internal static async Task<long> Decompress( Stream instream, long inLength, Stream outstream )
 		{
 			#region Format definition in NDSTEK style
 
@@ -78,19 +79,19 @@ namespace CtrDotNet.CTR
 			#endregion
 
 			long readBytes = 0;
-
-			byte type = (byte) instream.ReadByte();
+			
+			byte type = await instream.ReadByteAsync();
 			if ( type != 0x11 )
 				throw new InvalidDataException( "The provided stream is not a valid LZ-0x11 "
 												+ "compressed stream (invalid type 0x" + type.ToString( "X" ) + ")" );
 			byte[] sizeBytes = new byte[ 3 ];
-			instream.Read( sizeBytes, 0, 3 );
+			await instream.ReadAsync( sizeBytes, 0, 3 );
 			int decompressedSize = IOUtils.ToNDSu24( sizeBytes, 0 );
 			readBytes += 4;
 			if ( decompressedSize == 0 )
 			{
 				sizeBytes = new byte[ 4 ];
-				instream.Read( sizeBytes, 0, 4 );
+				await instream.ReadAsync( sizeBytes, 0, 4 );
 				decompressedSize = IOUtils.ToNDSs32( sizeBytes, 0 );
 				readBytes += 4;
 			}
@@ -114,7 +115,7 @@ namespace CtrDotNet.CTR
 				{
 					if ( readBytes >= inLength )
 						throw new NotEnoughDataException( currentOutSize, decompressedSize );
-					flags = instream.ReadByte();
+					flags = await instream.ReadByteAsync();
 					readBytes++;
 					if ( flags < 0 )
 						throw new StreamTooShortException();
@@ -137,7 +138,7 @@ namespace CtrDotNet.CTR
 					// read the first byte first, which also signals the size of the compressed block
 					if ( readBytes >= inLength )
 						throw new NotEnoughDataException( currentOutSize, decompressedSize );
-					int byte1 = instream.ReadByte();
+					int byte1 = await instream.ReadByteAsync();
 					readBytes++;
 					if ( byte1 < 0 )
 						throw new StreamTooShortException();
@@ -156,9 +157,9 @@ namespace CtrDotNet.CTR
 						// we need two more bytes available
 						if ( readBytes + 1 >= inLength )
 							throw new NotEnoughDataException( currentOutSize, decompressedSize );
-						int byte2 = instream.ReadByte();
+						int byte2 = await instream.ReadByteAsync();
 						readBytes++;
-						int byte3 = instream.ReadByte();
+						int byte3 = await instream.ReadByteAsync();
 						readBytes++;
 						if ( byte3 < 0 )
 							throw new StreamTooShortException();
@@ -180,11 +181,11 @@ namespace CtrDotNet.CTR
 						// we need three more bytes available
 						if ( readBytes + 2 >= inLength )
 							throw new NotEnoughDataException( currentOutSize, decompressedSize );
-						int byte2 = instream.ReadByte();
+						int byte2 = await instream.ReadByteAsync();
 						readBytes++;
-						int byte3 = instream.ReadByte();
+						int byte3 = await instream.ReadByteAsync();
 						readBytes++;
-						int byte4 = instream.ReadByte();
+						int byte4 = await instream.ReadByteAsync();
 						readBytes++;
 						if ( byte4 < 0 )
 							throw new StreamTooShortException();
@@ -206,7 +207,7 @@ namespace CtrDotNet.CTR
 						// we need only one more byte available
 						if ( readBytes >= inLength )
 							throw new NotEnoughDataException( currentOutSize, decompressedSize );
-						int byte2 = instream.ReadByte();
+						int byte2 = await instream.ReadByteAsync();
 						readBytes++;
 						if ( byte2 < 0 )
 							throw new StreamTooShortException();
@@ -230,7 +231,7 @@ namespace CtrDotNet.CTR
 					{
 						byte next = buffer[ bufIdx % bufferLength ];
 						bufIdx++;
-						outstream.WriteByte( next );
+						await outstream.WriteByteAsync( next );
 						buffer[ bufferOffset ] = next;
 						bufferOffset = ( bufferOffset + 1 ) % bufferLength;
 					}
@@ -240,12 +241,12 @@ namespace CtrDotNet.CTR
 				{
 					if ( readBytes >= inLength )
 						throw new NotEnoughDataException( currentOutSize, decompressedSize );
-					int next = instream.ReadByte();
+					int next = await instream.ReadByteAsync();
 					readBytes++;
 					if ( next < 0 )
 						throw new StreamTooShortException();
 
-					outstream.WriteByte( (byte) next );
+					await outstream.WriteByteAsync( (byte) next );
 					currentOutSize++;
 					buffer[ bufferOffset ] = (byte) next;
 					bufferOffset = ( bufferOffset + 1 ) % bufferLength;
@@ -306,7 +307,7 @@ namespace CtrDotNet.CTR
 
 			// save the input data in an array to prevent having to go back and forth in a file
 			byte[] indata = new byte[ inLength ];
-			int numReadBytes = instream.Read( indata, 0, (int) inLength );
+			int numReadBytes = await instream.ReadAsync( indata, 0, (int) inLength );
 			if ( numReadBytes != inLength )
 				throw new StreamTooShortException();
 

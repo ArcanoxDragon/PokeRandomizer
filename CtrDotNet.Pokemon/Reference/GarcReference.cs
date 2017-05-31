@@ -8,8 +8,8 @@ namespace CtrDotNet.Pokemon.Reference
 		{
 			this.Name = name;
 			this.FileNumber = file;
-			this.Offset = offset;
 			this.HasLanguageVariant = lv;
+			this.Offset = offset;
 		}
 
 		public int FileNumber { get; }
@@ -23,7 +23,7 @@ namespace CtrDotNet.Pokemon.Reference
 
 		public GarcReference GetRelativeGarc( int offset )
 		{
-			return new GarcReference( this.FileNumber + offset, this.Name, offset: offset );
+			return new GarcReference( ( this.FileNumber - this.Offset ) + offset, this.Name, this.HasLanguageVariant, offset );
 		}
 	}
 }

@@ -55,6 +55,7 @@
     <Compile Include="Game\Language.cs" />
     <Compile Include="Garc\ReferencedGarc.cs" />
     <Compile Include="Reference\CroNames.cs" />
+    <Compile Include="Reference\Forms.cs" />
     <Compile Include="Reference\GarcNames.cs" />
     <Compile Include="Structures\BaseDataStructure.cs" />
     <Compile Include="Structures\CRO\Common\BaseCroDataStructure.cs" />
@@ -64,6 +65,11 @@
     <Compile Include="Structures\CRO\Gen6\Starters\StartersField.cs" />
     <Compile Include="Structures\RomFS\Common\TextFile.cs" />
     <Compile Include="Reference\TextNames.cs" />
+    <Compile Include="Structures\RomFS\Gen6\EncounterWild.cs" />
+    <Compile Include="Structures\RomFS\Gen6\ORAS\OrasEncounterWild.cs" />
+    <Compile Include="Structures\RomFS\Gen6\XY\XyEncounterWild.cs" />
+    <Compile Include="Structures\RomFS\Gen6\ZoneData.cs" />
+    <Compile Include="Utility\ArrayStream.cs" />
     <Compile Include="Utility\Assertions.cs" />
     <Compile Include="Utility\Enumerable.cs" />
     <Compile Include="Utility\Number.cs" />

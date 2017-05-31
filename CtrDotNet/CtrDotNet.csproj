@@ -74,6 +74,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utility\StreamUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Lib\ETC1Lib.dll">

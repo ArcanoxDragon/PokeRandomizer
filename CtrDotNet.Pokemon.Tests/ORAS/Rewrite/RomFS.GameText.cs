@@ -17,7 +17,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 		[ Test, Order( 1 ) ]
 		public async Task RewriteGameText()
 		{
-			var garcGameText = await ORASConfig.GameConfig.GetGarcData( GarcNames.GameText );
+			var garcGameText = await ORASConfig.GameConfig.GetGarc( GarcNames.GameText );
 			var gameText = await ORASConfig.GameConfig.GetGameText();
 			var outDir = Path.Combine( this.path, "GameText" );
 

@@ -41,15 +41,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\IRandomizer.cs" />
+    <Compile Include="Common\Randomizer.cs" />
     <Compile Include="Config\RandomizerConfig.cs" />
     <Compile Include="Common\BaseRandomizer.cs" />
     <Compile Include="Config\StartersConfig.cs" />
-    <Compile Include="Gen6\ORAS\Randomizer.cs" />
-    <Compile Include="Gen6\ORAS\Randomizer.Starters.cs">
-      <DependentUpon>Randomizer.cs</DependentUpon>
+    <Compile Include="Gen6\Gen6Randomizer.cs" />
+    <Compile Include="Gen6\Gen6Randomizer.Starters.cs">
+      <DependentUpon>Gen6Randomizer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Gen6\ORAS\OrasRandomizer.cs" />
     <Compile Include="Legality\Starters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\HandlesGameAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CtrDotNet.Pokemon.Data\CtrDotNet.Pokemon.Data.csproj">

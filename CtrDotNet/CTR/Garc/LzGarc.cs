@@ -1,26 +1,24 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CtrDotNet.CTR.Garc
 {
-	/// <summary>
-	/// GARC Class that is heavier on OOP to allow for compression tracking for faster edits
-	/// </summary>
 	public class LzGarc : BaseGarc
 	{
 		#region Static
 
 		private class Entry
 		{
-			public bool Accessed { get; }
+			public bool Accessed { get; set; }
 			public bool Saved { get; set; }
 			public byte[] Data { get; set; }
-			public bool WasCompressed { get; }
+			public bool WasCompressed { get; set; }
 
 			public Entry() { }
 
-			public Entry( byte[] data )
+			public async Task Read( byte[] data )
 			{
 				this.Data = data;
 				this.Accessed = true;
@@ -33,10 +31,11 @@ namespace CtrDotNet.CTR.Garc
 
 				try
 				{
-					using ( MemoryStream newMS = new MemoryStream() )
+					using ( var msCompressed = new MemoryStream( data ) )
+					using ( var msDecompressed = new MemoryStream() )
 					{
-						Lzss.Decompress( new MemoryStream( data ), data.Length, newMS );
-						this.Data = newMS.ToArray();
+						await Lzss.Decompress( msCompressed, data.Length, msDecompressed );
+						this.Data = msDecompressed.ToArray();
 					}
 					this.WasCompressed = true;
 				}
@@ -82,47 +81,33 @@ namespace CtrDotNet.CTR.Garc
 
 		protected override async Task<byte[]> GetFile( int fileIndex, int subfileIndex = 0 )
 		{
-			if ( this.storage[ fileIndex ] == null || !this.storage[ fileIndex ].Saved ) // retrieve original
-				return await base.GetFile( fileIndex, subfileIndex );
+			if ( this.storage[ fileIndex ] == null )
+			{
+				this.storage[ fileIndex ] = new Entry();
+				await this.storage[ fileIndex ].Read( await base.GetFile( fileIndex ) );
+			}
 
-			// use modified
-			return await this.storage[ fileIndex ].Save();
+			return this.storage[ fileIndex ].Data;
 		}
 
-		//public byte[] this[ int file ]
-		//{
-		public override async Task<byte[][]> GetFiles()
+		public override Task<byte[][]> GetFiles()
+			=> Task.WhenAll( Enumerable.Range( 0, this.FileCount ).Select( i => this.GetFile( i ) ) );
+
+		public override async Task SetFiles( byte[][] files )
 		{
-			byte[][] files = new byte[ this.FileCount ][];
+			if ( files.Length != this.FileCount )
+				throw new NotSupportedException( "Cannot change number of entries" );
 
-			for ( int i = 0; i < this.FileCount; i++ )
+			for ( int i = 0; i < files.Length; i++ )
 			{
-				if ( i > this.FileCount )
-					throw new ArgumentException();
-
 				if ( this.storage[ i ] == null )
-					this.storage[ i ] = new Entry( await this.GetFile( i ) );
+					await this.GetFile( i );
 
-				files[ i ] = this.storage[ i ].Data;
+				// ReSharper disable once PossibleNullReferenceException
+				this.storage[ i ].Data = files[ i ];
 			}
 
-			return files;
+			await base.SetFiles( await Task.WhenAll( this.storage.Select( e => e.Save() ) ) );
 		}
-
-		public override Task SetFiles( byte[][] files )
-		{
-			for ( int file = 0; file < files.Length; file++ )
-			{
-				if ( this.storage[ file ] == null )
-					this.storage[ file ] = new Entry( files[ file ] );
-
-				this.storage[ file ].Data = files[ file ];
-				this.storage[ file ].Saved = true;
-			}
-
-			return Task.CompletedTask;
-		}
-
-		//}
 	}
 }

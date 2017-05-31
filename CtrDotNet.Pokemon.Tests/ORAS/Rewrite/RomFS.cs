@@ -76,7 +76,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 		[ Test ]
 		public async Task RewritePokemonInfo()
 		{
-			var garcPersonal = await ORASConfig.GameConfig.GetGarcData( GarcNames.PokemonInfo );
+			var garcPersonal = await ORASConfig.GameConfig.GetGarc( GarcNames.PokemonInfo );
 
 			await this.TestGarcStructure( garcPersonal, async () => {
 				var pokeInfo = await ORASConfig.GameConfig.GetPokemonInfo();
@@ -88,7 +88,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 		[ Test ]
 		public async Task RewriteLearnsets()
 		{
-			var garcLearnsets = await ORASConfig.GameConfig.GetGarcData( GarcNames.Learnsets );
+			var garcLearnsets = await ORASConfig.GameConfig.GetGarc( GarcNames.Learnsets );
 
 			await this.TestGarcStructure( garcLearnsets, async () => {
 				var learnsets = await ORASConfig.GameConfig.GetLearnsets();
@@ -101,7 +101,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 		[ Test ]
 		public async Task RewriteMoves()
 		{
-			var garcMoves = await ORASConfig.GameConfig.GetGarcData( GarcNames.Moves );
+			var garcMoves = await ORASConfig.GameConfig.GetGarc( GarcNames.Moves );
 
 			await this.TestGarcStructure( garcMoves, async () => {
 				var moves = await ORASConfig.GameConfig.GetMoves();
@@ -111,11 +111,37 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 
 				for ( int i = 0; i < files.Length; i++ )
 				{
-					string moveName = Moves.GetValue( i )?.Name ?? "NULL";
+					string moveName = Moves.GetValueFrom( i )?.Name ?? "NULL";
 					Assert.AreEqual( orig[ i ], files[ i ], $"Rewritten data for move {i} ({moveName}) did not match" );
 				}
 
 				await garcMoves.SetFile( 0, Mini.PackMini( files, "WD" ) );
+			} );
+		}
+
+		[ Test ]
+		public async Task RewriteEncounters()
+		{
+			var garcEncounters = await ORASConfig.GameConfig.GetGarc( GarcNames.EncounterData, useLz: true );
+
+			await this.TestGarcStructure( garcEncounters, async () => {
+				var encounters = ( await ORASConfig.GameConfig.GetEncounterData() ).ToArray();
+				byte[][] files = await garcEncounters.GetFiles();
+
+				for ( int i = 0; i < encounters.Length; i++ )
+				{
+					byte[] encounterBuffer = encounters[ i ].Write();
+					// Last file is decStorage
+					const int offset = 0xE;
+					byte[] decStorageData = files[ files.Length - 1 ];
+					int entryPointer = BitConverter.ToInt32( decStorageData, ( i + 1 ) * sizeof( int ) ) + offset;
+
+					Array.Copy( encounterBuffer, 0, decStorageData, entryPointer, encounterBuffer.Length - offset );
+
+					files[ i ] = encounterBuffer;
+				}
+
+				await garcEncounters.SetFiles( files );
 			} );
 		}
 	}

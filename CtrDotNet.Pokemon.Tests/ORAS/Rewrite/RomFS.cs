@@ -136,7 +136,9 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 					byte[] decStorageData = files[ files.Length - 1 ];
 					int entryPointer = BitConverter.ToInt32( decStorageData, ( i + 1 ) * sizeof( int ) ) + offset;
 
-					Array.Copy( encounterBuffer, 0, decStorageData, entryPointer, encounterBuffer.Length - offset );
+					Array.Copy( encounterBuffer, 0,
+								decStorageData, entryPointer,
+								encounters[ i ].DataLength );
 
 					files[ i ] = encounterBuffer;
 				}

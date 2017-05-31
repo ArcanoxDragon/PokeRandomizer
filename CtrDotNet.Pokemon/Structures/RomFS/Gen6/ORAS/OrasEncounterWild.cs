@@ -38,9 +38,9 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6.ORAS
 		public OrasEncounterWild( GameVersion gameVersion, int zoneId ) : base( gameVersion, zoneId ) { }
 
 		protected override int DataStart => 0xE;
-		protected override int DataLength => 0xF4;
+		public override int DataLength => 0xF4;
 
-		protected override int NumEntries => NumTallGrass +
+		public override int NumEntries => NumTallGrass +
 											 NumVeryTallGrass +
 											 NumSwarm +
 											 NumSurf +

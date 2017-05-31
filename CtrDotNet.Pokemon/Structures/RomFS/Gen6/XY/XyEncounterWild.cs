@@ -42,9 +42,9 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6.XY
 		public XyEncounterWild( GameVersion gameVersion, int zoneId ) : base( gameVersion, zoneId ) { }
 
 		protected override int DataStart => 0xE;
-		protected override int DataLength => 0x178;
+		public override int DataLength => 0x178;
 
-		protected override int NumEntries => NumTallGrass +
+		public override int NumEntries => NumTallGrass +
 											 NumYellowFlowers +
 											 NumPurpleFlowers +
 											 NumRedFlowers +

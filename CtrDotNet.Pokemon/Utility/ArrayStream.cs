@@ -41,7 +41,7 @@ namespace CtrDotNet.Pokemon.Utility
 
 		public T[] Read( int count )
 		{
-			this.AssertEnd( this.Position + count, "read" );
+			this.AssertEnd( this.Position + count - 1, "read" );
 			T[] ret = this.array.Skip( this.Position ).Take( count ).ToArray();
 			this.Position += count;
 
@@ -50,7 +50,7 @@ namespace CtrDotNet.Pokemon.Utility
 
 		public void Write( T[] data )
 		{
-			this.AssertEnd( this.Position + data.Length, "write" );
+			this.AssertEnd( this.Position + data.Length - 1, "write" );
 
 			data.CopyTo( this.array, this.Position );
 

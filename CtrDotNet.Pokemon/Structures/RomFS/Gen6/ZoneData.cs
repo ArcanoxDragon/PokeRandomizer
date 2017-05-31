@@ -8,11 +8,10 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 	{
 		#region Static
 
-		private const int DataOffset = 0x1C;
-
 		public class Entry : BaseDataStructure
 		{
 			public const int Size = 0x38;
+			private const int IdOffset = 0x1C;
 
 			public Entry( GameVersion gameVersion ) : base( gameVersion ) { }
 
@@ -20,6 +19,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 
 			protected override void ReadData( BinaryReader br )
 			{
+				br.BaseStream.Seek( IdOffset, SeekOrigin.Begin );
 				this.ZoneId = (ushort) ( br.ReadUInt16() & 0x1FF );
 			}
 		}
@@ -34,9 +34,8 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 
 		protected override void ReadData( BinaryReader br )
 		{
-			br.BaseStream.Seek( DataOffset, SeekOrigin.Begin );
-
-			int numEntries = (int) ( ( br.BaseStream.Length - DataOffset ) / Entry.Size );
+			int numEntries = (int) ( br.BaseStream.Length / Entry.Size );
+			this.Entries = new Entry[ numEntries ];
 
 			for ( int i = 0; i < numEntries; i++ )
 			{

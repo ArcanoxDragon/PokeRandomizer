@@ -25,7 +25,7 @@ namespace CtrDotNet.Pokemon.Tests.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Brian\\Documents\\3DS\\Unpacked\\Pokemon OmegaRuby\\Vanilla")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Arcanox\\Documents\\3DS\\OmegaRuby\\Unpacked\\Vanilla")]
         public string RomPathORAS {
             get {
                 return ((string)(this["RomPathORAS"]));

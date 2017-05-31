@@ -72,10 +72,11 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 		}
 
 		public int ZoneId { get; }
+		public bool HasEntries { get; private set; }
 
 		protected abstract int DataStart { get; }
-		protected abstract int DataLength { get; }
-		protected abstract int NumEntries { get; }
+		public abstract int DataLength { get; }
+		public abstract int NumEntries { get; }
 
 		public Entry[] GetAllEntries() => this.AssembleEntries();
 
@@ -94,14 +95,17 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 			int dataEnd = br.ReadInt32();
 			int totalLength = dataEnd - this.actualDataStart;
 
-			if ( totalLength < this.DataLength )
-				return; // No encounter data
-
 			this.header = new byte[ this.actualDataStart ];
 			br.BaseStream.Seek( 0, SeekOrigin.Begin );
 			br.Read( this.header, 0, this.actualDataStart );
 
+			if ( totalLength < this.DataLength )
+				return; // No encounter data
+
 			Entry[] entries = new Entry[ this.NumEntries ];
+			this.HasEntries = true;
+
+			entries.Fill( () => new Entry( this.GameVersion ) );
 
 			for ( int i = 0; i < this.NumEntries; i++ )
 			{
@@ -126,12 +130,15 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 			bw.Write( this.actualDataStart - this.DataStart );
 			bw.BaseStream.Seek( this.actualDataStart, SeekOrigin.Begin );
 
-			this.AssembleEntries().ForEach( entry => {
-				byte[] entryData = entry.Write();
-				bw.Write( entryData, 0, entryData.Length );
-			} );
+			if ( this.HasEntries )
+			{
+				this.AssembleEntries().ForEach( entry => {
+					byte[] entryData = entry.Write();
+					bw.Write( entryData, 0, entryData.Length );
+				} );
 
-			bw.Write( this.footer, 0, this.footer.Length );
+				bw.Write( this.footer, 0, this.footer.Length );
+			}
 		}
 
 		protected abstract void ProcessEntries( Entry[] entries );

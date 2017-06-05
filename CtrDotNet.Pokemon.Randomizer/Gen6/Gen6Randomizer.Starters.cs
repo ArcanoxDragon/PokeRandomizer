@@ -2,23 +2,27 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Data;
-using CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters;
 using CtrDotNet.Pokemon.Utility;
+using Starters = CtrDotNet.Pokemon.Randomization.Legality.Starters;
 
-namespace CtrDotNet.Pokemon.Randomizer.Gen6
+namespace CtrDotNet.Pokemon.Randomization.Gen6
 {
-	public partial class Gen6Randomizer
+	public abstract partial class Gen6Randomizer
 	{
 		public override async Task RandomizeStarters()
 		{
-			Starters starters = await this.Game.GetStarters();
-			List<SpeciesType> chosen = new List<SpeciesType>( starters.Generations.Count() * 3 );
+			var config = this.RandomizerConfig.Starters;
+			var starters = await this.Game.GetStarters();
+			var species = Species.AllSpecies.ToList();
+			var chosen = new List<SpeciesType>( starters.Generations.Count() * 3 );
+
+			if ( config.StartersOnly )
+				species = species.Intersect( Starters.AllStarters )
+								 .ToList();
 
 			for ( int i = 0; i < chosen.Capacity; i++ )
 			{
-				SpeciesType ret = this.GetRandomSpecies( sp => this.RandomizerConfig.Starters.StartersOnly
-																   ? sp.Intersect( Legality.Starters.AllStarters )
-																   : sp, chosen );
+				var ret = this.GetRandomSpecies( species.Except( chosen ) );
 
 				chosen.Add( ret );
 			}
@@ -27,6 +31,8 @@ namespace CtrDotNet.Pokemon.Randomizer.Gen6
 				for ( int i = 0; i < 3; i++ )
 					starters[ gen ][ i ] = (ushort) chosen[ genIndex * 3 + i ];
 			} );
+
+			await this.Game.SaveStarters( starters );
 		}
 	}
 }

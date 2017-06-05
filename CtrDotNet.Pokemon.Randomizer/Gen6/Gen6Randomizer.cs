@@ -1,11 +1,6 @@
-﻿using CtrDotNet.Pokemon.Game;
-using CtrDotNet.Pokemon.Randomizer.Common;
-using CtrDotNet.Pokemon.Randomizer.Config;
+﻿using CtrDotNet.Pokemon.Randomization.Common;
 
-namespace CtrDotNet.Pokemon.Randomizer.Gen6
+namespace CtrDotNet.Pokemon.Randomization.Gen6
 {
-	public partial class Gen6Randomizer : BaseRandomizer
-	{
-		public Gen6Randomizer( GameConfig game, RandomizerConfig randomizerConfig ) : base( game, randomizerConfig ) { }
-	}
+	public abstract partial class Gen6Randomizer : BaseRandomizer { }
 }

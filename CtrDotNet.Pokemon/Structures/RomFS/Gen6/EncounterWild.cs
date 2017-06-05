@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Structures.RomFS.Gen6.ORAS;
@@ -11,7 +12,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 	{
 		#region Static
 
-		private const int DataOffset = 0x10;
+		public const int DataOffset = 0x10;
 
 		public class Entry : BaseDataStructure
 		{
@@ -44,6 +45,42 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 				bw.Write( this.MinLevel );
 				bw.Write( this.MaxLevel );
 			}
+
+			#region Equality
+
+			protected bool Equals( Entry other )
+			{
+				return this.Species == other.Species && this.Form == other.Form;
+			}
+
+			public override bool Equals( object obj )
+			{
+				if ( object.ReferenceEquals( null, obj ) )
+					return false;
+				if ( object.ReferenceEquals( this, obj ) )
+					return true;
+				return obj.GetType() == this.GetType() && this.Equals( (Entry) obj );
+			}
+
+			public override int GetHashCode()
+			{
+				unchecked
+				{
+					return ( this.Species.GetHashCode() * 397 ) ^ this.Form.GetHashCode();
+				}
+			}
+
+			public static bool operator ==( Entry left, Entry right )
+			{
+				return object.Equals( left, right );
+			}
+
+			public static bool operator !=( Entry left, Entry right )
+			{
+				return !object.Equals( left, right );
+			}
+
+			#endregion
 		}
 
 		public static EncounterWild New( GameVersion version, int zoneId )
@@ -62,8 +99,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 
 		#endregion
 
-		private byte[] header;
-		private byte[] footer;
+		private byte[] buffer;
 		private int actualDataStart;
 
 		protected EncounterWild( GameVersion gameVersion, int zoneId ) : base( gameVersion )
@@ -74,11 +110,12 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 		public int ZoneId { get; }
 		public bool HasEntries { get; private set; }
 
-		protected abstract int DataStart { get; }
+		public abstract int DataStart { get; }
 		public abstract int DataLength { get; }
 		public abstract int NumEntries { get; }
+		public abstract Entry[][] EntryArrays { get; set; }
 
-		public Entry[] GetAllEntries() => this.AssembleEntries();
+		public IEnumerable<Entry> GetAllEntries() => this.AssembleEntries();
 
 		public void SetAllEntries( Entry[] entries )
 		{
@@ -89,15 +126,15 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 
 		protected override void ReadData( BinaryReader br )
 		{
+			this.buffer = new byte[ br.BaseStream.Length ];
+			br.Read( this.buffer, 0, this.buffer.Length );
+
 			br.BaseStream.Seek( DataOffset, SeekOrigin.Begin );
 
 			this.actualDataStart = br.ReadInt32() + this.DataStart;
 			int dataEnd = br.ReadInt32();
 			int totalLength = dataEnd - this.actualDataStart;
-
-			this.header = new byte[ this.actualDataStart ];
-			br.BaseStream.Seek( 0, SeekOrigin.Begin );
-			br.Read( this.header, 0, this.actualDataStart );
+			br.BaseStream.Seek( this.actualDataStart, SeekOrigin.Begin );
 
 			if ( totalLength < this.DataLength )
 				return; // No encounter data
@@ -116,15 +153,11 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 			}
 
 			this.ProcessEntries( entries );
-
-			int footerLength = (int) ( br.BaseStream.Length - br.BaseStream.Position );
-			this.footer = new byte[ footerLength ];
-			br.Read( this.footer, 0, footerLength );
 		}
 
 		protected override void WriteData( BinaryWriter bw )
 		{
-			bw.Write( this.header, 0, this.header.Length );
+			bw.Write( this.buffer, 0, this.buffer.Length );
 			bw.BaseStream.Seek( DataOffset, SeekOrigin.Begin );
 
 			bw.Write( this.actualDataStart - this.DataStart );
@@ -136,12 +169,10 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 					byte[] entryData = entry.Write();
 					bw.Write( entryData, 0, entryData.Length );
 				} );
-
-				bw.Write( this.footer, 0, this.footer.Length );
 			}
 		}
 
 		protected abstract void ProcessEntries( Entry[] entries );
-		protected abstract Entry[] AssembleEntries();
+		protected abstract IEnumerable<Entry> AssembleEntries();
 	}
 }

@@ -13,13 +13,13 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 				return;
 			this.Data = data;
 
-			this.TMHM = PokemonInfo.GetBits( this.Data.Skip( 0x28 ).Take( 0x10 ).ToArray() ); // 36-39
+			this.TmHm = PokemonInfo.GetBits( this.Data.Skip( 0x28 ).Take( 0x10 ).ToArray() ); // 36-39
 			this.TypeTutors = PokemonInfo.GetBits( this.Data.Skip( 0x38 ).Take( 0x4 ).ToArray() ); // 40
 		}
 
 		public override byte[] Write()
 		{
-			PokemonInfo.SetBits( this.TMHM ).CopyTo( this.Data, 0x28 );
+			PokemonInfo.SetBits( this.TmHm ).CopyTo( this.Data, 0x28 );
 			PokemonInfo.SetBits( this.TypeTutors ).CopyTo( this.Data, 0x38 );
 			return this.Data;
 		}

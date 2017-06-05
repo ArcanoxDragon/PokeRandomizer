@@ -16,8 +16,6 @@ namespace CtrDotNet.CTR.Garc
 			public byte[] Data { get; set; }
 			public bool WasCompressed { get; set; }
 
-			public Entry() { }
-
 			public async Task Read( byte[] data )
 			{
 				this.Data = data;
@@ -53,9 +51,10 @@ namespace CtrDotNet.CTR.Garc
 				byte[] data;
 				try
 				{
+					using ( MemoryStream oldMS = new MemoryStream( this.Data ) )
 					using ( MemoryStream newMS = new MemoryStream() )
 					{
-						await Lzss.Compress( new MemoryStream( this.Data ), this.Data.Length, newMS, original: true );
+						await Lzss.Compress( oldMS, this.Data.Length, newMS, original: true );
 						data = newMS.ToArray();
 					}
 				}
@@ -73,22 +72,20 @@ namespace CtrDotNet.CTR.Garc
 
 		internal LzGarc() { }
 
-		public override void Read( byte[] data )
+		public override async Task Read( byte[] data )
 		{
-			base.Read( data );
+			await base.Read( data );
 			this.storage = new Entry[ this.FileCount ];
-		}
 
-		protected override async Task<byte[]> GetFile( int fileIndex, int subfileIndex = 0 )
-		{
-			if ( this.storage[ fileIndex ] == null )
+			for ( int i = 0; i < this.FileCount; i++ )
 			{
-				this.storage[ fileIndex ] = new Entry();
-				await this.storage[ fileIndex ].Read( await base.GetFile( fileIndex ) );
+				this.storage[ i ] = new Entry();
+				await this.storage[ i ].Read( await base.GetFile( i, 0 ) );
 			}
-
-			return this.storage[ fileIndex ].Data;
 		}
+
+		public override Task<byte[]> GetFile( int fileIndex, int subfileIndex )
+			=> Task.FromResult( this.storage[ fileIndex ].Data );
 
 		public override Task<byte[][]> GetFiles()
 			=> Task.WhenAll( Enumerable.Range( 0, this.FileCount ).Select( i => this.GetFile( i ) ) );
@@ -108,6 +105,29 @@ namespace CtrDotNet.CTR.Garc
 			}
 
 			await base.SetFiles( await Task.WhenAll( this.storage.Select( e => e.Save() ) ) );
+		}
+
+		public override async Task SetFile( int file, byte[] data )
+		{
+			if ( file < 0 || file >= this.FileCount )
+				throw new ArgumentOutOfRangeException( nameof(file), "File index not valid" );
+
+			if ( this.storage[ file ] == null )
+				await this.GetFile( file );
+
+			// ReSharper disable once PossibleNullReferenceException
+			this.storage[ file ].Data = data;
+
+			await base.SetFile( file, await this.storage[ file ].Save() );
+		}
+
+		public override async Task SaveFile()
+		{
+			byte[][] data = await Task.WhenAll( this.storage.Select( ( s, i ) => s.Save() ) );
+
+			var memGarc = await GarcUtil.PackGarc( data, this.Def.Version, (int) this.Def.ContentPadToNearest );
+			this.Def = memGarc.Def;
+			this.Data = memGarc.Data;
 		}
 	}
 }

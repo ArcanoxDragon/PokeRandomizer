@@ -1,4 +1,5 @@
-﻿using CtrDotNet.Pokemon.Utility;
+﻿using System.Linq;
+using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 {
@@ -55,7 +56,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 		public double HeightM => this.Height / 100.0;
 		public double WeightKg => this.Weight / 10.0;
 
-		public bool[] TMHM { get; set; }
+		public bool[] TmHm { get; set; }
 		public bool[] TypeTutors { get; set; }
 		public bool[][] SpecialTutors { get; set; } = new bool[ 0 ][];
 
@@ -71,7 +72,9 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 		{
 			byte[] data = new byte[ bits.Length / 8 ];
 			for ( int i = 0; i < bits.Length; i++ )
-				data[ i / 8 ] |= (byte) ( bits[ i ] ? 1 << ( i & 0x7 ) : 0 );
+				data[ i / 8 ] |= (byte) ( bits[ i ]
+											  ? 1 << ( i & 0x7 )
+											  : 0 );
 			return data;
 		}
 
@@ -108,5 +111,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 
 		public bool HasFormes => this.FormeCount > 1;
 		public int BaseStat => this.HP + this.Attack + this.Defense + this.Speed + this.SpecialAttack + this.SpecialDefense;
+
+		public bool HasType( PokemonType type ) => this.Types.Any( t => t == type.TypeId );
 	}
 }

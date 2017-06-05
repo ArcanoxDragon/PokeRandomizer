@@ -5,44 +5,55 @@ using System.Linq;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Game;
-using CtrDotNet.Pokemon.Randomizer.Config;
+using CtrDotNet.Pokemon.Randomization.Config;
+using CtrDotNet.Pokemon.Randomization.Utility;
 
-namespace CtrDotNet.Pokemon.Randomizer.Common
+namespace CtrDotNet.Pokemon.Randomization.Common
 {
 	public abstract class BaseRandomizer : IRandomizer
 	{
 		protected readonly Random rand;
 
-		protected BaseRandomizer( GameConfig game, RandomizerConfig randomizerConfig )
+		protected BaseRandomizer()
 		{
 			this.rand = new Random();
+		}
 
+		public GameConfig Game { get; private set; }
+		public RandomizerConfig RandomizerConfig { get; private set; }
+
+		public void Initialize( GameConfig game, RandomizerConfig randomizerConfig )
+		{
 			this.Game = game;
 			this.RandomizerConfig = randomizerConfig;
 		}
 
-		public GameConfig Game { get; }
-		public RandomizerConfig RandomizerConfig { get; }
+		public async Task RandomizeAll()
+		{
+			await this.RandomizeStarters();
+			await this.RandomizeEncounters();
+			await this.RandomizeLearnsets();
+		}
+
+		#region Randomization tasks
 
 		public abstract Task RandomizeStarters();
+		public abstract Task RandomizeEncounters();
+		public abstract Task RandomizeLearnsets();
+
+		#endregion
 
 		#region Helpers
 
-		public SpeciesType GetRandomSpecies( Func<IEnumerable<SpeciesType>, IEnumerable<SpeciesType>> selector = null, IEnumerable<SpeciesType> excluded = null )
+		public SpeciesType GetRandomSpecies( IEnumerable<SpeciesType> chooseFrom )
 		{
-			selector = selector ?? ( s => s );
-			excluded = excluded ?? Enumerable.Empty<SpeciesType>();
+			var available = chooseFrom.Where( st => st.Id <= this.Game.Version.GetInfo().SpeciesCount )
+									  .ToList();
 
-			IEnumerable<SpeciesType> available = Species.AllSpecies
-														.Where( st => st.Id <= this.Game.Version.GetInfo().SpeciesCount )
-														.Except( excluded );
-
-			IList<SpeciesType> chooseFrom = selector( available ).ToList();
-
-			if ( chooseFrom.Count <= 0 )
+			if ( available.Count <= 0 )
 				throw new InvalidDataException( "No species available matching the given constraints" );
 
-			return chooseFrom.Skip( this.rand.Next( chooseFrom.Count ) ).First();
+			return available.GetRandom( this.rand );
 		}
 
 		#endregion

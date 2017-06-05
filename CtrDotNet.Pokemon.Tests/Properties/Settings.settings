@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="RomPathORAS" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">C:\Users\Brian\Documents\3DS\Unpacked\Pokemon OmegaRuby\Vanilla</Value>
     </Setting>
   </Settings>
 </SettingsFile>

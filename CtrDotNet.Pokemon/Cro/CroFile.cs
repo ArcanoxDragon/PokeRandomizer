@@ -67,12 +67,14 @@ namespace CtrDotNet.Pokemon.Cro
 
 		public async Task SaveFileTo( string path )
 		{
-			if ( IO.Path.GetExtension( path )?.ToLower() != ".cro" )
-				path = IO.Path.Combine( path, IO.Path.GetFileName( this.Path ) );
-
+			string filename = IO.Path.GetFileName( this.Path );
+			string outPath = IO.Path.Combine( path, "RomFS" );
 			byte[] data = this.SafeGetBuffer();
 
-			using ( var fs = new IO.FileStream( path, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None ) )
+			if ( !IO.Directory.Exists( outPath ) )
+				IO.Directory.CreateDirectory( outPath );
+
+			using ( var fs = new IO.FileStream( IO.Path.Combine( outPath, filename ), IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None ) )
 				await fs.WriteAsync( data, 0, data.Length );
 		}
 

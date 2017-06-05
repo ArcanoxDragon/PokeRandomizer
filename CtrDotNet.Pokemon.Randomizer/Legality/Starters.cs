@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Utility;
 
-namespace CtrDotNet.Pokemon.Randomizer.Legality
+namespace CtrDotNet.Pokemon.Randomization.Legality
 {
 	public static class Starters
 	{

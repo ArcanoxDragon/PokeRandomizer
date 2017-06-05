@@ -4,19 +4,21 @@ using System.Threading.Tasks;
 
 namespace CtrDotNet.CTR.Garc
 {
-	public abstract class BaseGarc
+	public abstract class BaseGarc : IGarcFile
 	{
-		protected BaseGarc() { }
-
 		public byte[] Data { get; protected set; }
 		public GarcDef Def { get; protected set; }
 		public int FileCount => this.Def.Fato.EntryCount;
 
-		public virtual void Read( byte[] data )
+		public virtual Task Read( byte[] data )
 		{
 			this.Data = data;
-			this.Def = CTR.Garc.GarcUtil.UnpackGarc( data );
+			this.Def = GarcUtil.UnpackGarc( data );
+
+			return Task.CompletedTask;
 		}
+
+		public virtual Task<byte[]> Write() => Task.FromResult( this.Data );
 
 		public virtual async Task<byte[][]> GetFiles()
 		{
@@ -33,12 +35,12 @@ namespace CtrDotNet.CTR.Garc
 			if ( files == null || files.Length != this.FileCount )
 				throw new ArgumentException();
 
-			var memGarc = await CTR.Garc.GarcUtil.PackGarc( files, this.Def.Version, (int) this.Def.ContentPadToNearest );
+			var memGarc = await GarcUtil.PackGarc( files, this.Def.Version, (int) this.Def.ContentPadToNearest );
 			this.Def = memGarc.Def;
 			this.Data = memGarc.Data;
 		}
 
-		protected virtual async Task<byte[]> GetFile( int file, int subfile = 0 )
+		public virtual async Task<byte[]> GetFile( int file, int subfile )
 		{
 			var entry = this.Def.Fatb.Entries[ file ];
 			var subEntry = entry.SubEntries[ subfile ];
@@ -58,7 +60,16 @@ namespace CtrDotNet.CTR.Garc
 			return data;
 		}
 
-		public async Task<byte[]> Save()
+		public Task<byte[]> GetFile( int file ) => this.GetFile( file, 0 );
+
+		public virtual async Task SetFile( int file, byte[] data )
+		{
+			byte[][] files = await this.GetFiles();
+			files[ file ] = data;
+			await this.SetFiles( files );
+		}
+
+		public virtual async Task SaveFile()
 		{
 			byte[][] data = new byte[ this.FileCount ][];
 
@@ -70,7 +81,8 @@ namespace CtrDotNet.CTR.Garc
 			var memGarc = await GarcUtil.PackGarc( data, this.Def.Version, (int) this.Def.ContentPadToNearest );
 			this.Def = memGarc.Def;
 			this.Data = memGarc.Data;
-			return this.Data;
 		}
+
+		public virtual Task SaveFileTo( string path ) => this.SaveFile();
 	}
 }

@@ -1,13 +1,9 @@
 ﻿using CtrDotNet.Pokemon.Game;
-using CtrDotNet.Pokemon.Randomizer.Config;
-using CtrDotNet.Pokemon.Randomizer.Reflection;
+using CtrDotNet.Pokemon.Randomization.Reflection;
 
-namespace CtrDotNet.Pokemon.Randomizer.Gen6.ORAS
+namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 {
 	[ HandlesGame( GameVersion.ORAS ) ]
 	[ HandlesGame( GameVersion.ORASDemo ) ]
-	public class OrasRandomizer : Gen6Randomizer
-	{
-		public OrasRandomizer( GameConfig game, RandomizerConfig randomizerConfig ) : base( game, randomizerConfig ) { }
-	}
+	public partial class OrasRandomizer : Gen6Randomizer { }
 }

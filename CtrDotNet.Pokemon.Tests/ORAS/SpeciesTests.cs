@@ -26,7 +26,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 
 			TestContext.Out.WriteLine( "Bulbasaur can learn the following TMs:" );
 
-			foreach ( var (_, tm) in bulbasaurInfo.TMHM
+			foreach ( var (_, tm) in bulbasaurInfo.TmHm
 												  .Select( ( b, i ) => (b, i) )
 												  .Where( t => t.Item1 ) )
 			{

@@ -175,14 +175,15 @@ namespace CtrDotNet.Pokemon.Game
 			} );
 		}
 
-		public async Task SaveLearnsets( IList<Learnset> learnsets )
+		public async Task SaveLearnsets( IEnumerable<Learnset> learnsets )
 		{
+			var list = learnsets.ToList();
 			var garcLearnsets = await this.GetGarc( GarcNames.Learnsets );
 
-			foreach ( Learnset l in learnsets )
+			foreach ( Learnset l in list )
 				Assertions.AssertVersion( this.Version, l.GameVersion );
 
-			byte[][] files = learnsets.Select( l => l.Write() ).ToArray();
+			byte[][] files = list.Select( l => l.Write() ).ToArray();
 
 			await garcLearnsets.SetFiles( files );
 			await this.SaveFile( garcLearnsets );
@@ -212,6 +213,12 @@ namespace CtrDotNet.Pokemon.Game
 			TextFile tf = new TextFile( this.Version, this.Variables );
 			tf.Read( file );
 			return tf;
+		}
+
+		public Task<TextFile> GetGameText( TextNames name )
+		{
+			var reference = this.GetTextReference( name );
+			return this.GetGameText( reference.Index );
 		}
 
 		public async Task SaveGameText( IEnumerable<TextFile> textFiles )
@@ -274,6 +281,16 @@ namespace CtrDotNet.Pokemon.Game
 
 		#endregion
 
+		#region Types
+
+		public async Task<PokemonType[]> GetTypes()
+		{
+			TextFile typeNames = await this.GetGameText( this.GetTextReference( TextNames.Types ).Index );
+			return typeNames.Lines.Select( ( l, i ) => new PokemonType { Name = l, TypeId = i } ).ToArray();
+		}
+
+		#endregion
+
 		#region Encounter Data
 
 		public async Task<IEnumerable<Gen6.EncounterWild>> GetEncounterData()
@@ -282,7 +299,7 @@ namespace CtrDotNet.Pokemon.Game
 
 			// All but last two files are the encounter data
 			byte[][] encounterBuffers = ( await encounterGarc.GetFiles() ).Take( encounterGarc.Garc.FileCount - 2 ).ToArray();
-
+			
 			// Second-to-last file is zone data
 			byte[] zoneDataBuffer = await encounterGarc.GetFile( encounterGarc.Garc.FileCount - 2 );
 			Gen6.ZoneData zoneData = new Gen6.ZoneData( this.Version );
@@ -300,31 +317,38 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task SaveEncounterData( IEnumerable<Gen6.EncounterWild> encounters )
 		{
-			var encounterGarc = await this.GetGarc( GarcNames.EncounterData, useLz: true );
+			var garcEncounters = await this.GetGarc( GarcNames.EncounterData, useLz: true );
 			Gen6.EncounterWild[] array = encounters.ToArray();
-			byte[][] files = await encounterGarc.GetFiles();
+			byte[][] files = await garcEncounters.GetFiles();
 
-			Assertions.AssertLength( encounterGarc.Garc.FileCount - 2, array, exact: true );
+			Assertions.AssertLength( garcEncounters.Garc.FileCount - 2, array, exact: true );
 
 			for ( int i = 0; i < array.Length; i++ )
 			{
+				if ( !array[ i ].HasEntries )
+					continue;
+
 				byte[] encounterBuffer = array[ i ].Write();
 
-				if ( this.Version.IsORAS() ) // Not really sure why this is necessary, but pk3DS does it
+				if ( this.Version.IsORAS() ) // Have to write encounter zone data to DexNav database too
 				{
-					// Last file is decStorage
-					const int offset = 0xE;
-					byte[] decStorageData = files[ files.Length - 1 ];
-					int entryPointer = BitConverter.ToInt32( decStorageData, ( i + 1 ) * sizeof( int ) ) + offset;
+					// Last file is dexNavData
+					const int Offset = 0xE;
+					byte[] dexNavData = files[ files.Length - 1 ];
+					int entryPointer = BitConverter.ToInt32( dexNavData, ( i + 1 ) * sizeof( int ) ) + Offset;
 
-					Array.Copy( encounterBuffer, 0, decStorageData, entryPointer, encounterBuffer.Length - offset );
+					int dataPointer = BitConverter.ToInt32( encounterBuffer, Gen6.EncounterWild.DataOffset );
+					dataPointer += array[ i ].DataStart;
+					int dataLength = array[ i ].GetAllEntries().Count() * Gen6.EncounterWild.Entry.Size;
+
+					Array.Copy( encounterBuffer, dataPointer, dexNavData, entryPointer, dataLength );
 				}
 
 				files[ i ] = encounterBuffer;
 			}
 
-			await encounterGarc.SetFiles( files );
-			await this.SaveFile( encounterGarc );
+			await garcEncounters.SetFiles( files );
+			await this.SaveFile( garcEncounters );
 		}
 
 		#endregion
@@ -447,7 +471,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public TextVariableCode GetVariableName( int value ) => this.Variables.FirstOrDefault( v => v.Code == value );
 
-		public TextReference GetGameText( TextNames name ) => this.GameText.FirstOrDefault( f => f.Name == name );
+		public TextReference GetTextReference( TextNames name ) => this.GameText.FirstOrDefault( f => f.Name == name );
 
 		public bool IsRebuildable( int fileCount )
 		{

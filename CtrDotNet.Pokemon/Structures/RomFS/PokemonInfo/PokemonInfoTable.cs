@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CtrDotNet.Pokemon.Data;
@@ -7,7 +9,7 @@ using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 {
-	public class PokemonInfoTable : BaseDataStructure
+	public class PokemonInfoTable : BaseDataStructure, IEnumerable<PokemonInfo>
 	{
 		private readonly int entrySize;
 
@@ -28,6 +30,8 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 					break;
 			}
 		}
+
+		#region BaseDataStructure implementation
 
 		protected override void ReadData( BinaryReader br )
 		{
@@ -73,11 +77,25 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			}
 		}
 
+		#endregion
+
+		#region IEnumerable implementation
+
+		public IEnumerator<PokemonInfo> GetEnumerator() => this.Table.AsEnumerable().GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator() => this.Table.GetEnumerator();
+
+		#endregion
+
+		#region Querying helpers
+
 		public PokemonInfo[] Table { get; private set; }
 
 		public PokemonInfo this[ int index ]
 		{
-			get => index >= 0 && index < this.Table.Length ? this.Table[ index ] : this.Table[ 0 ];
+			get => index >= 0 && index < this.Table.Length
+					   ? this.Table[ index ]
+					   : this.Table[ 0 ];
 			set
 			{
 				if ( index < this.Table.Length )
@@ -88,6 +106,10 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 
 		public PokemonInfo this[ BaseSpeciesType species ] => this[ species.Id ];
 
+		#endregion
+
+		#region Ability helpers
+
 		public int[] GetAbilities( int species, int forme )
 		{
 			if ( species >= this.Table.Length )
@@ -97,6 +119,10 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			}
 			return this[ this.GetFormeIndex( species, forme ) ].Abilities;
 		}
+
+		#endregion
+
+		#region Forme helpers
 
 		public int GetFormeIndex( int species, int forme )
 		{
@@ -132,6 +158,27 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			return formList;
 		}
 
+		public int[] GetSpeciesForm( int personalEntry )
+		{
+			int maxSpecies = this.GameVersion.GetGeneration().GetInfo().SpeciesCount;
+
+			if ( personalEntry < maxSpecies )
+				return new[] { personalEntry, 0 };
+
+			for ( int i = 0; i < maxSpecies; i++ )
+			{
+				int formCount = this[ i ].FormeCount - 1; // Mons with no alt forms have a FormCount of 1.
+				var altformpointer = this[ i ].FormStatsIndex;
+				if ( altformpointer <= 0 )
+					continue;
+				for ( int j = 0; j < formCount; j++ )
+					if ( altformpointer + j == personalEntry )
+						return new[] { i, j };
+			}
+
+			return new[] { -1, -1 };
+		}
+
 		public string[] GetPersonalEntryList( string[][] altForms, string[] species, int maxSpecies, out int[] baseForm, out int[] formVal )
 		{
 			string[] result = new string[ this.Table.Length ];
@@ -156,25 +203,6 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			return result;
 		}
 
-		public int[] GetSpeciesForm( int personalEntry )
-		{
-			int maxSpecies = this.GameVersion.GetGeneration().GetInfo().SpeciesCount;
-
-			if ( personalEntry < maxSpecies )
-				return new[] { personalEntry, 0 };
-
-			for ( int i = 0; i < maxSpecies; i++ )
-			{
-				int formCount = this[ i ].FormeCount - 1; // Mons with no alt forms have a FormCount of 1.
-				var altformpointer = this[ i ].FormStatsIndex;
-				if ( altformpointer <= 0 )
-					continue;
-				for ( int j = 0; j < formCount; j++ )
-					if ( altformpointer + j == personalEntry )
-						return new[] { i, j };
-			}
-
-			return new[] { -1, -1 };
-		}
+		#endregion
 	}
 }

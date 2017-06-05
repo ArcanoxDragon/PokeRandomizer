@@ -1,6 +1,6 @@
-﻿namespace CtrDotNet.Pokemon.Randomizer.Config
+﻿namespace CtrDotNet.Pokemon.Randomization.Config
 {
-	public class StartersConfig
+	public class StartersConfig : IStarters
 	{
 		public bool StartersOnly { get; set; }
 	}

@@ -69,6 +69,7 @@
     <Compile Include="Structures\RomFS\Gen6\ORAS\OrasEncounterWild.cs" />
     <Compile Include="Structures\RomFS\Gen6\XY\XyEncounterWild.cs" />
     <Compile Include="Structures\RomFS\Gen6\ZoneData.cs" />
+    <Compile Include="Structures\RomFS\PokemonInfo\PokemonType.cs" />
     <Compile Include="Utility\ArrayStream.cs" />
     <Compile Include="Utility\Assertions.cs" />
     <Compile Include="Utility\Enumerable.cs" />

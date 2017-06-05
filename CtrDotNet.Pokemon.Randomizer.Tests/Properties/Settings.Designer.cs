@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace CtrDotNet.Pokemon.Tests.Properties {
+namespace CtrDotNet.Pokemon.Randomizer.Tests.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

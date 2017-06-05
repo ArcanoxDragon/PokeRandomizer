@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using CtrDotNet.CTR.Garc;
 using CtrDotNet.Pokemon.Reference;
 
@@ -21,6 +22,16 @@ namespace CtrDotNet.Pokemon.Garc
 		public Task SetFile( int file, byte[] data ) => this.Garc.SetFile( file, data );
 		public Task<byte[]> Write() => this.Garc.Write();
 		public Task SaveFile() => this.Garc.SaveFile();
-		public Task SaveFileTo( string path ) => this.Garc.SaveFileTo( path );
+
+		public Task SaveFileTo( string path )
+		{
+			string dirName = Path.GetDirectoryName( this.Reference.RomFsPath );
+			string outPath = Path.Combine( path, "RomFS", dirName );
+
+			if ( !Directory.Exists( outPath ) )
+				Directory.CreateDirectory( outPath );
+
+			return this.Garc.SaveFileTo( outPath );
+		}
 	}
 }

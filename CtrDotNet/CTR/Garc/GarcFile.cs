@@ -44,14 +44,9 @@ namespace CtrDotNet.CTR.Garc
 
 		public Task SetFiles( byte[][] files ) => this.GarcData.SetFiles( files );
 
-		public async Task SetFile( int file, byte[] data )
-		{
-			byte[][] files = await this.GetFiles();
-			files[ file ] = data;
-			await this.SetFiles( files );
-		}
+		public Task SetFile( int file, byte[] data ) => this.GarcData.SetFile( file, data );
 
-		public Task<byte[]> Write() => this.GarcData.Save();
+		public Task<byte[]> Write() => this.GarcData.Write();
 
 		public Task SaveFile() => this.SaveFileTo( IO.Path.GetDirectoryName( this.Path ) );
 
@@ -59,10 +54,10 @@ namespace CtrDotNet.CTR.Garc
 		{
 			string filename = IO.Path.GetFileName( this.Path );
 
-			byte[] data = await this.GarcData.Save();
+			await this.GarcData.SaveFile();
 
 			using ( var fs = new FileStream( IO.Path.Combine( path, filename ), FileMode.Create, FileAccess.Write, FileShare.None ) )
-				await fs.WriteAsync( data, 0, data.Length );
+				await fs.WriteAsync( this.GarcData.Data, 0, this.GarcData.Data.Length );
 		}
 	}
 }

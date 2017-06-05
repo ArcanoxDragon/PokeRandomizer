@@ -14,15 +14,15 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			this.Data = data;
 
 			// Unpack TMHM & Tutors
-			this.TMHM = PokemonInfo.GetBits( this.Data.Skip( 0x28 ).Take( 0x10 ).ToArray() );
-			this.TypeTutors = PokemonInfo.GetBits( this.Data.Skip( 0x38 ).Take( 0x4 ).ToArray() );
+			this.TmHm = GetBits( this.Data.Skip( 0x28 ).Take( 0x10 ).ToArray() );
+			this.TypeTutors = GetBits( this.Data.Skip( 0x38 ).Take( 0x4 ).ToArray() );
 			// 0x3C-0x40 unknown
 		}
 
 		public override byte[] Write()
 		{
-			PokemonInfo.SetBits( this.TMHM ).CopyTo( this.Data, 0x28 );
-			PokemonInfo.SetBits( this.TypeTutors ).CopyTo( this.Data, 0x38 );
+			SetBits( this.TmHm ).CopyTo( this.Data, 0x28 );
+			SetBits( this.TypeTutors ).CopyTo( this.Data, 0x38 );
 			return this.Data;
 		}
 

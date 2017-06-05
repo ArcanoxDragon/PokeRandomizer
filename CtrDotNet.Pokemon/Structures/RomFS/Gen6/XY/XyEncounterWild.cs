@@ -1,4 +1,5 @@
-﻿using CtrDotNet.Pokemon.Game;
+﻿using System.Collections.Generic;
+using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6.XY
@@ -39,24 +40,27 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6.XY
 
 		#endregion
 
-		public XyEncounterWild( GameVersion gameVersion, int zoneId ) : base( gameVersion, zoneId ) { }
+		public XyEncounterWild( GameVersion gameVersion, int zoneId ) : base( gameVersion, zoneId )
+		{
+			this.FillEmpty();
+		}
 
-		protected override int DataStart => 0xE;
+		public override int DataStart => 0xE;
 		public override int DataLength => 0x178;
 
 		public override int NumEntries => NumTallGrass +
-											 NumYellowFlowers +
-											 NumPurpleFlowers +
-											 NumRedFlowers +
-											 NumRoughTerrain +
-											 NumSurf +
-											 NumRockSmash +
-											 NumOldRod +
-											 NumGoodRod +
-											 NumSuperRod +
-											 NumHordeA +
-											 NumHordeB +
-											 NumHordeC;
+										  NumYellowFlowers +
+										  NumPurpleFlowers +
+										  NumRedFlowers +
+										  NumRoughTerrain +
+										  NumSurf +
+										  NumRockSmash +
+										  NumOldRod +
+										  NumGoodRod +
+										  NumSuperRod +
+										  NumHordeA +
+										  NumHordeB +
+										  NumHordeC;
 
 		public Entry[] TallGrass { get; private set; }
 		public Entry[] YellowFlowers { get; private set; }
@@ -71,6 +75,60 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6.XY
 		public Entry[] HordeA { get; private set; }
 		public Entry[] HordeB { get; private set; }
 		public Entry[] HordeC { get; private set; }
+
+		public override Entry[][] EntryArrays
+		{
+			get => new[] {
+				this.TallGrass,
+				this.YellowFlowers,
+				this.PurpleFlowers,
+				this.RedFlowers,
+				this.RoughTerrain,
+				this.Surf,
+				this.RockSmash,
+				this.OldRod,
+				this.GoodRod,
+				this.SuperRod,
+				this.HordeA,
+				this.HordeB,
+				this.HordeC
+			};
+			set
+			{
+				Assertions.AssertLength( 13, value, true );
+
+				this.TallGrass = value[ 0 ];
+				this.YellowFlowers = value[ 1 ];
+				this.PurpleFlowers = value[ 2 ];
+				this.RedFlowers = value[ 3 ];
+				this.RoughTerrain = value[ 4 ];
+				this.Surf = value[ 5 ];
+				this.RockSmash = value[ 6 ];
+				this.OldRod = value[ 7 ];
+				this.GoodRod = value[ 8 ];
+				this.SuperRod = value[ 9 ];
+				this.HordeA = value[ 10 ];
+				this.HordeB = value[ 11 ];
+				this.HordeC = value[ 12 ];
+			}
+		}
+
+		private void FillEmpty()
+		{
+			this.TallGrass = new Entry[ NumTallGrass ];
+			this.YellowFlowers = new Entry[ NumYellowFlowers ];
+			this.PurpleFlowers = new Entry[ NumPurpleFlowers ];
+			this.RedFlowers = new Entry[ NumRedFlowers ];
+			this.RoughTerrain = new Entry[ NumRoughTerrain ];
+			this.Surf = new Entry[ NumSurf ];
+			this.RockSmash = new Entry[ NumRockSmash ];
+			this.OldRod = new Entry[ NumOldRod ];
+			this.GoodRod = new Entry[ NumGoodRod ];
+			this.SuperRod = new Entry[ NumSuperRod ];
+			this.HordeA = new Entry[ NumHordeA ];
+			this.HordeB = new Entry[ NumHordeB ];
+			this.HordeC = new Entry[ NumHordeC ];
+		}
 
 		protected override void ProcessEntries( Entry[] entries )
 		{
@@ -95,7 +153,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6.XY
 			this.HordeC = stream.Read( NumHordeC );
 		}
 
-		protected override Entry[] AssembleEntries()
+		protected override IEnumerable<Entry> AssembleEntries()
 		{
 			Entry[] entries = new Entry[ this.NumEntries ];
 			ArrayStream<Entry> stream = new ArrayStream<Entry>( entries );

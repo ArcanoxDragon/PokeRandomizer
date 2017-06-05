@@ -49,12 +49,14 @@ namespace CtrDotNet.Pokemon.ExeFS
 
 		public async Task SaveFileTo( string path )
 		{
-			if ( IO.Path.GetExtension( path )?.ToLower() != ".bin" )
-				path = IO.Path.Combine( path, IO.Path.GetFileName( this.Path ) );
-
+			string filename = IO.Path.GetFileName( this.Path );
+			string outPath = IO.Path.Combine( path, "ExeFS" );
 			byte[] data = this.Data;
 
-			using ( var fs = new FileStream( path, FileMode.Create, FileAccess.Write, FileShare.None ) )
+			if ( !IO.Directory.Exists( outPath ) )
+				IO.Directory.CreateDirectory( outPath );
+
+			using ( var fs = new FileStream( IO.Path.Combine( outPath, filename ), FileMode.Create, FileAccess.Write, FileShare.None ) )
 				await fs.WriteAsync( data, 0, data.Length );
 		}
 

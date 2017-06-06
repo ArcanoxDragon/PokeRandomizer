@@ -43,21 +43,36 @@
   <ItemGroup>
     <Compile Include="Common\IRandomizer.cs" />
     <Compile Include="Common\Randomizer.cs" />
+    <Compile Include="Config\AbilitiesConfig.cs" />
     <Compile Include="Config\Contracts.cs" />
+    <Compile Include="Config\EggMovesConfig.cs" />
     <Compile Include="Config\EncountersConfig.cs" />
     <Compile Include="Config\LearnsetsConfig.cs" />
     <Compile Include="Config\RandomizerConfig.cs" />
     <Compile Include="Common\BaseRandomizer.cs" />
     <Compile Include="Config\StartersConfig.cs" />
+    <Compile Include="Config\TrainersConfig.cs" />
+    <Compile Include="Gen6\Gen6Randomizer.Abilities.cs">
+      <DependentUpon>Gen6Randomizer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Gen6\Gen6Randomizer.cs" />
+    <Compile Include="Gen6\Gen6Randomizer.EggMoves.cs">
+      <DependentUpon>Gen6Randomizer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Gen6\Gen6Randomizer.Learnsets.cs">
       <DependentUpon>Gen6Randomizer.cs</DependentUpon>
     </Compile>
     <Compile Include="Gen6\Gen6Randomizer.Starters.cs">
       <DependentUpon>Gen6Randomizer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Gen6\Gen6Randomizer.Trainers.cs">
+      <DependentUpon>Gen6Randomizer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Gen6\ORAS\OrasRandomizer.cs" />
     <Compile Include="Gen6\ORAS\OrasRandomizer.Encounters.cs">
+      <DependentUpon>OrasRandomizer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Gen6\ORAS\OrasRandomizer.Trainers.cs">
       <DependentUpon>OrasRandomizer.cs</DependentUpon>
     </Compile>
     <Compile Include="Legality\Legendaries.cs" />
@@ -65,6 +80,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflection\HandlesGameAttribute.cs" />
     <Compile Include="Utility\ArrayUtils.cs" />
+    <Compile Include="Utility\Assertions.cs" />
+    <Compile Include="Utility\LinqUtils.cs" />
     <Compile Include="Utility\MathUtil.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -409,7 +409,7 @@ namespace CtrDotNet.CTR.Garc
 							string decout = Path.Combine( Path.GetDirectoryName( fileOut ), "dec_" + Path.GetFileName( fileOut ) );
 							try
 							{
-								Lzss.Decompress( fileOut, decout );
+								await Lzss.Decompress( fileOut, decout );
 								try
 								{
 									File.Delete( fileOut );

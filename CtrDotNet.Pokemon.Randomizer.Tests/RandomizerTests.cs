@@ -24,7 +24,7 @@ namespace CtrDotNet.Pokemon.Randomizer.Tests
 		}
 
 		[ OneTimeSetUp ]
-		public async Task TestLoadRandomizer()
+		public async Task LoadRandomizer()
 		{
 			this.SetUpOutputDirectory();
 
@@ -39,18 +39,24 @@ namespace CtrDotNet.Pokemon.Randomizer.Tests
 			Assert.True( Directory.Exists( romFsPath ), "ROM path does not contain a RomFS folder" );
 			Assert.True( Directory.Exists( exeFsPath ), "ROM path does not contain an ExeFS folder" );
 
-			await Game.Initialize( romFsPath, exeFsPath, Language.English );
+			await Game.Initialize( romPath, Language.English );
 
 			RandomizerConfig randConfig = new RandomizerConfig {
-				Starters = {
-					StartersOnly = false
-				},
+				Abilities = { },
+				EggMoves = { },
 				Encounters = {
 					LevelMultiplier = 1.25m,
 					TypeThemedAreas = true
 				},
 				Learnsets = {
 					RandomizeLevels = true
+				},
+				Starters = {
+					StartersOnly = false
+				},
+				Trainers = {
+					FriendKeepsStarter = true,
+					TypeThemed = true
 				}
 			};
 
@@ -59,22 +65,40 @@ namespace CtrDotNet.Pokemon.Randomizer.Tests
 			Game.OutputPathOverride = this.romOutputDir;
 		}
 
-		[ Test ]
-		public async Task RandomizeStarters()
+		[ Test, Order( 1 ) ]
+		public async Task RandomizeAbilities()
 		{
-			await Randomizer.RandomizeStarters();
+			await Randomizer.RandomizeAbilities();
 		}
 
-		[ Test ]
+		[ Test, Order( 2 ) ]
+		public async Task RandomizeEggMoves()
+		{
+			await Randomizer.RandomizeEggMoves();
+		}
+
+		[ Test, Order( 3 ) ]
 		public async Task RandomizeEncounters()
 		{
 			await Randomizer.RandomizeEncounters();
 		}
 
-		[ Test ]
+		[ Test, Order( 4 ) ]
 		public async Task RandomizeLearnsets()
 		{
 			await Randomizer.RandomizeLearnsets();
+		}
+
+		[ Test, Order( 5 ) ]
+		public async Task RandomizeStarters()
+		{
+			await Randomizer.RandomizeStarters();
+		}
+
+		[ Test, Order( 6 ) ]
+		public async Task RandomizeTrainers()
+		{
+			await Randomizer.RandomizeTrainers();
 		}
 	}
 }

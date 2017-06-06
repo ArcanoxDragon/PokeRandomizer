@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using CtrDotNet.CTR.Garc;
-using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Reference;
 using CtrDotNet.Pokemon.Structures.RomFS.Common;
 using CtrDotNet.Pokemon.Tests.Utility;
@@ -18,7 +17,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 		public async Task RewriteGameText()
 		{
 			var garcGameText = await ORASConfig.GameConfig.GetGarc( GarcNames.GameText );
-			var gameText = await ORASConfig.GameConfig.GetGameText();
+			var gameText = await ORASConfig.GameConfig.GetTextFiles();
 			var outDir = Path.Combine( this.path, "GameText" );
 
 			if ( !Directory.Exists( outDir ) )
@@ -51,30 +50,20 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 			await this.TestGarcStructure( garcGameText, async () => {
 				for ( int i = 0; i < gameText.Length; i++ )
 				{
-					try
-					{
-						int file = i;
-						byte[] data = gameText[ file ].Write();
+					int file = i;
+					byte[] data = gameText[ file ].Write();
 
-						TextFile test = new TextFile( ORASConfig.GameConfig.Version, ORASConfig.GameConfig.Variables );
-						test.Read( data );
-						var path = Path.Combine( this.path, "GameText", $"TextFile-{file}.txt" );
-						Encoding testEncoding = Encoding.GetEncoding( "UTF-8", new EncoderReplacementFallback( "?" ), new DecoderExceptionFallback() );
-						File.WriteAllLines( path, test.Lines, testEncoding );
+					TextFile test = new TextFile( ORASConfig.GameConfig.Version, ORASConfig.GameConfig.Variables );
+					test.Read( data );
+					var path = Path.Combine( this.path, "GameText", $"TextFile-{file}.txt" );
+					Encoding testEncoding = Encoding.GetEncoding( "UTF-8", new EncoderReplacementFallback( "?" ), new DecoderExceptionFallback() );
+					File.WriteAllLines( path, test.Lines, testEncoding );
 
-						Assert.AreEqual( gameText[ file ].Lines, test.Lines, $"Strings did not match for file {file}" );
+					Assert.AreEqual( gameText[ file ].Lines, test.Lines, $"Strings did not match for file {file}" );
 
-						await garcGameText.SetFile( file, data );
-					}
-					catch ( InconclusiveException )
-					{
-						// ignore
-					}
-					finally
-					{
-						progress = i / (double) gameText.Length;
-						UpdateProgress();
-					}
+					await garcGameText.SetFile( file, data );
+					progress = i / (double) gameText.Length;
+					UpdateProgress();
 				}
 
 				TestContext.Progress.WriteLine();

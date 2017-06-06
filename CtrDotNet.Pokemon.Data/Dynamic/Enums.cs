@@ -4646,4 +4646,50 @@ private static readonly SpeciesType[] staticValues = { Egg,
 public static IEnumerable<SpeciesType> AllSpecies => staticValues.AsEnumerable();
 }
 
+public sealed class PokemonType : BasePokemonType {
+    public PokemonType( int id, string name ) : base( id, name ) { }
+    public static explicit operator PokemonType( int id ) => PokemonTypes.GetValueFrom( id );
+    public static explicit operator int( PokemonType val ) => val.Id;
+}
+public static class PokemonTypes {
+public static PokemonType Normal = new PokemonType( 0, "Normal" );
+public static PokemonType Fighting = new PokemonType( 1, "Fighting" );
+public static PokemonType Flying = new PokemonType( 2, "Flying" );
+public static PokemonType Poison = new PokemonType( 3, "Poison" );
+public static PokemonType Ground = new PokemonType( 4, "Ground" );
+public static PokemonType Rock = new PokemonType( 5, "Rock" );
+public static PokemonType Bug = new PokemonType( 6, "Bug" );
+public static PokemonType Ghost = new PokemonType( 7, "Ghost" );
+public static PokemonType Steel = new PokemonType( 8, "Steel" );
+public static PokemonType Fire = new PokemonType( 9, "Fire" );
+public static PokemonType Water = new PokemonType( 10, "Water" );
+public static PokemonType Grass = new PokemonType( 11, "Grass" );
+public static PokemonType Electric = new PokemonType( 12, "Electric" );
+public static PokemonType Psychic = new PokemonType( 13, "Psychic" );
+public static PokemonType Ice = new PokemonType( 14, "Ice" );
+public static PokemonType Dragon = new PokemonType( 15, "Dragon" );
+public static PokemonType Dark = new PokemonType( 16, "Dark" );
+public static PokemonType Fairy = new PokemonType( 17, "Fairy" );
+public static PokemonType GetValueFrom( int id ) => staticValues[ id ];
+private static readonly PokemonType[] staticValues = { Normal,
+	Fighting,
+	Flying,
+	Poison,
+	Ground,
+	Rock,
+	Bug,
+	Ghost,
+	Steel,
+	Fire,
+	Water,
+	Grass,
+	Electric,
+	Psychic,
+	Ice,
+	Dragon,
+	Dark,
+	Fairy };
+public static IEnumerable<PokemonType> AllPokemonTypes => staticValues.AsEnumerable();
+}
+
 }

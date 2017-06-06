@@ -17,4 +17,5 @@ namespace CtrDotNet.Pokemon.Data
 <#= enumHelper.EmitEnum( "Item", "Items" ) #>
 <#= enumHelper.EmitEnum( "Move", "Moves" ) #>
 <#= enumHelper.EmitEnum( "SpeciesType", "Species" ) #>
+<#= enumHelper.EmitEnum( "PokemonType", "PokemonTypes" ) #>
 }

@@ -4,11 +4,11 @@ namespace CtrDotNet.Pokemon.Reference
 {
 	public class GarcReference
 	{
-		internal GarcReference( int file, GarcNames name, bool lv = false, int offset = 0 )
+		public GarcReference( int file, GarcNames name, bool hasLangVariant = false, int offset = 0 )
 		{
 			this.Name = name;
 			this.FileNumber = file;
-			this.HasLanguageVariant = lv;
+			this.HasLanguageVariant = hasLangVariant;
 			this.Offset = offset;
 		}
 

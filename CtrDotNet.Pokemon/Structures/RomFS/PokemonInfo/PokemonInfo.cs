@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
@@ -26,16 +27,16 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 		public abstract int EvSpecialAttack { get; set; }
 		public abstract int EvSpecialDefense { get; set; }
 
-		public abstract int[] Types { get; set; }
+		public abstract byte[] Types { get; set; }
 		public abstract int CatchRate { get; set; }
 		public virtual int EvoStage { get; set; }
-		public abstract int[] Items { get; set; }
+		public abstract short[] Items { get; set; }
 		public abstract int Gender { get; set; }
 		public abstract int HatchCycles { get; set; }
 		public abstract int BaseFriendship { get; set; }
 		public abstract int ExpGrowth { get; set; }
-		public abstract int[] EggGroups { get; set; }
-		public abstract int[] Abilities { get; set; }
+		public abstract byte[] EggGroups { get; set; }
+		public abstract byte[] Abilities { get; set; }
 		public abstract int EscapeRate { get; set; }
 		public virtual int FormeCount { get; set; }
 		protected internal virtual int FormStatsIndex { get; set; }
@@ -59,6 +60,8 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 		public bool[] TmHm { get; set; }
 		public bool[] TypeTutors { get; set; }
 		public bool[][] SpecialTutors { get; set; } = new bool[ 0 ][];
+		public bool HasFormes => this.FormeCount > 1;
+		public int BaseStat => this.HP + this.Attack + this.Defense + this.Speed + this.SpecialAttack + this.SpecialDefense;
 
 		protected static bool[] GetBits( byte[] data )
 		{
@@ -78,40 +81,31 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			return data;
 		}
 
-		// Data Manipulation
-		public int FormeIndex( int species, int forme )
+		public int FormIndex( int form )
 		{
-			if ( forme <= 0 ) // no forme requested
-				return species;
-			if ( this.FormStatsIndex <= 0 ) // no formes present
-				return species;
-			if ( forme > this.FormeCount ) // beyond range of species' formes
-				return species;
+			if ( form < 0 )
+				return -1;
+			if ( form >= this.FormeCount )
+				return -1;
 
-			return this.FormStatsIndex + forme - 1;
+			return this.FormStatsIndex + form - 1;
 		}
 
-		public int RandomGender
+		public int GetRandomGender()
 		{
-			get
+			switch ( this.Gender )
 			{
-				switch ( this.Gender )
-				{
-					case 255: // Genderless
-						return 2;
-					case 254: // Female
-						return 1;
-					case 0: // Male
-						return 0;
-					default:
-						return (int) ( RandomUtil.UInt32() % 2 );
-				}
+				case 255: // Genderless
+					return 2;
+				case 254: // Female
+					return 1;
+				case 0: // Male
+					return 0;
+				default:
+					return (int) ( RandomUtil.UInt32() % 2 );
 			}
 		}
 
-		public bool HasFormes => this.FormeCount > 1;
-		public int BaseStat => this.HP + this.Attack + this.Defense + this.Speed + this.SpecialAttack + this.SpecialDefense;
-
-		public bool HasType( PokemonType type ) => this.Types.Any( t => t == type.TypeId );
+		public bool HasType( BasePokemonType type ) => this.Types.Any( t => t == type.Id );
 	}
 }

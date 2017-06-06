@@ -52,6 +52,7 @@ namespace CtrDotNet.Pokemon.Reference
 				new GarcReference( 192, GarcNames.Evolutions ),
 				new GarcReference( 193, GarcNames.MegaEvolutions ),
 				new GarcReference( 195, GarcNames.PokemonInfo ),
+				new GarcReference( 196, GarcNames.EggSpecies ),
 				new GarcReference( 197, GarcNames.Items ),
 
 				// Varied

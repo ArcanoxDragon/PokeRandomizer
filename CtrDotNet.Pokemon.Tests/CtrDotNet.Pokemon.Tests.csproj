@@ -52,7 +52,6 @@
       <DependentUpon>RomFS.cs</DependentUpon>
     </Compile>
     <Compile Include="ORAS\SpeciesTests.cs" />
-    <Compile Include="ORAS\StartersTest.cs" />
     <Compile Include="ORAS\TextFileTests.cs" />
     <Compile Include="ORAS\TmHmTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

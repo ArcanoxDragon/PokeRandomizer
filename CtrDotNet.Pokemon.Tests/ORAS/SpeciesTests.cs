@@ -15,7 +15,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 		public async Task Bulbasaur()
 		{
 			PokemonInfoTable pokeInfo = await ORASConfig.GameConfig.GetPokemonInfo();
-			TmsHms tmsHms = ORASConfig.GameConfig.GetTmsHms();
+			TmsHms tmsHms = await ORASConfig.GameConfig.GetTmsHms();
 			PokemonInfo nullInfo = pokeInfo[ 0 ];
 			PokemonInfo bulbasaurInfo = pokeInfo[ Species.Bulbasaur ];
 
@@ -23,6 +23,8 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 
 			Assert.AreEqual( 6.9, bulbasaurInfo.WeightKg, "Species weight for Bulbasaur doesn't match the Pokedex!" );
 			Assert.AreEqual( 0.7, bulbasaurInfo.HeightM, "Species height for Bulbasaur doesn't match the Pokedex!" );
+			Assert.AreEqual( PokemonTypes.Grass, PokemonTypes.GetValueFrom( bulbasaurInfo.Types[ 0 ] ), "Bulbasaur's primary type should be Grass!" );
+			Assert.AreEqual( PokemonTypes.Poison, PokemonTypes.GetValueFrom( bulbasaurInfo.Types[ 1 ] ), "Bulbasaur's secondary type should be Poison!" );
 
 			TestContext.Out.WriteLine( "Bulbasaur can learn the following TMs:" );
 

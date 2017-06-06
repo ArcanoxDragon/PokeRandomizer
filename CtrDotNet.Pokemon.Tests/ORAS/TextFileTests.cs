@@ -15,7 +15,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 		{
 			var garcGameText = await ORASConfig.GameConfig.GetGarc( GarcNames.GameText );
 			byte[] tf0Data = await garcGameText.GetFile( 0 );
-			TextFile tf0 = await ORASConfig.GameConfig.GetGameText( 0 );
+			TextFile tf0 = await ORASConfig.GameConfig.GetTextFile( 0 );
 			byte[] textData = tf0Data.Skip( 0x10 /* SectionDataOffset */ ).ToArray();
 			ushort key = TextFileHelper.KeyBase;
 
@@ -60,7 +60,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 		{
 			var garcGameText = await ORASConfig.GameConfig.GetGarc( GarcNames.GameText );
 			byte[] tf0Data = await garcGameText.GetFile( 0 );
-			TextFile tf0 = await ORASConfig.GameConfig.GetGameText( 0 );
+			TextFile tf0 = await ORASConfig.GameConfig.GetTextFile( 0 );
 			byte[][] encData = TextFileHelper.EncryptLines( tf0, tf0.Lines ).Select( el => el.Item2 ).ToArray();
 			byte[][] oriData = new byte[ tf0.Lines.Count ][];
 

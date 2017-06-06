@@ -17,9 +17,8 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 
 			var config = this.RandomizerConfig.Encounters;
 			var species = Species.AllSpecies.ToList();
-			var speciesInfo = await this.Game.GetPokemonInfo();
+			var speciesInfo = await this.Game.GetPokemonInfo( edited: true );
 			var encounters = ( await this.Game.GetEncounterData() ).Cast<OrasEncounterWild>().ToList();
-			var types = await this.Game.GetTypes();
 
 			if ( !config.AllowLegendaries )
 				species = species.Except( Legendaries.AllLegendaries )
@@ -36,7 +35,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 
 				if ( config.TypeThemedAreas )
 				{
-					var areaType = types.GetRandom( this.rand );
+					var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.rand );
 					speciesChoose = speciesChoose.Where( s => speciesInfo[ s.Id ].HasType( areaType ) )
 												 .ToList();
 				}

@@ -3,11 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using CtrDotNet.CTR;
-using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Garc;
 using CtrDotNet.Pokemon.Reference;
-using CtrDotNet.Pokemon.Structures.RomFS.Gen6;
 using NUnit.Framework;
 
 namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
@@ -19,7 +16,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 
 		public RomFS()
 		{
-			this.path = Path.Combine( TestContext.CurrentContext.TestDirectory, "Output", "RomFS" );
+			this.path = Path.Combine( ORASConfig.OutputPath, "RomFS" );
 
 			if ( !Directory.Exists( this.path ) )
 				Directory.CreateDirectory( this.path );
@@ -60,8 +57,9 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 				byte[] hashOriginal = md5.ComputeHash( origData );
 				byte[] hashNew = md5.ComputeHash( newData );
 
-				TestContext.Out.WriteLine( $"Old hash: {string.Join( "", hashOriginal.Select( d => d.ToString( "X2" ) ) )}" );
-				TestContext.Out.WriteLine( $"New hash: {string.Join( "", hashNew.Select( d => d.ToString( "X2" ) ) )}" );
+				TestContext.Out.WriteLine( $"GARC {garc.Reference.RomFsPath} ({garc.Reference.Name}):" );
+				TestContext.Out.WriteLine( $"\tOld hash: {string.Join( "", hashOriginal.Select( d => d.ToString( "X2" ) ) )}" );
+				TestContext.Out.WriteLine( $"\tNew hash: {string.Join( "", hashNew.Select( d => d.ToString( "X2" ) ) )}" );
 
 				try
 				{
@@ -82,12 +80,12 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 		[ Test ]
 		public async Task RewritePokemonInfo()
 		{
-			var garcPersonal = await ORASConfig.GameConfig.GetGarc( GarcNames.PokemonInfo );
+			var garcPokeInfo = await ORASConfig.GameConfig.GetGarc( GarcNames.PokemonInfo );
 
-			await this.TestGarcStructure( garcPersonal, async () => {
-				var pokeInfo = await ORASConfig.GameConfig.GetPokemonInfo();
+			await this.TestGarcStructure( garcPokeInfo, async () => {
+				var pokeInfoTable = await ORASConfig.GameConfig.GetPokemonInfo();
 
-				await garcPersonal.SetFile( garcPersonal.Garc.FileCount - 1, pokeInfo.Write() );
+				await ORASConfig.GameConfig.SavePokemonInfo( pokeInfoTable, garcPokeInfo );
 			} );
 		}
 
@@ -98,9 +96,8 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 
 			await this.TestGarcStructure( garcLearnsets, async () => {
 				var learnsets = await ORASConfig.GameConfig.GetLearnsets();
-				byte[][] files = learnsets.Select( l => l.Write() ).ToArray();
 
-				await garcLearnsets.SetFiles( files );
+				await ORASConfig.GameConfig.SaveLearnsets( learnsets, garcLearnsets );
 			} );
 		}
 
@@ -112,16 +109,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 			await this.TestGarcStructure( garcMoves, async () => {
 				var moves = await ORASConfig.GameConfig.GetMoves();
 
-				byte[][] orig = Mini.UnpackMini( await garcMoves.GetFile( 0 ), "WD" );
-				byte[][] files = moves.Select( l => l.Write() ).ToArray();
-
-				for ( int i = 0; i < files.Length; i++ )
-				{
-					string moveName = Moves.GetValueFrom( i )?.Name ?? "NULL";
-					Assert.AreEqual( orig[ i ], files[ i ], $"Rewritten data for move {i} ({moveName}) did not match" );
-				}
-
-				await garcMoves.SetFile( 0, Mini.PackMini( files, "WD" ) );
+				await ORASConfig.GameConfig.SaveMoves( moves, garcMoves );
 			} );
 		}
 
@@ -129,45 +117,53 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 		public async Task RewriteEncounters()
 		{
 			var garcEncounters = await ORASConfig.GameConfig.GetGarc( GarcNames.EncounterData, useLz: true );
-			byte[][] files = await garcEncounters.GetFiles();
-			byte[][] origFiles = new byte[ files.Length ][];
-
-			for ( int i = 0; i < files.Length; i++ )
-				origFiles[ i ] = (byte[]) files[ i ].Clone();
 
 			await this.TestGarcStructure( garcEncounters, async () => {
-				var encounters = ( await ORASConfig.GameConfig.GetEncounterData() ).ToArray();
+				var encounters = await ORASConfig.GameConfig.GetEncounterData();
 
-				for ( int i = 0; i < encounters.Length; i++ )
+				await ORASConfig.GameConfig.SaveEncounterData( encounters, garcEncounters );
+			} );
+		}
+
+		[ Test ]
+		public async Task RewriteEggMoves()
+		{
+			var garcEggMoves = await ORASConfig.GameConfig.GetGarc( GarcNames.EggMoves );
+
+			await this.TestGarcStructure( garcEggMoves, async () => {
+				var eggMoves = await ORASConfig.GameConfig.GetEggMoves();
+
+				byte[][] files = await garcEggMoves.GetFiles();
+				for ( int i = 0; i < files.Length; i++ )
 				{
-					if ( !encounters[ i ].HasEntries )
-						continue;
-
-					byte[] encounterBuffer = encounters[ i ].Write();
-
-					if ( true /* IsORAS */ )
-					{
-						// Last file is dexNavData
-						const int Offset = 0xE;
-						byte[] dexNavData = files[ files.Length - 1 ];
-						int entryPointer = BitConverter.ToInt32( dexNavData, ( i + 1 ) * sizeof( int ) ) + Offset;
-
-						int dataPointer = BitConverter.ToInt32( encounterBuffer, EncounterWild.DataOffset );
-						dataPointer += encounters[ i ].DataStart;
-						int dataLength = encounters[ i ].GetAllEntries().Count() * EncounterWild.Entry.Size;
-
-						Array.Copy( encounterBuffer, dataPointer, dexNavData, entryPointer, dataLength );
-					}
-
-					files[ i ] = encounterBuffer;
-
-					Assert.AreEqual( origFiles[ i ], files[ i ], $"Data for encounter zone {i} did not match" );
+					Assert.AreEqual( files[ i ], eggMoves[ i ].Write(), $"Data for egg move for species #{i} did not match" );
 				}
 
-				Assert.AreEqual( origFiles[ files.Length - 1 ], files[ files.Length - 1 ], "DecStorage data did not match" );
-
-				await garcEncounters.SetFiles( files );
+				await ORASConfig.GameConfig.SaveEggMoves( eggMoves, garcEggMoves );
 			} );
+		}
+
+		[ Test ]
+		public async Task RewriteTrainers()
+		{
+			var garcTrainerData = await ORASConfig.GameConfig.GetGarc( GarcNames.TrainerData );
+			var garcTrainerPoke = await ORASConfig.GameConfig.GetGarc( GarcNames.TrainerPokemon );
+
+			await this.TestGarcStructure( garcTrainerData, () => this.TestGarcStructure( garcTrainerPoke, async () => {
+				var trainers = ( await ORASConfig.GameConfig.GetTrainerData() ).ToList();
+				byte[][] trainerFiles = await garcTrainerData.GetFiles();
+				byte[][] pokemonFiles = await garcTrainerPoke.GetFiles();
+
+				Assert.AreEqual( trainerFiles.Length, pokemonFiles.Length, "Trainer data and trainer team files do not have equal lengths" );
+
+				for ( int i = 0; i < trainers.Count; i++ )
+				{
+					Assert.AreEqual( trainerFiles[ i ], trainers[ i ].Write(), $"Trainer data file for trainer #{i} did not match" );
+					Assert.AreEqual( pokemonFiles[ i ], trainers[ i ].WriteTeam(), $"Trainer team file for trainer #{i} did not match" );
+				}
+
+				await ORASConfig.GameConfig.SaveTrainerData( trainers, garcTrainerData, garcTrainerPoke );
+			} ) );
 		}
 	}
 }

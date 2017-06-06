@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using CtrDotNet.Pokemon.Cro;
+using CtrDotNet.CTR.Cro;
 using CtrDotNet.Pokemon.Reference;
 using CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters;
 using NUnit.Framework;
@@ -16,11 +16,13 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 
 		public Cro()
 		{
-			this.path = Path.Combine( TestContext.CurrentContext.TestDirectory, "Output", "RomFS" );
+			this.path = Path.Combine( ORASConfig.OutputPath, "RomFS" );
 
 			if ( !Directory.Exists( this.path ) )
 				Directory.CreateDirectory( this.path );
 		}
+
+		#region Helpers
 
 		private async Task TestCroFile( CroFile cro, Func<Task> saveAction, bool failOnBadHash = true )
 		{
@@ -57,17 +59,18 @@ namespace CtrDotNet.Pokemon.Tests.ORAS.Rewrite
 			}
 		}
 
+		#endregion
+
 		[ Test ]
 		public async Task RewriteStarters()
 		{
-			CroFile dllField = await ORASConfig.GameConfig.GetCroFile( CroNames.Field );
-			CroFile dllPoke3Select = await ORASConfig.GameConfig.GetCroFile( CroNames.Poke3Select );
+			var dllField = await ORASConfig.GameConfig.GetCroFile( CroNames.Field );
+			var dllPoke3Select = await ORASConfig.GameConfig.GetCroFile( CroNames.Poke3Select );
 
 			await this.TestCroFile( dllField, () => this.TestCroFile( dllPoke3Select, async () => {
-				Starters starters = new Starters( ORASConfig.GameConfig.Version );
+				Starters starters = await ORASConfig.GameConfig.GetStarters();
 
-				await starters.Read( dllField, dllPoke3Select );
-				await starters.Write( dllField, dllPoke3Select );
+				await ORASConfig.GameConfig.SaveStarters( starters, dllField, dllPoke3Select );
 			} ) );
 		}
 	}

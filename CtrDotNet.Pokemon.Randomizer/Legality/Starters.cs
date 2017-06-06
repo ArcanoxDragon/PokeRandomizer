@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using CtrDotNet.Pokemon.Data;
-using CtrDotNet.Pokemon.Utility;
+using CtrDotNet.Pokemon.Randomization.Utility;
 
 namespace CtrDotNet.Pokemon.Randomization.Legality
 {

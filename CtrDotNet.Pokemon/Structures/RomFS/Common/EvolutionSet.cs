@@ -11,14 +11,29 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 		public int Level { get; set; }
 	}
 
-	public abstract class BaseEvolutionSet : BaseDataStructure
+	public abstract class EvolutionSet : BaseDataStructure
 	{
+		#region Static
+
+		public static EvolutionSet New( GameVersion version )
+		{
+			switch ( version.GetGeneration() )
+			{
+				case GameGeneration.Generation7:
+					return new Gen7.EvolutionSet( version );
+				default:
+					return new Gen6.EvolutionSet( version );
+			}
+		}
+
+		#endregion
+
 		public EvolutionMethod[] PossibleEvolutions { get; protected set; }
 		public int Size => this.EntrySize * this.EntryCount;
 
 		protected abstract int EntryCount { get; }
 		protected abstract int EntrySize { get; }
 
-		protected BaseEvolutionSet( GameVersion gameVersion ) : base( gameVersion ) { }
+		protected EvolutionSet( GameVersion gameVersion ) : base( gameVersion ) { }
 	}
 }

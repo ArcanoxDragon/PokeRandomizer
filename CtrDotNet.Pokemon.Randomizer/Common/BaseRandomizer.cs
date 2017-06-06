@@ -30,16 +30,22 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 
 		public async Task RandomizeAll()
 		{
-			await this.RandomizeStarters();
+			await this.RandomizeAbilities();
+			await this.RandomizeEggMoves();
 			await this.RandomizeEncounters();
 			await this.RandomizeLearnsets();
+			await this.RandomizeStarters();
+			await this.RandomizeTrainers();
 		}
 
 		#region Randomization tasks
 
-		public abstract Task RandomizeStarters();
+		public abstract Task RandomizeAbilities();
+		public abstract Task RandomizeEggMoves();
 		public abstract Task RandomizeEncounters();
 		public abstract Task RandomizeLearnsets();
+		public abstract Task RandomizeStarters();
+		public abstract Task RandomizeTrainers();
 
 		#endregion
 

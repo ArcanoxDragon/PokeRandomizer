@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CtrDotNet.Pokemon.Game;
@@ -9,8 +8,12 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 {
 	public class TrainerData : BaseDataStructure
 	{
+		public const int BattleTypeSingle = 0;
+		public const int BattleTypeDouble = 1;
+
 		public TrainerData( GameVersion gameVersion ) : base( gameVersion ) { }
 
+		public bool PartialEntry { get; private set; }
 		public int Format { get; set; }
 		public int Class { get; set; }
 		public bool Item { get; set; }
@@ -18,7 +21,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 		public byte BattleType { get; set; }
 		public byte NumPokemon { get; set; }
 		public byte AI { get; set; }
-		public ushort[] Items { get; set; }
+		public ushort[] Items { get; private set; }
 		public byte Unused1 { get; set; }
 		public byte Unused2 { get; set; }
 		public byte Unused3 { get; set; }
@@ -32,6 +35,10 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 		{
 			// Fetch Team
 			this.Team = new Pokemon[ this.NumPokemon ];
+
+			if ( this.NumPokemon == 0 )
+				return;
+
 			byte[][] teamData = trainerPokeData.ToArray().Partition( trainerPokeData.Length / this.NumPokemon );
 
 			for ( int i = 0; i < this.NumPokemon; i++ )
@@ -42,14 +49,18 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 			}
 		}
 
-		public IEnumerable<byte> WriteTeam() => this.Team.Aggregate( new byte[ 0 ].AsEnumerable(), ( i, pkm ) => {
-			pkm.HasItem = this.Item;
-			pkm.HasMoves = this.Moves;
-			return i.Concat( pkm.Write() );
-		} );
+		public byte[] WriteTeam() => this.Team.Length == 0
+										 ? new byte[ 6 ]
+										 : this.Team.Aggregate( new byte[ 0 ].AsEnumerable(), ( data, pkm ) => {
+											 pkm.HasItem = this.Item;
+											 pkm.HasMoves = this.Moves;
+											 return data.Concat( pkm.Write() );
+										 } ).ToArray();
 
 		protected override void ReadData( BinaryReader br )
 		{
+			this.PartialEntry = br.BaseStream.Length < 24;
+
 			bool oras = this.GameVersion.IsORAS();
 			this.Items = new ushort[ 4 ];
 
@@ -66,6 +77,9 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 
 			for ( int i = 0; i < 4; i++ )
 				this.Items[ i ] = br.ReadUInt16();
+
+			if ( this.PartialEntry )
+				return;
 
 			this.AI = br.ReadByte();
 			this.Unused1 = br.ReadByte();
@@ -94,10 +108,10 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 
 			bw.Write( this.BattleType );
 			bw.Write( this.NumPokemon );
-			bw.Write( this.Items[ 0 ] );
-			bw.Write( this.Items[ 1 ] );
-			bw.Write( this.Items[ 2 ] );
-			bw.Write( this.Items[ 3 ] );
+			this.Items.ForEach( bw.Write );
+
+			if ( this.PartialEntry )
+				return;
 
 			bw.Write( this.AI );
 			bw.Write( this.Unused1 );
@@ -119,7 +133,9 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 			public bool HasItem { get; set; }
 			public bool HasMoves { get; set; }
 
-			public byte Vs { get; set; }
+			// ReSharper disable once InconsistentNaming
+			public byte IVs { get; set; }
+
 			public byte Pid { get; set; }
 			public ushort Level { get; set; }
 			public ushort Species { get; set; }
@@ -134,7 +150,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 			{
 				this.Moves = new ushort[ 4 ];
 
-				this.Vs = br.ReadByte();
+				this.IVs = br.ReadByte();
 				this.Pid = br.ReadByte();
 				this.Level = br.ReadUInt16();
 				this.Species = br.ReadUInt16();
@@ -156,9 +172,9 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 			{
 				this.Pid = (byte) ( ( ( this.Ability & 0b1111 ) << 4 ) |
 									( ( this.UBit & 0b1 ) << 3 ) |
-									( this.Gender & 0b111 ) );
+									( this.Gender & 0b11 ) );
 
-				bw.Write( this.Vs );
+				bw.Write( this.IVs );
 				bw.Write( this.Pid );
 				bw.Write( this.Level );
 				bw.Write( this.Species );

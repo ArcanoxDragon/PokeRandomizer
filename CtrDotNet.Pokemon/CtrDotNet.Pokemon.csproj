@@ -42,7 +42,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cro\CroFile.cs" />
     <Compile Include="Data\BaseTypes.cs" />
     <Compile Include="Dynamic\DynamicHelpers.cs" />
     <Compile Include="Dynamic\DynamicType.cs" />
@@ -69,7 +68,6 @@
     <Compile Include="Structures\RomFS\Gen6\ORAS\OrasEncounterWild.cs" />
     <Compile Include="Structures\RomFS\Gen6\XY\XyEncounterWild.cs" />
     <Compile Include="Structures\RomFS\Gen6\ZoneData.cs" />
-    <Compile Include="Structures\RomFS\PokemonInfo\PokemonType.cs" />
     <Compile Include="Utility\ArrayStream.cs" />
     <Compile Include="Utility\Assertions.cs" />
     <Compile Include="Utility\Enumerable.cs" />
@@ -86,7 +84,7 @@
     <Compile Include="Structures\ExeFS\Common\TmsHms.cs" />
     <Compile Include="Structures\RomFS\Gen7\EggMoves.cs" />
     <Compile Include="Structures\RomFS\Gen6\EggMoves.cs" />
-    <Compile Include="Structures\RomFS\Common\Evolutions.cs" />
+    <Compile Include="Structures\RomFS\Common\EvolutionSet.cs" />
     <Compile Include="Structures\IDataStructure.cs" />
     <Compile Include="Structures\RomFS\Gen7\Learnset.cs" />
     <Compile Include="Structures\RomFS\Gen6\Learnset.cs" />

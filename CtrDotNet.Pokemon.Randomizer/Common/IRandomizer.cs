@@ -11,8 +11,11 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 
 		void Initialize( GameConfig game, RandomizerConfig randomizerConfig );
 
-		Task RandomizeStarters();
+		Task RandomizeAbilities();
+		Task RandomizeEggMoves();
 		Task RandomizeEncounters();
 		Task RandomizeLearnsets();
+		Task RandomizeStarters();
+		Task RandomizeTrainers();
 	}
 }

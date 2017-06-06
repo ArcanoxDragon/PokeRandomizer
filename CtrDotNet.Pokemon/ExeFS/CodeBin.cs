@@ -3,6 +3,7 @@ using IO = System.IO;
 using System.IO;
 using System.Threading.Tasks;
 using CtrDotNet.CTR;
+using CtrDotNet.Utility;
 
 namespace CtrDotNet.Pokemon.ExeFS
 {
@@ -49,7 +50,11 @@ namespace CtrDotNet.Pokemon.ExeFS
 
 		public async Task SaveFileTo( string path )
 		{
-			string filename = IO.Path.GetFileName( this.Path );
+			string filename = IO.Path.GetFileName( this.Path ) ?? ""; // literally will never be null, wtf
+
+			if ( filename.StartsWith( "." ) ) // If the file is ".code.bin" change it to "code.bin"
+				filename = filename.Substring( 1 );
+
 			string outPath = IO.Path.Combine( path, "ExeFS" );
 			byte[] data = this.Data;
 
@@ -60,6 +65,6 @@ namespace CtrDotNet.Pokemon.ExeFS
 				await fs.WriteAsync( data, 0, data.Length );
 		}
 
-		public Task SaveFile() => this.SaveFileTo( this.Path );
+		public Task SaveFile() => this.SaveFileTo( PathUtil.GetPathBase( this.Path, "ExeFS" ) );
 	}
 }

@@ -1,23 +1,24 @@
 using System.IO;
+using CtrDotNet.Pokemon.Game;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Gen7
 {
 	public class EggMoves : Gen6.EggMoves
 	{
-		protected EggMoves() { }
+		public EggMoves( GameVersion gameVersion ) : base( gameVersion ) { }
 
-		public EggMoves( byte[] data ) : base( data ) { }
+		public int FormTableIndex { get; set; }
 
-		protected override void ReadEggMoves( BinaryReader r )
+		protected override void ReadData( BinaryReader r )
 		{
 			this.FormTableIndex = r.ReadUInt16();
-			base.ReadEggMoves( r );
+			base.ReadData( r );
 		}
 
-		protected override void WriteEggMoves( BinaryWriter w )
+		protected override void WriteData( BinaryWriter w )
 		{
 			w.Write( (ushort) this.FormTableIndex );
-			base.WriteEggMoves( w );
+			base.WriteData( w );
 		}
 	}
 }

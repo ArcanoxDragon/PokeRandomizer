@@ -2,6 +2,7 @@
 {
 	public enum GarcNames
 	{
+		Unknown = -1,
 		MoveSprites,
 		EncounterData,
 		TrainerData,
@@ -21,6 +22,7 @@
 		Evolutions,
 		MegaEvolutions,
 		PokemonInfo,
+		EggSpecies,
 		Items,
 		GameText,
 		StoryText,

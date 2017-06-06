@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using CtrDotNet.CTR.Garc;
 using CtrDotNet.Pokemon.Reference;
+using CtrDotNet.Utility;
 
 namespace CtrDotNet.Pokemon.Garc
 {
@@ -21,7 +22,7 @@ namespace CtrDotNet.Pokemon.Garc
 		public Task SetFiles( byte[][] files ) => this.Garc.SetFiles( files );
 		public Task SetFile( int file, byte[] data ) => this.Garc.SetFile( file, data );
 		public Task<byte[]> Write() => this.Garc.Write();
-		public Task SaveFile() => this.Garc.SaveFile();
+		public Task SaveFile() => this.SaveFileTo( PathUtil.GetPathBase( this.Garc.Path, this.Reference.RomFsPath ) );
 
 		public Task SaveFileTo( string path )
 		{

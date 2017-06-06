@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using CtrDotNet.Pokemon.Cro;
+using CtrDotNet.CTR.Cro;
 using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Utility;
 

@@ -3,6 +3,8 @@ using System.Linq;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 {
+	// TODO: Convert this whole thing to BaseDataStructure
+
 	public class PokemonInfoXY : PokemonInfo
 	{
 		public const int Size = 0x40;
@@ -62,15 +64,16 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			set => this.Data[ 0x05 ] = (byte) value;
 		}
 
-		public override int[] Types
+		public override byte[] Types
 		{
-			get => new int[] { this.Data[ 0x06 ], this.Data[ 0x07 ] };
+			get => new[] { this.Data[ 0x06 ], this.Data[ 0x07 ] };
 			set
 			{
 				if ( value?.Length != 2 )
 					return;
-				this.Data[ 0x06 ] = (byte) value[ 0 ];
-				this.Data[ 0x07 ] = (byte) value[ 1 ];
+
+				this.Data[ 0x06 ] = value[ 0 ];
+				this.Data[ 0x07 ] = value[ 1 ];
 			}
 		}
 
@@ -128,16 +131,16 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			set => this.EvYield = ( this.EvYield & ~( 0x3 << 10 ) ) | ( value & 0x3 ) << 10;
 		}
 
-		public override int[] Items
+		public override short[] Items
 		{
-			get => new int[] { BitConverter.ToInt16( this.Data, 0xC ), BitConverter.ToInt16( this.Data, 0xE ), BitConverter.ToInt16( this.Data, 0x10 ) };
+			get => new[] { BitConverter.ToInt16( this.Data, 0xC ), BitConverter.ToInt16( this.Data, 0xE ), BitConverter.ToInt16( this.Data, 0x10 ) };
 			set
 			{
 				if ( value?.Length != 3 )
 					return;
-				BitConverter.GetBytes( (short) value[ 0 ] ).CopyTo( this.Data, 0xC );
-				BitConverter.GetBytes( (short) value[ 1 ] ).CopyTo( this.Data, 0xE );
-				BitConverter.GetBytes( (short) value[ 2 ] ).CopyTo( this.Data, 0x10 );
+				BitConverter.GetBytes( value[ 0 ] ).CopyTo( this.Data, 0xC );
+				BitConverter.GetBytes( value[ 1 ] ).CopyTo( this.Data, 0xE );
+				BitConverter.GetBytes( value[ 2 ] ).CopyTo( this.Data, 0x10 );
 			}
 		}
 
@@ -165,28 +168,29 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 			set => this.Data[ 0x15 ] = (byte) value;
 		}
 
-		public override int[] EggGroups
+		public override byte[] EggGroups
 		{
-			get => new int[] { this.Data[ 0x16 ], this.Data[ 0x17 ] };
+			get => new[] { this.Data[ 0x16 ], this.Data[ 0x17 ] };
 			set
 			{
 				if ( value?.Length != 2 )
 					return;
-				this.Data[ 0x16 ] = (byte) value[ 0 ];
-				this.Data[ 0x17 ] = (byte) value[ 1 ];
+				this.Data[ 0x16 ] = value[ 0 ];
+				this.Data[ 0x17 ] = value[ 1 ];
 			}
 		}
 
-		public override int[] Abilities
+		public override byte[] Abilities
 		{
-			get => new int[] { this.Data[ 0x18 ], this.Data[ 0x19 ], this.Data[ 0x1A ] };
+			get => new [] { this.Data[ 0x18 ], this.Data[ 0x19 ], this.Data[ 0x1A ] };
 			set
 			{
 				if ( value?.Length != 3 )
 					return;
-				this.Data[ 0x18 ] = (byte) value[ 0 ];
-				this.Data[ 0x19 ] = (byte) value[ 1 ];
-				this.Data[ 0x1A ] = (byte) value[ 2 ];
+
+				this.Data[ 0x18 ] = value[ 0 ];
+				this.Data[ 0x19 ] = value[ 1 ];
+				this.Data[ 0x1A ] = value[ 2 ];
 			}
 		}
 

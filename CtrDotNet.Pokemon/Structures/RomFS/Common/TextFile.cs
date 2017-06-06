@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using CtrDotNet.Pokemon.Game;
@@ -8,7 +10,7 @@ using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 {
-	public sealed class TextFile : BaseDataStructure
+	public sealed class TextFile : BaseDataStructure, IEnumerable<string>
 	{
 		#region Static
 
@@ -60,6 +62,22 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 
 		public IReadOnlyList<string> Lines => this.lineArray;
 
+		#region Enumerable
+
+		public IEnumerator<string> GetEnumerator() => this.Lines.GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+		public string this[ int index ]
+		{
+			get => this.Lines[ index ];
+			set => this.SetLine( index, value );
+		}
+
+		#endregion
+
+		#region Data
+
 		public override void Read( byte[] data )
 		{
 			base.Read( data );
@@ -71,6 +89,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 //				throw new Exception( "Invalid Text File" );
 		}
 
+		[ SuppressMessage( "ReSharper", "UnusedVariable" ) ]
 		protected override void ReadData( BinaryReader br )
 		{
 			this.TextSections = br.ReadUInt16();
@@ -128,6 +147,10 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 			bw.Write( aggregateLineData, 0, aggregateLineData.Length );
 		}
 
+		#endregion
+
+		#region Lines
+
 		public void SetLines( string[] lines )
 		{
 			lines = lines ?? new string[ 0 ];
@@ -150,6 +173,10 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 
 			this.SetLines( lineArray );
 		}
+
+		#endregion
+
+		#region Variables
 
 		internal IEnumerable<ushort> GetVariableValues( string variable )
 		{
@@ -223,5 +250,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 			var var = this.variables.FirstOrDefault( v => v.Code == variable );
 			return var == null ? variable.ToString( "X4" ) : var.Name;
 		}
+
+		#endregion
 	}
 }

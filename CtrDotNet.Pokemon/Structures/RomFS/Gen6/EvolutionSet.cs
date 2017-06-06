@@ -5,7 +5,7 @@ using CtrDotNet.Pokemon.Structures.RomFS.Common;
 
 namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6
 {
-	public class EvolutionSet : BaseEvolutionSet
+	public class EvolutionSet : Common.EvolutionSet
 	{
 		public EvolutionSet( GameVersion gameVersion ) : base( gameVersion ) { }
 

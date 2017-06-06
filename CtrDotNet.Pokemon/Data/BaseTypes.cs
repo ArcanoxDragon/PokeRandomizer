@@ -21,4 +21,9 @@ namespace CtrDotNet.Pokemon.Data
 	{
 		protected BaseSpeciesType( int id, string name ) : base( id, name ) { }
 	}
+
+	public abstract class BasePokemonType : DynamicType
+	{
+		protected BasePokemonType( int id, string name ) : base( id, name ) { }
+	}
 }

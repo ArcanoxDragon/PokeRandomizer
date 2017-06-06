@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CtrDotNet.CTR.Garc
@@ -20,15 +21,8 @@ namespace CtrDotNet.CTR.Garc
 
 		public virtual Task<byte[]> Write() => Task.FromResult( this.Data );
 
-		public virtual async Task<byte[][]> GetFiles()
-		{
-			byte[][] data = new byte[ this.FileCount ][];
-
-			for ( int i = 0; i < data.Length; i++ )
-				data[ i ] = await this.GetFile( i );
-
-			return data;
-		}
+		public virtual Task<byte[][]> GetFiles()
+			=> Task.WhenAll( Enumerable.Range( 0, this.FileCount ).Select( i => this.GetFile( i ) ) );
 
 		public virtual async Task SetFiles( byte[][] files )
 		{

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Game;
 using NUnit.Framework;
@@ -10,6 +9,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 	public class ORASConfig
 	{
 		public static GameConfig GameConfig { get; private set; }
+		public static string OutputPath { get; private set; }
 
 		[ OneTimeSetUp ]
 		public async Task SetUp()
@@ -22,8 +22,18 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 			Assert.True( Directory.Exists( romFsPath ), "ROM path does not contain a RomFS folder" );
 			Assert.True( Directory.Exists( exeFsPath ), "ROM path does not contain an ExeFS folder" );
 
+			OutputPath = Path.Combine( TestContext.CurrentContext.TestDirectory, "Output" );
 			GameConfig = new GameConfig( GameVersion.ORAS );
-			await GameConfig.Initialize( romFsPath, exeFsPath, Language.English );
+
+			if ( Directory.Exists( OutputPath ) )
+			{
+				foreach ( var file in Directory.EnumerateFiles( OutputPath, "*", SearchOption.AllDirectories ) )
+					File.Delete( file );
+
+				Directory.Delete( OutputPath, true );
+			}
+
+			await GameConfig.Initialize( romPath, Language.English );
 		}
 	}
 }

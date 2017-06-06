@@ -98,9 +98,8 @@ namespace CtrDotNet.CTR.Garc
 			for ( int i = 0; i < files.Length; i++ )
 			{
 				if ( this.storage[ i ] == null )
-					await this.GetFile( i );
+					this.storage[ i ] = new Entry();
 
-				// ReSharper disable once PossibleNullReferenceException
 				this.storage[ i ].Data = files[ i ];
 			}
 

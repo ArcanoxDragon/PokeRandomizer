@@ -44,5 +44,11 @@
 		}
 
 		#endregion
+
+		#region object overrides
+
+		public override string ToString() => $"{this.Id}:{this.Name}";
+
+		#endregion
 	}
 }

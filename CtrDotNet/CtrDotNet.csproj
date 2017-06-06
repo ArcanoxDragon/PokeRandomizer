@@ -46,7 +46,7 @@
     <Compile Include="CTR\AES.cs" />
     <Compile Include="CTR\ALYT.cs" />
     <Compile Include="CTR\BLZ.cs" />
-    <Compile Include="CTR\CRO.cs" />
+    <Compile Include="CTR\Cro\CroFile.cs" />
     <Compile Include="CTR\CTR.cs" />
     <Compile Include="CTR\DARC.cs" />
     <Compile Include="CTR\ETC1.cs" />
@@ -74,6 +74,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utility\Assertions.cs" />
+    <Compile Include="Utility\PathUtil.cs" />
     <Compile Include="Utility\StreamUtil.cs" />
   </ItemGroup>
   <ItemGroup>

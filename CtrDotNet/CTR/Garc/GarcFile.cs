@@ -1,6 +1,7 @@
 ﻿using IO = System.IO;
 using System.IO;
 using System.Threading.Tasks;
+using CtrDotNet.Utility;
 
 namespace CtrDotNet.CTR.Garc
 {
@@ -48,7 +49,7 @@ namespace CtrDotNet.CTR.Garc
 
 		public Task<byte[]> Write() => this.GarcData.Write();
 
-		public Task SaveFile() => this.SaveFileTo( IO.Path.GetDirectoryName( this.Path ) );
+		public Task SaveFile() => this.SaveFileTo( PathUtil.GetPathBase( this.Path, "RomFS" ) );
 
 		public async Task SaveFileTo( string path )
 		{

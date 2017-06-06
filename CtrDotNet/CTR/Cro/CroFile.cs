@@ -1,10 +1,9 @@
 ﻿using System;
-using IO = System.IO;
 using System.Threading.Tasks;
-using CtrDotNet.CTR;
-using CtrDotNet.Pokemon.Utility;
+using CtrDotNet.Utility;
+using IO = System.IO;
 
-namespace CtrDotNet.Pokemon.Cro
+namespace CtrDotNet.CTR.Cro
 {
 	public class CroFile : IWritableFile
 	{
@@ -63,7 +62,7 @@ namespace CtrDotNet.Pokemon.Cro
 
 		public Task<byte[]> Write() => Task.FromResult( this.Data );
 
-		public Task SaveFile() => this.SaveFileTo( this.Path );
+		public Task SaveFile() => this.SaveFileTo( PathUtil.GetPathBase( this.Path, "RomFS" ) );
 
 		public async Task SaveFileTo( string path )
 		{

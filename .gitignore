@@ -4,6 +4,7 @@
 # Config files
 [Aa]pp.config
 [Ss]ettings.settings
+[Ss]ettings.designer.cs
 
 # User-specific files
 *.suo

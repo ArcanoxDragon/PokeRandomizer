@@ -9,7 +9,7 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 {
 	public static class Randomizer
 	{
-		public static IRandomizer GetRandomizer( GameConfig game, RandomizerConfig config )
+		public static IRandomizer GetRandomizer( GameConfig game, IConfig config )
 		{
 			var randomizers = from asm in AppDomain.CurrentDomain.GetAssemblies()
 							  from type in asm.GetTypes()
@@ -33,7 +33,7 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 				}
 			}
 
-			throw new NotSupportedException( $"No loaded IRandomizer is able to support the game version {game.Version}" );
+			throw new NotSupportedException( $"There is no loaded randomizer which supports the game version {game.Version}" );
 		}
 	}
 }

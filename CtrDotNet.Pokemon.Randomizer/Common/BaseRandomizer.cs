@@ -20,9 +20,9 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 		}
 
 		public GameConfig Game { get; private set; }
-		public RandomizerConfig RandomizerConfig { get; private set; }
+		public IConfig RandomizerConfig { get; private set; }
 
-		internal void Initialize( GameConfig game, RandomizerConfig randomizerConfig )
+		internal void Initialize( GameConfig game, IConfig randomizerConfig )
 		{
 			this.Game = game;
 			this.RandomizerConfig = randomizerConfig;

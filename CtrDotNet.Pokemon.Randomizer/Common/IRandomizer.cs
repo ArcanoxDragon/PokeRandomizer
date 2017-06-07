@@ -7,7 +7,7 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 	public interface IRandomizer
 	{
 		GameConfig Game { get; }
-		RandomizerConfig RandomizerConfig { get; }
+		IConfig RandomizerConfig { get; }
 
 		Task RandomizeAbilities();
 		Task RandomizeEggMoves();
@@ -15,5 +15,6 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 		Task RandomizeLearnsets();
 		Task RandomizeStarters();
 		Task RandomizeTrainers();
+		Task RandomizeAll();
 	}
 }

@@ -52,14 +52,24 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 					// Find a new unique species from our current determined list of choices
 					uniqueList.Add( this.GetRandomSpecies( speciesChoose.Except( uniqueList ) ) );
 
-				foreach ( var entry in entryArrays.SelectMany( entryArray => entryArray.Where( entry => entry.Species > 0 ) ) )
+				foreach ( var entryArray in entryArrays )
 				{
-					entry.Species = (ushort) this.GetRandomSpecies( uniqueList ).Id;
-
-					if ( config.LevelMultiplier != 1.0m )
+					foreach ( var entry in entryArray.Where( entry => entry.Species > 0 ) )
 					{
-						entry.MinLevel = (byte) MathUtil.Clamp( (int) ( config.LevelMultiplier * entry.MinLevel ), 2, 100 );
-						entry.MaxLevel = (byte) MathUtil.Clamp( (int) ( config.LevelMultiplier * entry.MaxLevel ), 2, 100 );
+						entry.Species = (ushort) this.GetRandomSpecies( uniqueList ).Id;
+
+						if ( config.LevelMultiplier != 1.0m )
+						{
+							entry.MinLevel = (byte) MathUtil.Clamp( (int) ( config.LevelMultiplier * entry.MinLevel ), 2, 100 );
+							entry.MaxLevel = (byte) MathUtil.Clamp( (int) ( config.LevelMultiplier * entry.MaxLevel ), 2, 100 );
+						}
+					}
+
+					if ( config.TypeThemedAreas && config.TypePerSubArea ) // Re-generate type for the new sub-area
+					{
+						var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.rand );
+						speciesChoose = speciesChoose.Where( s => speciesInfo[ s.Id ].HasType( areaType ) )
+													 .ToList();
 					}
 				}
 

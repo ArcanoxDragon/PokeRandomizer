@@ -18,7 +18,10 @@
 	public interface IEncounters
 	{
 		bool AllowLegendaries { get; }
+
+		[ MinValue( 0.5 ) ]
 		decimal LevelMultiplier { get; }
+
 		bool TypeThemedAreas { get; }
 	}
 
@@ -29,6 +32,11 @@
 
 	public interface ILearnsets : IMoves
 	{
+		bool AtLeast4Moves { get; }
+
+		[ MinValue( 10 ), MaxValue( 100 ) ]
+		int LearnAllMovesBy { get; }
+
 		bool RandomizeLevels { get; }
 	}
 
@@ -42,7 +50,10 @@
 	public interface ITrainers
 	{
 		bool FriendKeepsStarter { get; }
+
+		[ MinValue( 0.5 ) ]
 		decimal LevelMultiplier { get; }
+
 		bool TypeThemed { get; }
 	}
 }

@@ -28,7 +28,6 @@ namespace CtrDotNet.Pokemon.Randomizer.Tests
 		{
 			this.SetUpOutputDirectory();
 
-			Randomizer = Randomization.Common.Randomizer.GetRandomizerFor( GameVersion.ORAS );
 			Game = new GameConfig( GameVersion.ORAS );
 
 			string romPath = Path.GetFullPath( Properties.Settings.Default.RomPathORAS );
@@ -49,6 +48,7 @@ namespace CtrDotNet.Pokemon.Randomizer.Tests
 					TypeThemedAreas = true
 				},
 				Learnsets = {
+					AtLeast4Moves = true,
 					RandomizeLevels = true
 				},
 				Starters = {
@@ -56,12 +56,12 @@ namespace CtrDotNet.Pokemon.Randomizer.Tests
 				},
 				Trainers = {
 					FriendKeepsStarter = true,
+					LevelMultiplier = 1.3m,
 					TypeThemed = true
 				}
 			};
 
-			Randomizer.Initialize( Game, randConfig );
-
+			Randomizer = Randomization.Common.Randomizer.GetRandomizer( Game, randConfig );
 			Game.OutputPathOverride = this.romOutputDir;
 		}
 

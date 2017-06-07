@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Garc;
 using CtrDotNet.Pokemon.Reference;
 using NUnit.Framework;

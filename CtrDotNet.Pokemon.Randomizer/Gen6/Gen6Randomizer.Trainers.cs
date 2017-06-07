@@ -97,12 +97,12 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 
 					// Fill the Pokemon's available moves with random choices from its learnset (up to its current level)
 					var moveset = learnsets[ pokemon.Species ].GetPossibleMoves( pokemon.Level ).ToList();
-					pokemon.Moves = new ushort[] { 0, 0, 0, 0 };
 
 					if ( trainer.Moves )
 					{
 						pokemon.HasItem = false;
 						pokemon.HasMoves = true;
+						pokemon.Moves = new ushort[] { 0, 0, 0, 0 };
 						for ( int m = 0; m < Math.Min( moveset.Count, 4 ); m++ )
 							pokemon.Moves[ m ] = moveset.Except( pokemon.Moves ).ToList().GetRandom( this.rand );
 					}

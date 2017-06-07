@@ -6,6 +6,14 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 {
 	public class Move : BaseDataStructure
 	{
+		#region Static
+
+		public const int CategoryStatus = 0;
+		public const int CategoryPhysical = 1;
+		public const int CategorySpecial = 2;
+
+		#endregion
+
 		public Move( GameVersion gameVersion ) : base( gameVersion ) { }
 
 		public byte Type { get; set; }

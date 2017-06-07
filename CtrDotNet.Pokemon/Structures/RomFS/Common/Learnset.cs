@@ -30,7 +30,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Common
 
 		public IEnumerable<ushort> GetPossibleMoves( int level )
 		{
-			return this.Moves.TakeWhile( ( move, i ) => this.Levels[ i ] <= level ).Distinct();
+			return this.Moves.Where( m => m > 0 ).TakeWhile( ( move, i ) => this.Levels[ i ] <= level ).Distinct();
 		}
 
 		public ushort[] GetMostLikelyMoves( int level )

@@ -53,6 +53,7 @@
     <None Include="Data\Abilities.db" />
     <None Include="Data\Items.db" />
     <None Include="Data\Moves.db" />
+    <None Include="Data\PokemonTypes.db" />
     <None Include="Data\Species.db" />
   </ItemGroup>
   <ItemGroup>

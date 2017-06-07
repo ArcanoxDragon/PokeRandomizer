@@ -4,7 +4,12 @@
 # Config files
 [Aa]pp.config
 [Ss]ettings.settings
-[Ss]ettings.designer.cs
+[Ss]ettings.[Dd]esigner.cs
+
+# Un-ignore template config files
+![Aa]pp.template.config
+![Ss]ettings.template.settings
+![Ss]ettings.[Dd]esigner.template.cs
 
 # User-specific files
 *.suo

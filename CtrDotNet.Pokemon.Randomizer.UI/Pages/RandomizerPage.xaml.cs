@@ -92,7 +92,7 @@ namespace CtrDotNet.Pokemon.Randomization.UI.Pages
 			string hintText = dep.GetValue( DependencyProperties.Properties.HintTextProperty ) as string
 							  ?? this.defaultHintText;
 
-			hintText = Regex.Replace( hintText, @"\s*\\n\s*", "\n\n" );
+			hintText = Regex.Replace( hintText, @"\s*\\n\s*", "\n" );
 
 			this.HintBox.Text = hintText;
 		}
@@ -181,6 +181,23 @@ namespace CtrDotNet.Pokemon.Randomization.UI.Pages
 			}
 		}
 
+		private void ResetConfig_Click( object sender, RoutedEventArgs e )
+		{
+			if ( MessageBox.Show( this.Parent as Window,
+								  "Are you sure you want to reset the settings back to default?\n\n" +
+								  "All unsaved changes will be lost.",
+								  "Reset Settings",
+								  MessageBoxButton.YesNo,
+								  MessageBoxImage.Question ) == MessageBoxResult.Yes )
+			{
+				this.Randomizer.Config = RandomizerConfig.Default.AsEditable();
+
+				// Refresh config in UI
+				this.DataContext = null;
+				this.DataContext = this.Randomizer;
+			}
+		}
+
 		private void SetOutputPath_Click( object sender, RoutedEventArgs e )
 		{
 			var dialog = new CommonOpenFileDialog {
@@ -224,8 +241,8 @@ namespace CtrDotNet.Pokemon.Randomization.UI.Pages
 
 					if ( update.Type == ProgressUpdate.UpdateType.Status )
 						await this.Dispatcher.InvokeAsync( () => {
-							progressBar.Value = (int) ( update.Progress * 100.0 );
-							dialog.Text = update.Status;
+							progressBar.Value = (int) ( progress.Progress * 100.0 );
+							dialog.Text = update.Status ?? progress.Status;
 						} );
 				}
 
@@ -235,15 +252,34 @@ namespace CtrDotNet.Pokemon.Randomization.UI.Pages
 				}
 				catch ( Exception ex )
 				{
-					await this.Dispatcher.InvokeAsync( () => MessageBox.Show( this.Parent as Window,
-																			  $"An error occurred while randomizing the game:\n\n" +
-																			  $"{ex.Message}",
-																			  "Randomization Error",
-																			  MessageBoxButton.OK,
-																			  MessageBoxImage.Error ) );
+					await this.Dispatcher.InvokeAsync(
+						() => MessageBox.Show( this.Parent as Window,
+											   $"An error occurred while randomizing the game:\n\n" +
+											   $"{ex.Message}",
+											   "Randomization Error",
+											   MessageBoxButton.OK,
+											   MessageBoxImage.Error ) );
+					dialog.Close( TaskDialogResult.Ok );
+					return;
 				}
 
 				dialog.Close( TaskDialogResult.Ok );
+
+				if ( progress.IsComplete )
+					await this.Dispatcher.InvokeAsync(
+						() => MessageBox.Show( this.Parent as Window,
+											   $"Game patch files were successfully saved to:\n\n" +
+											   $"{this.OutputPath}",
+											   "Randomization Complete",
+											   MessageBoxButton.OK,
+											   MessageBoxImage.Information ) );
+				else if ( progress.IsCancelled )
+					await this.Dispatcher.InvokeAsync(
+						() => MessageBox.Show( this.Parent as Window,
+											   "Randomization was cancelled. There may still be partial game patch files in the output directory.",
+											   "Randomization Cancelled",
+											   MessageBoxButton.OK,
+											   MessageBoxImage.Warning ) );
 			} );
 
 			dialog.Closing += ( o, ev ) => {

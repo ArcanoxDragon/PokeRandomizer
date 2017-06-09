@@ -16,19 +16,25 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        
-        <TextBlock Grid.Row="1"
-                   FontSize="24"
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Image Source="Resources/Pokeball.ico" Width="32" Height="32" Margin="0,0,16,-8"/>
+            <TextBlock FontSize="24"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center" Margin="0,8,0,0">
+                Welcome to the
+                <LineBreak />
+                Pokémon Randomizer!
+            </TextBlock>
+        </StackPanel>
+
+        <TextBlock Grid.Row="2"
+                   TextAlignment="Center"
                    TextWrapping="Wrap"
-                   TextAlignment="Center" Margin="0,8,0,0">
-            <Image Source="Resources/Pokeball.ico" Width="32" Height="32" Margin="0,0,0,-8" />
-            Welcome to the
-            <LineBreak />
-            Pokémon Randomizer!
+                   Margin="0,8,0,0">
+            Choose a game language and game folder to get started
         </TextBlock>
-        
-        <TextBlock Grid.Row="2" TextAlignment="Center" Margin="0,8,0,0">Choose a language and game folder to get started</TextBlock>
-        
+
         <ComboBox Name="ListLanguage" Grid.Row="3" Margin="8,16,8,0" SelectedIndex="2">
             <ComboBoxItem Content="Japanese (Kana)" Tag="{x:Static game:Language.JapaneseKana}" />
             <ComboBoxItem Content="Japanese (Kanji)" Tag="{x:Static game:Language.JapaneseKanji}" />
@@ -41,7 +47,7 @@
             <ComboBoxItem Content="Chinese (Simplified)" Tag="{x:Static game:Language.ChineseSimplified}" />
             <ComboBoxItem Content="Chinese (Traditional)" Tag="{x:Static game:Language.ChineseTraditional}" />
         </ComboBox>
-        
+
         <Button Grid.Row="4" Content="_Browse..." Margin="100,8,100,0" Click="BrowseButton_Click" Height="24" />
     </Grid>
 </Window>

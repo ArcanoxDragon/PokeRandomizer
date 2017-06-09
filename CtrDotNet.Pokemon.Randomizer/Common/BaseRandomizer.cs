@@ -8,6 +8,7 @@ using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Randomization.Config;
 using CtrDotNet.Pokemon.Randomization.Progress;
+using CtrDotNet.Pokemon.Randomization.Tasks;
 using CtrDotNet.Pokemon.Randomization.Utility;
 
 namespace CtrDotNet.Pokemon.Randomization.Common
@@ -38,65 +39,33 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 			return this.Config;
 		}
 
-		public async Task RandomizeAll( ProgressNotifier progress = null, CancellationToken? token = null )
+		public async Task RandomizeAll( ProgressNotifier progress, CancellationToken token )
 		{
-			var t = token ?? CancellationToken.None;
-			int subOp = 0;
-			double Progress( int op ) => ( op / (double) NumSubOperations );
+			var runner = new TaskRunner {
+				this.RandomizeAbilities,
+				this.RandomizeEggMoves,
+				this.RandomizeEncounters,
+				this.RandomizeLearnsets,
+				this.RandomizeStarters,
+				this.RandomizeTrainers
+			};
 
-			bool DoUpdate( string message )
-			{
-				if ( t.IsCancellationRequested )
-				{
-					progress?.NotifyUpdate( ProgressUpdate.Cancelled() );
-					return false;
-				}
+			if ( progress != null )
+				runner.ProgressNotifier.ProgressUpdated += ( s, u ) => progress.NotifyUpdate( u );
 
-				progress?.NotifyUpdate( ProgressUpdate.Update( message, Progress( subOp++ ) ) );
-				return true;
-			}
-
-			if ( !DoUpdate( "Randomizing abilities" ) )
-				return;
-
-			await this.RandomizeAbilities();
-
-			if ( !DoUpdate( "Randomizing egg moves" ) )
-				return;
-
-			await this.RandomizeEggMoves();
-
-			if ( !DoUpdate( "Randomizing wild encounters" ) )
-				return;
-
-			await this.RandomizeEncounters();
-
-			if ( !DoUpdate( "Randomizing Pokémon learnsets" ) )
-				return;
-
-			await this.RandomizeLearnsets();
-
-			if ( !DoUpdate( "Randomizing starter Pokémon" ) )
-				return;
-
-			await this.RandomizeStarters();
-
-			if ( !DoUpdate( "Randomizing trainer battles" ) )
-				return;
-
-			await this.RandomizeTrainers();
+			await runner.Run( token );
 
 			progress?.NotifyUpdate( ProgressUpdate.Completed() );
 		}
 
 		#region Randomization tasks
 
-		public abstract Task RandomizeAbilities();
-		public abstract Task RandomizeEggMoves();
-		public abstract Task RandomizeEncounters();
-		public abstract Task RandomizeLearnsets();
-		public abstract Task RandomizeStarters();
-		public abstract Task RandomizeTrainers();
+		public abstract Task RandomizeAbilities( ProgressNotifier progressNotifier, CancellationToken token );
+		public abstract Task RandomizeEggMoves( ProgressNotifier progressNotifier, CancellationToken token );
+		public abstract Task RandomizeEncounters( ProgressNotifier progressNotifier, CancellationToken token );
+		public abstract Task RandomizeLearnsets( ProgressNotifier progressNotifier, CancellationToken token );
+		public abstract Task RandomizeStarters( ProgressNotifier progressNotifier, CancellationToken token );
+		public abstract Task RandomizeTrainers( ProgressNotifier progressNotifier, CancellationToken token );
 
 		#endregion
 

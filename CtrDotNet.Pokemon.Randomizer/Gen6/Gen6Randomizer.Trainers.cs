@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Data;
+using CtrDotNet.Pokemon.Randomization.Progress;
 using CtrDotNet.Pokemon.Randomization.Utility;
 using CtrDotNet.Pokemon.Reference;
-using CtrDotNet.Pokemon.Utility;
 
 namespace CtrDotNet.Pokemon.Randomization.Gen6
 {
 	public partial class Gen6Randomizer
 	{
-		public override async Task RandomizeTrainers()
+		public override async Task RandomizeTrainers( ProgressNotifier progressNotifier, CancellationToken token )
 		{
+			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing trainer teams..." ) );
+
 			var config = this.ValidateAndGetConfig().Trainers;
 			var trainers = ( await this.Game.GetTrainerData() ).ToList();
 			var trainerNames = await this.Game.GetTextFile( TextNames.TrainerNames );
@@ -45,6 +48,8 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 			foreach ( var (i, trainer) in trainers.Pairs() )
 			{
 				string name = trainerNames[ i ];
+				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing trainer teams...\n{name}", i / (double) trainers.Count ) );
+
 				bool isFriend = this.IsTrainerFriend( name );
 				var chooseFrom = species;
 

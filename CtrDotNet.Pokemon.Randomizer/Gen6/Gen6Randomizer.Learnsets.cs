@@ -1,24 +1,33 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Data;
+using CtrDotNet.Pokemon.Randomization.Progress;
 using CtrDotNet.Pokemon.Randomization.Utility;
+using CtrDotNet.Pokemon.Reference;
 using Move = CtrDotNet.Pokemon.Structures.RomFS.Common.Move;
 
 namespace CtrDotNet.Pokemon.Randomization.Gen6
 {
 	public partial class Gen6Randomizer
 	{
-		public override async Task RandomizeLearnsets()
+		public override async Task RandomizeLearnsets( ProgressNotifier progressNotifier, CancellationToken token )
 		{
+			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing learnsets..." ) );
+
 			var config = this.ValidateAndGetConfig().Learnsets;
 			var learnsets = ( await this.Game.GetLearnsets() ).ToList();
-			var speciesInfo = ( await this.Game.GetPokemonInfo( edited: true ) ).ToList();
+			var speciesInfo = await this.Game.GetPokemonInfo( edited: true );
 			var moves = ( await this.Game.GetMoves() ).ToList();
+			var pokeNames = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
 
 			for ( int i = 0; i < learnsets.Count; i++ )
 			{
-				bool preferSameType = false;
+				string name = pokeNames[ speciesInfo.GetSpeciesForEntry( i ) ];
+				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing learnsets...\n{name}", i / (double) learnsets.Count ) );
+
+				bool preferSameType;
 				var learnset = learnsets[ i ];
 				var species = speciesInfo[ i ];
 				var chooseFrom = moves;

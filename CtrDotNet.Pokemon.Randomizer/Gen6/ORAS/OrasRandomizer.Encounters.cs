@@ -1,31 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Randomization.Legality;
+using CtrDotNet.Pokemon.Randomization.Progress;
 using CtrDotNet.Pokemon.Randomization.Utility;
+using CtrDotNet.Pokemon.Reference;
 using CtrDotNet.Pokemon.Structures.RomFS.Gen6.ORAS;
 
 namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 {
 	public partial class OrasRandomizer
 	{
-		public override async Task RandomizeEncounters()
+		public override async Task RandomizeEncounters( ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			const int MaxUniqueSpecies = 18;
+
+			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing wild Pokémon encounters..." ) );
 
 			var config = this.ValidateAndGetConfig().Encounters;
 			var species = Species.AllSpecies.ToList();
 			var speciesInfo = await this.Game.GetPokemonInfo( edited: true );
 			var encounters = ( await this.Game.GetEncounterData() ).Cast<OrasEncounterWild>().ToList();
+			var zoneNames = ( await this.Game.GetTextFile( TextNames.EncounterZoneNames ) ).Lines;
 
 			if ( !config.AllowLegendaries )
 				species = species.Except( Legendaries.AllLegendaries )
 								 .ToList();
 
+			int cur = 0;
 			foreach ( var encounter in encounters )
 			{
+				string name = zoneNames[ encounter.ZoneId ];
+				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing encounters...\n{name}", ( cur++ ) / (double) encounters.Count ) );
+
 				var entries = encounter.GetAllEntries().Where( e => e != null ).ToList();
 
 				if ( entries.Count == 0 )
@@ -107,6 +117,8 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 
 				encounter.EntryArrays = entryArrays;
 			}
+
+			progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing encounters...\nCompressing encounter data...this may take a while", 1.0 ) );
 
 			await this.Game.SaveEncounterData( encounters );
 		}

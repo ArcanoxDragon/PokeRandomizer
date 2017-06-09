@@ -117,6 +117,21 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.PokemonInfo
 
 		#region Form helpers
 
+		public ushort GetSpeciesForEntry( int entryId )
+		{
+			if ( entryId <= this.GameVersion.GetInfo().SpeciesCount )
+				return (ushort) entryId;
+
+			var entry = this.Table.FirstOrDefault( e => e.FormeCount > 1 &&
+														entryId >= e.FormStatsIndex &&
+														entryId < e.FormStatsIndex + e.FormeCount - 1 );
+
+			if ( entry == null )
+				return 0;
+
+			return (ushort) Array.IndexOf( this.Table, entry );
+		}
+
 		public int GetFormIndex( BaseSpeciesType species, int form )
 		{
 			return this[ species ].FormIndex( form );

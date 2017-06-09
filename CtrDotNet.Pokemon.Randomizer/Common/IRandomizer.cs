@@ -11,13 +11,13 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 		GameConfig Game { get; }
 		RandomizerConfig Config { get; set; }
 
-		Task RandomizeAll( ProgressNotifier progressNotifier = null, CancellationToken? token = null );
+		Task RandomizeAll( ProgressNotifier progressNotifier, CancellationToken token );
 
-		Task RandomizeAbilities();
-		Task RandomizeEggMoves();
-		Task RandomizeEncounters();
-		Task RandomizeLearnsets();
-		Task RandomizeStarters();
-		Task RandomizeTrainers();
+		Task RandomizeAbilities( ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeEggMoves( ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeEncounters( ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeLearnsets( ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeStarters( ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeTrainers( ProgressNotifier progressNotifier, CancellationToken token );
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using CommandLine.Options;
 using CtrDotNet.Pokemon.Game;
@@ -117,7 +118,7 @@ namespace CtrDotNet.Pokemon.RandomizerCLI
 				if ( !string.IsNullOrEmpty( OutputDir ) )
 					game.OutputPathOverride = OutputDir;
 
-				await randomizer.RandomizeAll();
+				await randomizer.RandomizeAll( null, CancellationToken.None );
 			}
 			catch ( Exception ex )
 			{

@@ -39,16 +39,51 @@
                     <Label FontWeight="Bold">Game Language:</Label>
                     <Label Content="{Binding Game.Language, Converter={StaticResource LanguageValueConverter}}" />
                 </WrapPanel>
-                <Button Margin="4" Height="24" Content="_Load config file..." Click="LoadConfigFile_Click" />
-                <Button Margin="4" Height="24" Content="_Save config file..." Click="SaveConfigFile_Click" />
 
-                <Button Margin="4" Height="24" Content="Set _output path..." Click="SetOutputPath_Click" />
+                <Separator />
+
+                <Button Margin="4" Height="24" Click="LoadConfigFile_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="../Resources/Open.png" Margin="0,0,8,0"></Image>
+                        <Label Padding="0">_Load config file...</Label>
+                    </StackPanel>
+                </Button>
+                <Button Margin="4" Height="24" Click="SaveConfigFile_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="../Resources/Save.png" Margin="0,0,8,0"></Image>
+                        <Label Padding="0">_Save config file...</Label>
+                    </StackPanel>
+                </Button>
+                <Button Margin="4" Height="24" Click="ResetConfig_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="../Resources/Revert.png" Margin="0,0,8,0"></Image>
+                        <Label Padding="0">_Reset to default settings...</Label>
+                    </StackPanel>
+                </Button>
+
+                <Separator />
+
+                <Button Margin="4" Height="24" Click="SetOutputPath_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="../Resources/OutputDir.png" Margin="0,0,8,0"></Image>
+                        <Label Padding="0">Set _output path...</Label>
+                    </StackPanel>
+                </Button>
                 <Label>Current output path:</Label>
                 <TextBlock TextWrapping="WrapWithOverflow"
-                           Text="{Binding ElementName=Page, Path=OutputPathDisplay}" />
-                <Button Margin="4" Height="24" Content="_Randomize!"
+                           Text="{Binding ElementName=Page, Path=OutputPathDisplay}" 
+                           Margin="8"/>
+
+                <Separator />
+
+                <Button Margin="4" Height="24"
                         IsEnabled="{Binding ElementName=Page, Path=HasOutputPath}"
-                        Click="Randomize_Click"/>
+                        Click="Randomize_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="../Resources/Start.png" Margin="0,0,8,0"></Image>
+                        <Label Padding="0">_Randomize!</Label>
+                    </StackPanel>
+                </Button>
             </StackPanel>
         </Grid>
 
@@ -116,7 +151,7 @@
                                         Ensure that each Pokémon will always have at least 4 moves at Level 1.
                                         This prevents situations where a wild or starter Pokémon has, for
                                         example, Explosion or Selfdestruct as its only move.
-                                        \n
+                                        \n\n
                                         Note: Regardless of whether this option is set or not, every Pokémon will
                                         be guaranteed to have at least one attack move at Level 1 which is either
                                         Normal-type, or a type that matches one of the Pokémon's types.
@@ -129,25 +164,25 @@
                                         Randomize the levels at which the Pokémon learns the moves in its
                                         learnset. This does not change the number of moves in the learnset;
                                         it only changes the levels at which they are learned.
-                                        \n
+                                        \n\n
                                         The levels chosen will be randomly picked between Level 1 and the level
                                         specified in the "Learn all moves by" option.
                                     </props:Properties.HintText>
                                 </CheckBox>
                                 <WrapPanel Margin="16,8,0,0">
+                                    <Label Content="Learn all moves by level" />
                                     <xctk:IntegerUpDown Minimum="10"
                                                         Maximum="100"
                                                         Width="50"
                                                         IsEnabled="{Binding ElementName=LearnsetsRandomizeLevels, Path=IsChecked}"
                                                         Value="{Binding Config.Learnsets.LearnAllMovesBy}" />
-                                    <Label Content="Learn all moves by" />
                                     <props:Properties.HintText>
                                         Ensure all moves are learned by this level.
-                                        \n
-                                        Default value: Level 65
-                                        Minimum value: Level 10
+                                        \n\n
+                                        Default value: Level 65\n
+                                        Minimum value: Level 10\n
                                         Maximum value: Level 100
-                                        \n
+                                        \n\n
                                         This setting has no effect if "Randomize levels" is not enabled.
                                     </props:Properties.HintText>
                                 </WrapPanel>
@@ -162,9 +197,9 @@
                                         When choosing new starters for the player to choose from,
                                         only pick from Pokémon which are actual starters in this
                                         game or other games.
-                                        \n
+                                        \n\n
                                         In Generation 6, this list contains the following Pokémon:
-                                        \n
+                                        \n\n
                                         Bulbasaur, Charmander, Squirtle,
                                         Chikorita, Cyndaquil, Totodile,
                                         Treecko, Torchic, Mudkip,
@@ -211,16 +246,16 @@
                                     </props:Properties.HintText>
                                 </CheckBox>
                                 <WrapPanel Margin="0,8,0,0">
+                                    <Label Content="Level multiplier" />
                                     <xctk:DecimalUpDown Minimum="0.5"
                                                         Maximum="4.0"
                                                         Width="50"
                                                         Value="{Binding Config.Trainers.LevelMultiplier}"
                                                         Increment="0.1" />
-                                    <Label Content="Level multiplier" />
                                     <props:Properties.HintText>
                                         Each Pokémon on a trainer's team will have its level multiplied
                                         by this value.
-                                        \n
+                                        \n\n
                                         Levels will be capped at Level 100.
                                     </props:Properties.HintText>
                                 </WrapPanel>
@@ -258,27 +293,27 @@
                                         When this option is enabled, each sub-area in an encounter
                                         zone will have its own type theme, instead of all sub-areas
                                         sharing a type with the main encounter zone.
-                                        \n
+                                        \n\n
                                         Examples of types of encounter sub-zone include Surf areas,
                                         Fishing areas, Red/Yellow/Purple flowers in X/Y, and
                                         Very Tall Grass in OmegaRuby/AlphaSapphire.
-                                        \n
+                                        \n\n
                                         This option has no effect if "Type-themed areas" is not enabled.
                                     </props:Properties.HintText>
                                 </CheckBox>
                                 <WrapPanel Margin="0,8,0,0">
+                                    <Label Content="Level multiplier" />
                                     <xctk:DecimalUpDown Minimum="0.5"
                                                         Maximum="4.0"
                                                         Width="50"
                                                         Value="{Binding Config.Encounters.LevelMultiplier}"
                                                         Increment="0.1" />
-                                    <Label Content="Level multiplier" />
                                     <props:Properties.HintText>
                                         Each Pokémon encounter entry in an area will have its minimum and
                                         maximum level multiplied by this value. Early areas will have very
                                         little difference, as the minimum and maximum encounter levels are
                                         usually in the range of 2-4.
-                                        \n
+                                        \n\n
                                         Levels will be capped at Level 100.
                                     </props:Properties.HintText>
                                 </WrapPanel>

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Randomization.Common;
@@ -68,37 +69,37 @@ namespace CtrDotNet.Pokemon.Randomizer.Tests
 		[ Test, Order( 1 ) ]
 		public async Task RandomizeAbilities()
 		{
-			await Randomizer.RandomizeAbilities();
+			await Randomizer.RandomizeAbilities( null, CancellationToken.None );
 		}
 
 		[ Test, Order( 2 ) ]
 		public async Task RandomizeEggMoves()
 		{
-			await Randomizer.RandomizeEggMoves();
+			await Randomizer.RandomizeEggMoves( null, CancellationToken.None );
 		}
 
 		[ Test, Order( 3 ) ]
 		public async Task RandomizeEncounters()
 		{
-			await Randomizer.RandomizeEncounters();
+			await Randomizer.RandomizeEncounters( null, CancellationToken.None );
 		}
 
 		[ Test, Order( 4 ) ]
 		public async Task RandomizeLearnsets()
 		{
-			await Randomizer.RandomizeLearnsets();
+			await Randomizer.RandomizeLearnsets( null, CancellationToken.None );
 		}
 
 		[ Test, Order( 5 ) ]
 		public async Task RandomizeStarters()
 		{
-			await Randomizer.RandomizeStarters();
+			await Randomizer.RandomizeStarters( null, CancellationToken.None );
 		}
 
 		[ Test, Order( 6 ) ]
 		public async Task RandomizeTrainers()
 		{
-			await Randomizer.RandomizeTrainers();
+			await Randomizer.RandomizeTrainers( null, CancellationToken.None );
 		}
 	}
 }

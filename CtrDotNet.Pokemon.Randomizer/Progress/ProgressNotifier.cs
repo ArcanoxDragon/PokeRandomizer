@@ -1,19 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CtrDotNet.Pokemon.Randomization.Utility;
 
 namespace CtrDotNet.Pokemon.Randomization.Progress
 {
 	public class ProgressNotifier
 	{
+		public delegate void ProgressUpdatedEvent( ProgressNotifier sender, ProgressUpdate update );
+
+		public event ProgressUpdatedEvent ProgressUpdated;
+
 		private readonly List<TaskCompletionSource<ProgressUpdate>> awaiting;
-		private Exception failureException;
 
 		public ProgressNotifier()
 		{
 			this.awaiting = new List<TaskCompletionSource<ProgressUpdate>>();
 		}
 
+		public Exception FailureException { get; private set; }
 		public bool IsComplete { get; private set; }
 		public bool IsCancelled { get; private set; }
 		public bool IsFailed { get; private set; }
@@ -23,7 +28,7 @@ namespace CtrDotNet.Pokemon.Randomization.Progress
 		public Task<ProgressUpdate> AwaitUpdate()
 		{
 			if ( this.IsFailed )
-				return Task.FromException<ProgressUpdate>( this.failureException );
+				return Task.FromException<ProgressUpdate>( this.FailureException );
 
 			if ( this.IsComplete )
 				return Task.FromResult( ProgressUpdate.Completed() );
@@ -33,7 +38,8 @@ namespace CtrDotNet.Pokemon.Randomization.Progress
 
 			var source = new TaskCompletionSource<ProgressUpdate>();
 
-			this.awaiting.Add( source );
+			lock ( this.awaiting )
+				this.awaiting.Add( source );
 
 			return source.Task;
 		}
@@ -46,12 +52,22 @@ namespace CtrDotNet.Pokemon.Randomization.Progress
 			this.IsComplete = update.Type == ProgressUpdate.UpdateType.Completed;
 			this.IsCancelled = update.Type == ProgressUpdate.UpdateType.Cancelled;
 			this.Progress = ( update.Progress >= 0 ) ? update.Progress : this.Progress;
-			this.Status = update.Status;
+			this.Status = update.Status ?? this.Status;
 
-			foreach ( var source in this.awaiting )
+			this.Progress = MathUtil.Clamp( this.Progress, 0.0, 1.0 );
+
+			List<TaskCompletionSource<ProgressUpdate>> curAwaiting;
+
+			lock ( this.awaiting )
+			{
+				curAwaiting = new List<TaskCompletionSource<ProgressUpdate>>( this.awaiting );
+				this.awaiting.Clear();
+			}
+
+			foreach ( var source in curAwaiting )
 				source.SetResult( update );
 
-			this.awaiting.Clear();
+			this.ProgressUpdated?.Invoke( this, update );
 		}
 
 		public void NotifyFailure( Exception e )
@@ -60,12 +76,18 @@ namespace CtrDotNet.Pokemon.Randomization.Progress
 				return;
 
 			this.IsFailed = true;
-			this.failureException = e;
+			this.FailureException = e;
 
-			foreach ( var source in this.awaiting )
+			List<TaskCompletionSource<ProgressUpdate>> curAwaiting;
+
+			lock ( this.awaiting )
+			{
+				curAwaiting = new List<TaskCompletionSource<ProgressUpdate>>( this.awaiting );
+				this.awaiting.Clear();
+			}
+
+			foreach ( var source in curAwaiting )
 				source.SetException( e );
-
-			this.awaiting.Clear();
 		}
 	}
 }

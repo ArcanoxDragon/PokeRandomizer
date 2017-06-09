@@ -1,0 +1,23 @@
+﻿<Page x:Class="CtrDotNet.Pokemon.Randomization.UI.Pages.RandomizerLoadingPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="160"
+      Title="RandomizerLoadingPage" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="1" Grid.Column="1" Text="Loading game...please wait" TextAlignment="Center" />
+        <ProgressBar Grid.Row="2" Grid.Column="1" Height="24" Margin="8,8,8,0" IsIndeterminate="True" />
+    </Grid>
+</Page>

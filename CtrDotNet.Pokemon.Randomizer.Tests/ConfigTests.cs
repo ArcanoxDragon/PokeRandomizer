@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Reflection;
 using CtrDotNet.Pokemon.Randomization.Config;
+using CtrDotNet.Pokemon.Randomizer.Tests.Utility;
 using NUnit.Framework;
 
 namespace CtrDotNet.Pokemon.Randomizer.Tests
@@ -56,6 +58,41 @@ namespace CtrDotNet.Pokemon.Randomizer.Tests
 			Assert.Catch<ArgumentOutOfRangeException>( () => Validator.ValidateConfig( this.config ), "Invalid value was not caught by validator" );
 
 			this.config.Learnsets.LearnAllMovesBy = RandomizerConfig.Default.Learnsets.LearnAllMovesBy;
+		}
+
+		[ Test ]
+		public void TestConfigCloning()
+		{
+			var original = new RandomizerConfig();
+
+			// Change everything from the default
+			void ChangeProps( object obj )
+			{
+				foreach ( var prop in obj.GetType().GetProperties( BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly ) )
+				{
+					var value = prop.GetValue( obj );
+
+					switch ( value )
+					{
+						case bool b:
+							prop.SetValue( obj, !b );
+							break;
+						case decimal d:
+							prop.SetValue( obj, d + 0.1m );
+							break;
+						case var o when !value.GetType().IsPrimitive:
+							ChangeProps( o );
+							break;
+					}
+				}
+			}
+
+			ChangeProps( original );
+
+			var cloned = original.AsEditable();
+
+			Assert.AreNotSame( original, cloned, "Cloned config should not be the same instance as the source!" );
+			AssertEx.DeepPropertiesAreEqual( original, cloned, "Clone config's properties were not equal to source!" );
 		}
 	}
 }

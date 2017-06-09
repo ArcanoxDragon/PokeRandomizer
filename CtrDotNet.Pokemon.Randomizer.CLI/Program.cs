@@ -70,7 +70,7 @@ namespace CtrDotNet.Pokemon.RandomizerCLI
 				return;
 			}
 
-			IConfig config;
+			RandomizerConfig config;
 			Language lang = Language.English;
 
 			if ( !string.IsNullOrEmpty( GameLanguage ) )
@@ -84,7 +84,7 @@ namespace CtrDotNet.Pokemon.RandomizerCLI
 
 			if ( ConfigFile == null )
 			{
-				config = RandomizerConfig.Default;
+				config = RandomizerConfig.Default.AsEditable();
 			}
 			else
 			{

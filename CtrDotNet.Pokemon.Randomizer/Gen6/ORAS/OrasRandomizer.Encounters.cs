@@ -15,7 +15,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 		{
 			const int MaxUniqueSpecies = 18;
 
-			var config = this.RandomizerConfig.Encounters;
+			var config = this.ValidateAndGetConfig().Encounters;
 			var species = Species.AllSpecies.ToList();
 			var speciesInfo = await this.Game.GetPokemonInfo( edited: true );
 			var encounters = ( await this.Game.GetEncounterData() ).Cast<OrasEncounterWild>().ToList();

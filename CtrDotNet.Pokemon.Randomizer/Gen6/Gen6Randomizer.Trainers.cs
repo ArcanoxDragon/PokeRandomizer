@@ -12,7 +12,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 	{
 		public override async Task RandomizeTrainers()
 		{
-			var config = this.RandomizerConfig.Trainers;
+			var config = this.ValidateAndGetConfig().Trainers;
 			var trainers = ( await this.Game.GetTrainerData() ).ToList();
 			var trainerNames = await this.Game.GetTextFile( TextNames.TrainerNames );
 			var evolutions = ( await this.Game.GetEvolutions() ).ToList();

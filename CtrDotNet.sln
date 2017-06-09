@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarcExploration", "GarcExpl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrDotNet.Pokemon.Randomizer.CLI", "CtrDotNet.Pokemon.Randomizer.CLI\CtrDotNet.Pokemon.Randomizer.CLI.csproj", "{88D6590F-2DE7-4582-8D55-4646D7218EE1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrDotNet.Pokemon.Randomizer.UI", "CtrDotNet.Pokemon.Randomizer.UI\CtrDotNet.Pokemon.Randomizer.UI.csproj", "{AEF8828C-844F-45FF-B0FB-7478DBDA43E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,12 @@ Global
 		{88D6590F-2DE7-4582-8D55-4646D7218EE1}.DebugNoDynamic|Any CPU.Build.0 = Debug|Any CPU
 		{88D6590F-2DE7-4582-8D55-4646D7218EE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88D6590F-2DE7-4582-8D55-4646D7218EE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEF8828C-844F-45FF-B0FB-7478DBDA43E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEF8828C-844F-45FF-B0FB-7478DBDA43E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEF8828C-844F-45FF-B0FB-7478DBDA43E1}.DebugNoDynamic|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEF8828C-844F-45FF-B0FB-7478DBDA43E1}.DebugNoDynamic|Any CPU.Build.0 = Debug|Any CPU
+		{AEF8828C-844F-45FF-B0FB-7478DBDA43E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEF8828C-844F-45FF-B0FB-7478DBDA43E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

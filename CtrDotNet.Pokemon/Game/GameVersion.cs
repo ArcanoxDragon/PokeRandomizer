@@ -13,6 +13,25 @@
 
 	public static class GameVersionExtensions
 	{
+		public static string GetDisplayName( this GameVersion game )
+		{
+			switch ( game )
+			{
+				case GameVersion.XY:
+					return "X/Y";
+				case GameVersion.ORAS:
+					return "OmegaRuby/AlphaSapphire";
+				case GameVersion.ORASDemo:
+					return "OmegaRuby/AlphaSapphire (Demo)";
+				case GameVersion.SunMoon:
+					return "Sun/Moon";
+				case GameVersion.SunMoonDemo:
+					return "Sun/Moon (Demo)";
+				default:
+					return "Unknown";
+			}
+		}
+
 		public static GameGeneration GetGeneration( this GameVersion game )
 		{
 			switch ( game )

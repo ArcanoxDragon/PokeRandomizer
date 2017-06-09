@@ -8,7 +8,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 	{
 		public override async Task RandomizeEggMoves()
 		{
-			var config = this.RandomizerConfig.EggMoves;
+			var config = this.ValidateAndGetConfig().EggMoves;
 			var eggMovesList = await this.Game.GetEggMoves();
 			var speciesInfo = ( await this.Game.GetPokemonInfo( edited: true ) ).ToList();
 			var moves = ( await this.Game.GetMoves() ).ToList();

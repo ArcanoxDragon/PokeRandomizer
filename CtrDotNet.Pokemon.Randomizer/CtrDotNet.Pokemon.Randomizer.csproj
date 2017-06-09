@@ -44,6 +44,7 @@
     <Compile Include="Common\IRandomizer.cs" />
     <Compile Include="Common\Randomizer.cs" />
     <Compile Include="Config\AbilitiesConfig.cs" />
+    <Compile Include="Config\ConfigExtensions.cs" />
     <Compile Include="Config\Contracts.cs" />
     <Compile Include="Config\EggMovesConfig.cs" />
     <Compile Include="Config\EncountersConfig.cs" />
@@ -78,6 +79,8 @@
     </Compile>
     <Compile Include="Legality\Legendaries.cs" />
     <Compile Include="Legality\Starters.cs" />
+    <Compile Include="Progress\ProgressNotifier.cs" />
+    <Compile Include="Progress\ProgressUpdate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\InternalsVisibleTo.cs" />
     <Compile Include="Reflection\HandlesGameAttribute.cs" />

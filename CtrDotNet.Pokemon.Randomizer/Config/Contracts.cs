@@ -12,6 +12,7 @@
 
 	public interface IStarters
 	{
+		bool AllowLegendaries { get; }
 		bool StartersOnly { get; }
 	}
 

@@ -9,7 +9,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 	{
 		public override async Task RandomizeAbilities()
 		{
-			var config = this.RandomizerConfig.Abilities;
+			var config = this.ValidateAndGetConfig().Abilities;
 			var pokeInfoTable = await this.Game.GetPokemonInfo();
 			var chooseFrom = Abilities.AllAbilities.Skip( 1 ).ToList();
 

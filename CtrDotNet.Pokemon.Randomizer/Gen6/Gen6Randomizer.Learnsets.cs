@@ -11,7 +11,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 	{
 		public override async Task RandomizeLearnsets()
 		{
-			var config = this.RandomizerConfig.Learnsets;
+			var config = this.ValidateAndGetConfig().Learnsets;
 			var learnsets = ( await this.Game.GetLearnsets() ).ToList();
 			var speciesInfo = ( await this.Game.GetPokemonInfo( edited: true ) ).ToList();
 			var moves = ( await this.Game.GetMoves() ).ToList();

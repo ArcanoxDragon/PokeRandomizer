@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Data;
+using CtrDotNet.Pokemon.Randomization.Legality;
 using CtrDotNet.Pokemon.Utility;
 using Starters = CtrDotNet.Pokemon.Randomization.Legality.Starters;
 
@@ -11,13 +12,17 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 	{
 		public override async Task RandomizeStarters()
 		{
-			var config = this.RandomizerConfig.Starters;
+			var config = this.ValidateAndGetConfig().Starters;
 			var starters = await this.Game.GetStarters();
 			var species = Species.AllSpecies.ToList();
 			var chosen = new List<SpeciesType>( starters.Generations.Count() * 3 );
 
 			if ( config.StartersOnly )
 				species = species.Intersect( Starters.AllStarters )
+								 .ToList();
+
+			if ( !config.AllowLegendaries )
+				species = species.Except( Legendaries.AllLegendaries )
 								 .ToList();
 
 			for ( int i = 0; i < chosen.Capacity; i++ )

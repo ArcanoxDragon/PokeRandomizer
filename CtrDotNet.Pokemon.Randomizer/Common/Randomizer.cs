@@ -9,7 +9,7 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 {
 	public static class Randomizer
 	{
-		public static IRandomizer GetRandomizer( GameConfig game, IConfig config )
+		public static IRandomizer GetRandomizer( GameConfig game, RandomizerConfig config )
 		{
 			var randomizers = from asm in AppDomain.CurrentDomain.GetAssemblies()
 							  from type in asm.GetTypes()

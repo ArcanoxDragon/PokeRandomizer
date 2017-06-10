@@ -1,0 +1,46 @@
+﻿<flat:MetroWindow
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:flat="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:my="clr-namespace:GarcBrowser"
+    x:Class="GarcBrowser.MainWindow"
+    mc:Ignorable="d"
+    GlowBrush="{StaticResource HighlightBrush}"
+    d:DataContext="{d:DesignInstance my:MainWindow}"
+    Title="CTR Browser" Height="480" Width="640">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="VisibilityConverter" />
+    </Window.Resources>
+
+    <DockPanel>
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar ToolBarTray.IsLocked="True">
+                <Button ToolTip="Open file..." Click="ButtonOpen_Click">
+                    <Image Source="Resources/Open.png" />
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <Label Content="{Binding Status}" />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <ProgressBar Width="200" Height="20"
+                             IsIndeterminate="{Binding HasProgress}"
+                             Visibility="{Binding IsWorking, Converter={StaticResource VisibilityConverter}}"
+                             Minimum="-1" Maximum="1"
+                             Value="{Binding Progress}" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" BorderThickness="0,1,0,0">
+            <Frame Name="ViewFrame"
+                   Source="Pages/SplashPage.xaml"
+                   NavigationUIVisibility="Hidden" />
+        </Border>
+    </DockPanel>
+</flat:MetroWindow>

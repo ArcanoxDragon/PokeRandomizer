@@ -1,133 +1,187 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CtrDotNet.Utility;
 using IO = System.IO;
 
 namespace CtrDotNet.CTR.Cro
 {
-	public class CroFile : IWritableFile
-	{
-		#region Static
+    public class CroFile : IWritableFile
+    {
+        #region Static
 
-		public static async Task<CroFile> FromFile( string path )
-		{
-			using ( var fs = new IO.FileStream( path, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read ) )
-			{
-				byte[] buffer = new byte[ fs.Length ];
-				await fs.ReadAsync( buffer, 0, buffer.Length );
-				CroFile file = new CroFile( path );
-				file.Read( buffer );
-				return file;
-			}
-		}
+        public static async Task<CroFile> FromFile( string path )
+        {
+            using ( var fs = new IO.FileStream( path, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read ) )
+            {
+                byte[] buffer = new byte[ fs.Length ];
+                await fs.ReadAsync( buffer, 0, buffer.Length );
+                CroFile file = new CroFile( path );
+                file.Read( buffer );
+                return file;
+            }
+        }
 
-		private const int SizeOfPointer = 0x04;
-		private const int SizeOfHeader = 0x134 + SizeOfPointer;
-		private const int PointerCodeOffset = 0xB0;
-		private const int PointerCodeSize = 0xB4;
-		private const int PointerDataOffset = 0xB8;
-		private const int PointerDataSize = 0xBC;
+        private const int SizeOfPointer = 0x04;
+        private const int SizeOfHeader = 0x134 + SizeOfPointer;
+        private const int PointerCodeOffset = 0xB0;
+        private const int PointerCodeSize = 0xB4;
+        private const int PointerDataOffset = 0xB8;
+        private const int PointerDataSize = 0xBC;
 
-		#endregion
+        public enum SectionType
+        {
+            Code,
+            Data
+        }
 
-		private byte[] buffer;
+        public struct Section
+        {
+            public uint Size;
+            public uint Offset;
+            public int SizePointer;
+            public int OffsetPointer;
+        }
 
-		public CroFile( string path )
-		{
-			this.Path = path;
-		}
+        #endregion
 
-		public byte[] Data => this.SafeGetBuffer();
-		public string Path { get; }
-		public uint CodeOffset => BitConverter.ToUInt32( this.SafeGetBuffer(), PointerCodeOffset );
-		public uint CodeSize => BitConverter.ToUInt32( this.SafeGetBuffer(), PointerCodeSize );
-		public uint DataOffset => BitConverter.ToUInt32( this.SafeGetBuffer(), PointerDataOffset );
-		public uint DataSize => BitConverter.ToUInt32( this.SafeGetBuffer(), PointerDataSize );
+        private byte[] buffer;
+        private Dictionary<SectionType, Section> sections;
 
-		private byte[] SafeGetBuffer()
-		{
-			if ( this.buffer == null )
-				throw new InvalidOperationException( "Data cannot be read before the file is loaded" );
+        public CroFile( string path )
+        {
+            this.Path = path;
+        }
 
-			return this.buffer;
-		}
+        public byte[] Data => this.SafeGetBuffer();
+        public string Path { get; }
+        public IReadOnlyDictionary<SectionType, Section> Sections => this.sections;
 
-		public void Read( byte[] file )
-		{
-			// Make sure the file contains at least a full header
-			Assertions.AssertLength( SizeOfHeader, file );
+//		public uint CodeOffset => BitConverter.ToUInt32( this.SafeGetBuffer(), PointerCodeOffset );
+//		public uint CodeSize => BitConverter.ToUInt32( this.SafeGetBuffer(), PointerCodeSize );
+//		public uint DataOffset => BitConverter.ToUInt32( this.SafeGetBuffer(), PointerDataOffset );
+//		public uint DataSize => BitConverter.ToUInt32( this.SafeGetBuffer(), PointerDataSize );
 
-			this.buffer = file;
-		}
+        private byte[] SafeGetBuffer()
+        {
+            if ( this.buffer == null )
+                throw new InvalidOperationException( "Data cannot be read before the file is loaded" );
 
-		public Task<byte[]> Write() => Task.FromResult( this.Data );
+            return this.buffer;
+        }
 
-		public Task SaveFile() => this.SaveFileTo( PathUtil.GetPathBase( this.Path, "RomFS" ) );
+        public void Read( byte[] file )
+        {
+            // Make sure the file contains at least a full header
+            Assertions.AssertLength( SizeOfHeader, file );
 
-		public async Task SaveFileTo( string path )
-		{
-			string filename = IO.Path.GetFileName( this.Path );
-			string outPath = IO.Path.Combine( path, "RomFS" );
-			byte[] data = this.SafeGetBuffer();
+            this.buffer = file;
 
-			if ( !IO.Directory.Exists( outPath ) )
-				IO.Directory.CreateDirectory( outPath );
+            this.sections = new Dictionary<SectionType, Section> {
+                {
+                    SectionType.Code,
+                    new Section {
+                        SizePointer = PointerCodeSize,
+                        OffsetPointer = PointerCodeOffset,
+                        Size = BitConverter.ToUInt32( file, PointerCodeSize ),
+                        Offset = BitConverter.ToUInt32( file, PointerCodeOffset )
+                    }
+                }, {
+                    SectionType.Data,
+                    new Section {
+                        SizePointer = PointerDataSize,
+                        OffsetPointer = PointerDataOffset,
+                        Size = BitConverter.ToUInt32( file, PointerDataSize ),
+                        Offset = BitConverter.ToUInt32( file, PointerDataOffset )
+                    }
+                }
+            };
+        }
 
-			using ( var fs = new IO.FileStream( IO.Path.Combine( outPath, filename ), IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None ) )
-				await fs.WriteAsync( data, 0, data.Length );
-		}
+        public Task<byte[]> Write() => Task.FromResult( this.Data );
 
-		private async Task<byte[]> GetSection( uint offset, uint size )
-		{
-			byte[] data = this.SafeGetBuffer();
+        public Task SaveFile() => this.SaveFileTo( PathUtil.GetPathBase( this.Path, "RomFS" ) );
 
-			Assertions.AssertLength( this.DataOffset + this.DataSize, data );
+        public async Task SaveFileTo( string path )
+        {
+            string filename = IO.Path.GetFileName( this.Path );
+            string outPath = IO.Path.Combine( path, "RomFS" );
+            byte[] data = this.SafeGetBuffer();
 
-			using ( var ms = new IO.MemoryStream() )
-			{
-				await ms.WriteAsync( data, (int) offset, (int) size );
-				return ms.ToArray();
-			}
-		}
+            if ( !IO.Directory.Exists( outPath ) )
+                IO.Directory.CreateDirectory( outPath );
 
-		private async Task WriteSection( int offsetPointer, int sizePointer, uint offset, uint size, byte[] section )
-		{
-			byte[] data = this.SafeGetBuffer();
-			uint oldSize = size;
+            using ( var fs = new IO.FileStream( IO.Path.Combine( outPath, filename ), IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None ) )
+                await fs.WriteAsync( data, 0, data.Length );
+        }
 
-			using ( var ms = new IO.MemoryStream() )
-			using ( var bw = new IO.BinaryWriter( ms ) )
-			{
-				// Write up to offset pointer
-				await ms.WriteAsync( data, 0, offsetPointer );
+        private async Task<byte[]> GetSection( uint offset, uint size )
+        {
+            byte[] data = this.SafeGetBuffer();
 
-				// Write new section coordinates
-				bw.Write( offset );
-				bw.Write( (uint) section.Length );
+            using ( var ms = new IO.MemoryStream() )
+            {
+                await ms.WriteAsync( data, (int) offset, (int) size );
+                return ms.ToArray();
+            }
+        }
 
-				// Write up to beginning of section
-				await ms.WriteAsync( data, sizePointer + SizeOfPointer, (int) ( offset - ( sizePointer + SizeOfPointer ) ) );
+        private async Task WriteSection( int offsetPointer, int sizePointer, uint offset, uint size, byte[] section )
+        {
+            byte[] data = this.SafeGetBuffer();
+            uint oldSize = size;
 
-				// Write new section
-				await ms.WriteAsync( section, 0, section.Length );
+            using ( var ms = new IO.MemoryStream() )
+            using ( var bw = new IO.BinaryWriter( ms ) )
+            {
+                // Write up to offset pointer
+                await ms.WriteAsync( data, 0, offsetPointer );
 
-				// Write stuff after old section
-				await ms.WriteAsync( data, (int) ( offset + oldSize ), (int) ( data.Length - ( offset + oldSize ) ) );
+                // Write new section coordinates
+                bw.Write( offset );
+                bw.Write( (uint) section.Length );
 
-				this.buffer = ms.ToArray();
-			}
-		}
+                // Write up to beginning of section
+                await ms.WriteAsync( data, sizePointer + SizeOfPointer, (int) ( offset - ( sizePointer + SizeOfPointer ) ) );
 
-		public Task<byte[]> GetCodeSection()
-			=> this.GetSection( this.CodeOffset, this.CodeSize );
+                // Write new section
+                await ms.WriteAsync( section, 0, section.Length );
 
-		public Task WriteCodeSection( byte[] section )
-			=> this.WriteSection( PointerCodeOffset, PointerCodeSize, this.CodeOffset, this.CodeSize, section );
+                // Write stuff after old section
+                await ms.WriteAsync( data, (int) ( offset + oldSize ), (int) ( data.Length - ( offset + oldSize ) ) );
 
-		public Task<byte[]> GetDataSection()
-			=> this.GetSection( this.DataOffset, this.DataSize );
+                this.buffer = ms.ToArray();
+            }
+        }
 
-		public Task WriteDataSection( byte[] section )
-			=> this.WriteSection( PointerDataOffset, PointerDataSize, this.DataOffset, this.DataSize, section );
-	}
+        public Task<byte[]> GetSection( SectionType section )
+        {
+            if ( !this.sections.ContainsKey( section ) )
+                throw new NotSupportedException( $"Unknown section {section}" );
+
+            var sec = this.sections[ section ];
+            return this.GetSection( sec.Offset, sec.Size );
+        }
+
+        public Task WriteSection( SectionType section, byte[] data )
+        {
+            if ( !this.sections.ContainsKey( section ) )
+                throw new NotSupportedException( $"Unknown section {section}" );
+
+            var sec = this.sections[ section ];
+            return this.WriteSection( sec.OffsetPointer, sec.SizePointer, sec.Offset, sec.Size, data );
+        }
+
+        public Task<byte[]> GetCodeSection()
+            => this.GetSection( SectionType.Code );
+
+        public Task WriteCodeSection( byte[] section )
+            => this.WriteSection( SectionType.Code, section );
+
+        public Task<byte[]> GetDataSection()
+            => this.GetSection( SectionType.Data );
+
+        public Task WriteDataSection( byte[] section )
+            => this.WriteSection( SectionType.Data, section );
+    }
 }

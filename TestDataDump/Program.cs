@@ -6,9 +6,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Reference;
-using TestDataDump.Properties;
+using PokemonDataDump.Properties;
 
-namespace TestDataDump
+namespace PokemonDataDump
 {
 	class Program
 	{
@@ -19,7 +19,7 @@ namespace TestDataDump
 
 		private static void Main()
 		{
-			Initialize().Wait();
+			Program.Initialize().Wait();
 		}
 
 		private static async Task Initialize()
@@ -87,10 +87,10 @@ namespace TestDataDump
 			}
 		}
 
-		private static Task DumpSpeciesNames() => DumpStringTable( TextNames.SpeciesNames, "Species" );
-		private static Task DumpAbilityNames() => DumpStringTable( TextNames.AbilityNames, "Abilities" );
-		private static Task DumpItemNames() => DumpStringTable( TextNames.ItemNames, "Items" );
-		private static Task DumpMoveNames() => DumpStringTable( TextNames.MoveNames, "Moves" );
-		private static Task DumpTypeNames() => DumpStringTable( TextNames.Types, "PokemonTypes" );
+		private static Task DumpSpeciesNames() => Program.DumpStringTable( TextNames.SpeciesNames, "Species" );
+		private static Task DumpAbilityNames() => Program.DumpStringTable( TextNames.AbilityNames, "Abilities" );
+		private static Task DumpItemNames() => Program.DumpStringTable( TextNames.ItemNames, "Items" );
+		private static Task DumpMoveNames() => Program.DumpStringTable( TextNames.MoveNames, "Moves" );
+		private static Task DumpTypeNames() => Program.DumpStringTable( TextNames.Types, "PokemonTypes" );
 	}
 }

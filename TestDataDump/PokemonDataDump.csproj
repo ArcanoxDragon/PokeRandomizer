@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{8D2E3609-5096-4C1B-9DC4-ED810FB1F5F6}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>TestDataDump</RootNamespace>
-    <AssemblyName>TestDataDump</AssemblyName>
+    <RootNamespace>PokemonDataDump</RootNamespace>
+    <AssemblyName>PokemonDataDump</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

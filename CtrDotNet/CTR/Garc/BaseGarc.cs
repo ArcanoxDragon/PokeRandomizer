@@ -19,6 +19,8 @@ namespace CtrDotNet.CTR.Garc
 			return Task.CompletedTask;
 		}
 
+	    public virtual bool? IsFileCompressed( int file ) => false;
+
 		public virtual Task<byte[]> Write() => Task.FromResult( this.Data );
 
 		public virtual Task<byte[][]> GetFiles()

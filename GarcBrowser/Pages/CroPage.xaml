@@ -1,0 +1,60 @@
+﻿<my:FileEditorPage x:Class="GarcBrowser.Pages.CroPage"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                   xmlns:my="clr-namespace:GarcBrowser.Pages"
+                   xmlns:convert="clr-namespace:GarcBrowser.ValueConverters"
+                   xmlns:controls="clr-namespace:GarcBrowser.Controls"
+                   mc:Ignorable="d"
+                   d:DesignWidth="800" d:DesignHeight="600"
+                   Title="GarcPage"
+                   d:DataContext="{d:DesignInstance my:CroPage}"
+                   Loaded="Page_Loaded">
+    <Page.Resources>
+        <convert:CompressedValueConverter x:Key="CompressedConverter" />
+        <convert:FileSizeConverter x:Key="FileSizeConverter" />
+        <convert:HexConverter x:Key="HexConverter" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+
+        <DockPanel>
+            <ToolBarTray DockPanel.Dock="Top">
+                <ToolBar ToolBarTray.IsLocked="True">
+                    <Label>Entries:</Label>
+                    <Label Content="{Binding Path=Files.Count}" />
+                </ToolBar>
+            </ToolBarTray>
+
+            <ListView ItemsSource="{Binding Files}" Width="Auto" MouseDoubleClick="ListView_MouseDoubleClick">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Section" DisplayMemberBinding="{Binding Path=SectionName}" />
+                        <GridViewColumn Header="Size"
+                                        DisplayMemberBinding="{Binding Path=Size, Converter={StaticResource FileSizeConverter}}" />
+                        <GridViewColumn Header="Offset"
+                                        DisplayMemberBinding="{Binding Path=Offset, Converter={StaticResource HexConverter}}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1"
+                      Width="5"
+                      ResizeBehavior="PreviousAndNext"
+                      VerticalAlignment="Stretch"
+                      HorizontalAlignment="Center" />
+
+        <controls:HexControl Grid.Column="2"
+                             x:Name="HexEditor"
+                             Width="Auto"
+                             Height="Auto" />
+
+    </Grid>
+</my:FileEditorPage>

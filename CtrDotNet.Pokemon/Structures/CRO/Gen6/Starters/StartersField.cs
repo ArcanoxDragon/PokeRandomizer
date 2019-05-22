@@ -9,8 +9,8 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 	{
 		#region Static
 
-		public const int CodeSectionOffsetXY = -0x01;
 		public const int CodeSectionOffsetORAS = 0xF8EEC;
+		public const int CodeSectionOffsetXY = 0xF7EDC;
 		public const int EntrySizeXY = 0x18;
 		public const int EntrySizeORAS = 0x24;
 
@@ -18,7 +18,7 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 
 		public StartersField( GameVersion gameVersion ) : base( gameVersion ) { }
 
-		private int CodeSectionOffset => this.GameVersion.IsORAS() ? CodeSectionOffsetORAS : throw new NotSupportedException( "XY not supported yet" );
+		private int CodeSectionOffset => this.GameVersion.IsORAS() ? CodeSectionOffsetORAS : CodeSectionOffsetXY;
 		private int EntrySize => this.GameVersion.IsORAS() ? EntrySizeORAS : EntrySizeXY;
 
 		private int GetOffsetForGen( int gen )

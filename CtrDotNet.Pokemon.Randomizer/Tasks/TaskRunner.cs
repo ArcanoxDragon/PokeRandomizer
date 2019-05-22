@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,7 +50,15 @@ namespace CtrDotNet.Pokemon.Randomization.Tasks
 					}
 				};
 
-				await task( subNotifier, token );
+				try
+				{
+					await task( subNotifier, token );
+				}
+				catch ( Exception e )
+				{
+					this.ProgressNotifier?.NotifyFailure( e );
+					throw;
+				}
 
 				this.ProgressNotifier.NotifyUpdate( ProgressUpdate.Update( this.ProgressNotifier.Status, ( cur++ ) / (double) this.tasks.Count ) );
 			}

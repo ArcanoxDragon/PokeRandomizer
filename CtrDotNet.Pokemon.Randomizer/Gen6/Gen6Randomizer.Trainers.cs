@@ -6,6 +6,7 @@ using CtrDotNet.Pokemon.Data;
 using CtrDotNet.Pokemon.Randomization.Progress;
 using CtrDotNet.Pokemon.Randomization.Utility;
 using CtrDotNet.Pokemon.Reference;
+using CtrDotNet.Utility.Extensions;
 
 namespace CtrDotNet.Pokemon.Randomization.Gen6
 {
@@ -19,7 +20,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 			var trainers = ( await this.Game.GetTrainerData() ).ToList();
 			var trainerNames = await this.Game.GetTextFile( TextNames.TrainerNames );
 			var evolutions = ( await this.Game.GetEvolutions() ).ToList();
-			var species = Species.AllSpecies.ToList();
+			var species = Species.ValidSpecies.ToList();
 
 			// Get already-edited versions of the info so that we get the shuffled version
 			var starters = await this.Game.GetStarters( edited: true );
@@ -47,7 +48,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 
 			foreach ( var (i, trainer) in trainers.Pairs() )
 			{
-				string name = trainerNames[ i ];
+				string name = i < trainerNames.LineCount ? trainerNames[ i ] : "UNKNOWN";
 				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing trainer teams...\n{name}", i / (double) trainers.Count ) );
 
 				bool isFriend = this.IsTrainerFriend( name );

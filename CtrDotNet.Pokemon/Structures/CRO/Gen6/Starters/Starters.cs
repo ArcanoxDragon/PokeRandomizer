@@ -10,13 +10,13 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 {
 	public class Starters
 	{
-		private readonly StartersField startersField;
+		private readonly StartersField      startersField;
 		private readonly StartersPokeSelect startersPokeSelect;
 
 		public Starters( GameVersion gameVersion )
 		{
-			this.GameVersion = gameVersion;
-			this.startersField = new StartersField( gameVersion );
+			this.GameVersion        = gameVersion;
+			this.startersField      = new StartersField( gameVersion );
 			this.startersPokeSelect = new StartersPokeSelect( gameVersion );
 		}
 
@@ -50,7 +50,7 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 
 		public async Task Read( CroFile dllField, CroFile dllPoke3Select )
 		{
-			byte[] fieldCode = await dllField.GetCodeSection();
+			byte[] fieldCode      = await dllField.GetCodeSection();
 			byte[] pokeSelectData = await dllPoke3Select.GetDataSection();
 
 			fieldCode.WithReader( br => this.startersField.ReadData( br ) );
@@ -59,7 +59,7 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 			for ( int gen = 1; gen <= 6; gen++ )
 			for ( int entry = 0; entry < 3; entry++ )
 			{
-				ushort speciesField = this.startersField.StarterSpecies[ gen - 1 ][ entry ];
+				ushort speciesField      = this.startersField.StarterSpecies[ gen - 1 ][ entry ];
 				ushort speciesPokeSelect = this.startersPokeSelect.StarterSpecies[ gen - 1 ][ entry ];
 
 				if ( speciesField != speciesPokeSelect )
@@ -70,7 +70,7 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 
 		public async Task Write( CroFile dllField, CroFile dllPoke3Select )
 		{
-			byte[] fieldCode = await dllField.GetCodeSection();
+			byte[] fieldCode      = await dllField.GetCodeSection();
 			byte[] pokeSelectData = await dllPoke3Select.GetDataSection();
 
 			this.SynchronizeSpecies();

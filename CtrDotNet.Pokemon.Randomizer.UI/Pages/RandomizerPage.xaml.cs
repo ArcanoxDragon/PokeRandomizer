@@ -273,6 +273,14 @@ namespace CtrDotNet.Pokemon.Randomization.UI.Pages
 											   "Randomization Complete",
 											   MessageBoxButton.OK,
 											   MessageBoxImage.Information ) );
+				else if ( progress.IsFailed )
+					await this.Dispatcher.InvokeAsync(
+						() => MessageBox.Show( this.Parent as Window,
+											   $"An error occurred while randomizing the game:\n\n" +
+											   $"{progress.FailureException.Message}",
+											   "Randomization Failed",
+											   MessageBoxButton.OK,
+											   MessageBoxImage.Error ) );
 				else if ( progress.IsCancelled )
 					await this.Dispatcher.InvokeAsync(
 						() => MessageBox.Show( this.Parent as Window,

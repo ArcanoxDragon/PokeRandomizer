@@ -45,7 +45,7 @@ namespace CtrDotNet.Pokemon.Structures.RomFS.Gen6.XY
 			this.FillEmpty();
 		}
 
-		public override int DataStart => 0xE;
+		public override int DataStart => 0x10;
 		public override int DataLength => 0x178;
 
 		public override int NumEntries => NumTallGrass +

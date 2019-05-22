@@ -21,15 +21,23 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 
 		protected BaseRandomizer()
 		{
-			this.rand = new Random();
+			this.RandomSeed = Environment.TickCount; // Default constructor of Random uses this
+			this.rand       = new Random( this.RandomSeed );
 		}
 
-		public RandomizerConfig Config { get; set; }
-		public GameConfig Game { get; private set; }
+		protected BaseRandomizer( int seed )
+		{
+			this.RandomSeed = seed;
+			this.rand       = new Random( seed );
+		}
+
+		public RandomizerConfig Config     { get; set; }
+		public GameConfig       Game       { get; private set; }
+		public int              RandomSeed { get; }
 
 		internal void Initialize( GameConfig game, RandomizerConfig randomizerConfig )
 		{
-			this.Game = game;
+			this.Game   = game;
 			this.Config = randomizerConfig;
 		}
 
@@ -47,7 +55,7 @@ namespace CtrDotNet.Pokemon.Randomization.Common
 				this.RandomizeEncounters,
 				this.RandomizeLearnsets,
 				this.RandomizeStarters,
-				this.RandomizeTrainers
+				this.RandomizeTrainers,
 			};
 
 			if ( progress != null )

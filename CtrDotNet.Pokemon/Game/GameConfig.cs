@@ -20,17 +20,17 @@ namespace CtrDotNet.Pokemon.Game
 {
 	public class GameConfig
 	{
-		private const int FileCountXy = 271;
+		private const int FileCountXy       = 271;
 		private const int FileCountOrasDemo = 301;
-		private const int FileCountOras = 299;
-		private const int FileCountSmDemo = 239;
-		private const int FileCountSm = 311; // only a guess for now
+		private const int FileCountOras     = 299;
+		private const int FileCountSmDemo   = 239;
+		private const int FileCountSm       = 311; // only a guess for now
 
 		#region Constructors
 
 		public GameConfig( int fileCount )
 		{
-			GameVersion game = GameVersion.Invalid;
+			var game = GameVersion.Invalid;
 
 			switch ( fileCount )
 			{
@@ -66,16 +66,16 @@ namespace CtrDotNet.Pokemon.Game
 
 		#region Properties
 
-		public GameVersion Version { get; }
-		public GarcReference[] GarcFiles { get; private set; }
-		public TextVariableCode[] Variables { get; private set; }
-		public TextReference[] TextFiles { get; private set; }
-		public string RomPath { get; private set; }
-		public string RomFS => Path.Combine( this.RomPath, "RomFS" );
-		public string ExeFS => Path.Combine( this.RomPath, "ExeFS" );
-		public Language Language { get; set; }
-		public string OutputPathOverride { get; set; }
-		public bool IsOverridingOutPath => !string.IsNullOrEmpty( this.OutputPathOverride );
+		public GameVersion        Version             { get; }
+		public GarcReference[]    GarcFiles           { get; private set; }
+		public TextVariableCode[] Variables           { get; private set; }
+		public TextReference[]    TextFiles           { get; private set; }
+		public string             RomPath             { get; private set; }
+		public string             RomFS               => Path.Combine( this.RomPath, "RomFS" );
+		public string             ExeFS               => Path.Combine( this.RomPath, "ExeFS" );
+		public Language           Language            { get; set; }
+		public string             OutputPathOverride  { get; set; }
+		public bool               IsOverridingOutPath => !string.IsNullOrEmpty( this.OutputPathOverride );
 
 		#endregion
 
@@ -115,7 +115,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task Initialize( string romPath, Language lang )
 		{
-			this.RomPath = romPath;
+			this.RomPath  = romPath;
 			this.Language = lang;
 
 			this.GetGameData( this.Version );
@@ -136,12 +136,12 @@ namespace CtrDotNet.Pokemon.Game
 		public async Task<EggMoves[]> GetEggMoves( bool edited = false )
 		{
 			var garcEggMoves = await this.GetGarc( GarcNames.EggMoves, edited: edited );
-			byte[][] files = await garcEggMoves.GetFiles();
-			EggMoves[] array = new EggMoves[ files.Length ];
+			var files        = await garcEggMoves.GetFiles();
+			var array        = new EggMoves[ files.Length ];
 
-			for ( int i = 0; i < files.Length; i++ )
+			for ( var i = 0; i < files.Length; i++ )
 			{
-				byte[] file = files[ i ];
+				var file = files[ i ];
 
 				array[ i ] = EggMoves.New( this.Version );
 				array[ i ].Read( file );
@@ -152,7 +152,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		internal async Task SaveEggMoves( IEnumerable<EggMoves> eggMoves, ReferencedGarc garcEggMoves )
 		{
-			byte[][] files = eggMoves.Select( em => em.Write() ).ToArray();
+			var files = eggMoves.Select( em => em.Write() ).ToArray();
 
 			await garcEggMoves.SetFiles( files );
 		}
@@ -168,19 +168,21 @@ namespace CtrDotNet.Pokemon.Game
 
 		#region Encounter Data
 
+		private int ZoneDataPositionFromEnd => this.Version == GameVersion.XY ? 1 : 2;
+
 		public async Task<IEnumerable<Gen6.EncounterWild>> GetEncounterData( bool edited = false )
 		{
-			var encounterGarc = await this.GetGarc( GarcNames.EncounterData, useLz: true, edited: edited );
+			var encounterGarc     = await this.GetGarc( GarcNames.EncounterData, useLz: true, edited: edited );
+			var zoneDataFileIndex = encounterGarc.Garc.FileCount - this.ZoneDataPositionFromEnd;
 
-			// All but last two files are the encounter data
-			byte[][] encounterBuffers = ( await encounterGarc.GetFiles() ).Take( encounterGarc.Garc.FileCount - 2 ).ToArray();
+			// All files up until the zone data file are the encounter data
+			var encounterBuffers = ( await encounterGarc.GetFiles() ).Take( zoneDataFileIndex ).ToArray();
+			var zoneDataBuffer   = await encounterGarc.GetFile( zoneDataFileIndex );
+			var zoneData         = new Gen6.ZoneData( this.Version );
 
-			// Second-to-last file is zone data
-			byte[] zoneDataBuffer = await encounterGarc.GetFile( encounterGarc.Garc.FileCount - 2 );
-			Gen6.ZoneData zoneData = new Gen6.ZoneData( this.Version );
 			zoneData.Read( zoneDataBuffer );
 
-			if ( zoneData.Entries.Length != encounterBuffers.Length )
+			if ( zoneData.Entries.Length > encounterBuffers.Length )
 				throw new InvalidDataException( $"Zone data and encounter data mismatch. Zone data had {zoneData.Entries.Length} entries, but encounter data only had {encounterBuffers.Length}" );
 
 			return encounterBuffers.Zip( zoneData.Entries, ( b, e ) => {
@@ -192,28 +194,29 @@ namespace CtrDotNet.Pokemon.Game
 
 		internal async Task SaveEncounterData( IEnumerable<Gen6.EncounterWild> encounters, ReferencedGarc garcEncounters )
 		{
-			Gen6.EncounterWild[] array = encounters.ToArray();
-			byte[][] files = await garcEncounters.GetFiles();
+			var array             = encounters.ToArray();
+			var files             = await garcEncounters.GetFiles();
+			var zoneDataFileIndex = garcEncounters.Garc.FileCount - this.ZoneDataPositionFromEnd;
 
-			Assertions.AssertLength( garcEncounters.Garc.FileCount - 2, array, exact: true );
+			Assertions.AssertLength( zoneDataFileIndex, array, exact: true );
 
-			for ( int i = 0; i < array.Length; i++ )
+			for ( var i = 0; i < array.Length; i++ )
 			{
 				if ( !array[ i ].HasEntries )
 					continue;
 
-				byte[] encounterBuffer = array[ i ].Write();
+				var encounterBuffer = array[ i ].Write();
 
 				if ( this.Version.IsORAS() ) // Have to write encounter zone data to DexNav database too
 				{
 					// Last file is dexNavData
-					const int Offset = 0xE;
-					byte[] dexNavData = files[ files.Length - 1 ];
-					int entryPointer = BitConverter.ToInt32( dexNavData, ( i + 1 ) * sizeof( int ) ) + Offset;
+					const int Offset       = 0xE;
+					var       dexNavData   = files[ files.Length - 1 ];
+					var       entryPointer = BitConverter.ToInt32( dexNavData, ( i + 1 ) * sizeof( int ) ) + Offset;
 
-					int dataPointer = BitConverter.ToInt32( encounterBuffer, Gen6.EncounterWild.DataOffset );
+					var dataPointer = BitConverter.ToInt32( encounterBuffer, Gen6.EncounterWild.DataOffset );
 					dataPointer += array[ i ].DataStart;
-					int dataLength = array[ i ].GetAllEntries().Count() * Gen6.EncounterWild.Entry.Size;
+					var dataLength = array[ i ].GetAllEntries().Count() * Gen6.EncounterWild.Entry.Size;
 
 					Array.Copy( encounterBuffer, dataPointer, dexNavData, entryPointer, dataLength );
 				}
@@ -238,7 +241,7 @@ namespace CtrDotNet.Pokemon.Game
 		public async Task<IEnumerable<EvolutionSet>> GetEvolutions( bool edited = false )
 		{
 			var garcEvolutions = await this.GetGarc( GarcNames.Evolutions, edited: edited );
-			var files = await garcEvolutions.GetFiles();
+			var files          = await garcEvolutions.GetFiles();
 
 			return files.Select( f => {
 				var evoSet = EvolutionSet.New( this.Version );
@@ -267,10 +270,10 @@ namespace CtrDotNet.Pokemon.Game
 		public async Task<TextFile[]> GetTextFiles( bool edited = false )
 		{
 			var garcGameText = await this.GetGarc( GarcNames.GameText, edited: edited );
-			byte[][] files = await garcGameText.GetFiles();
+			var files        = await garcGameText.GetFiles();
 
 			return files.Select( file => {
-				TextFile tf = new TextFile( this.Version, this.Variables );
+				var tf = new TextFile( this.Version, this.Variables );
 				tf.Read( file );
 				return tf;
 			} ).ToArray();
@@ -279,9 +282,9 @@ namespace CtrDotNet.Pokemon.Game
 		public async Task<TextFile> GetTextFile( int textFile, bool edited = false )
 		{
 			var garcGameText = await this.GetGarc( GarcNames.GameText, edited: edited );
-			byte[] file = await garcGameText.GetFile( textFile );
+			var file         = await garcGameText.GetFile( textFile );
 
-			TextFile tf = new TextFile( this.Version, this.Variables );
+			var tf = new TextFile( this.Version, this.Variables );
 			tf.Read( file );
 			return tf;
 		}
@@ -295,7 +298,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		internal async Task SaveTextFiles( IEnumerable<TextFile> textFiles, ReferencedGarc garcGameText )
 		{
-			byte[][] files = textFiles.Select( tf => tf.Write() ).ToArray();
+			var files = textFiles.Select( tf => tf.Write() ).ToArray();
 
 			await garcGameText.SetFiles( files );
 		}
@@ -326,9 +329,9 @@ namespace CtrDotNet.Pokemon.Game
 		public async Task<IEnumerable<Learnset>> GetLearnsets( bool edited = false )
 		{
 			var garcLearnsets = await this.GetGarc( GarcNames.Learnsets, edited: edited );
-			byte[][] files = await garcLearnsets.GetFiles();
+			var files         = await garcLearnsets.GetFiles();
 			return files.Select( f => {
-				Learnset l = Learnset.New( this.Version );
+				var l = Learnset.New( this.Version );
 
 				l.Read( f );
 
@@ -340,10 +343,10 @@ namespace CtrDotNet.Pokemon.Game
 		{
 			var list = learnsets.ToList();
 
-			foreach ( Learnset l in list )
+			foreach ( var l in list )
 				Assertions.AssertVersion( this.Version, l.GameVersion );
 
-			byte[][] files = list.Select( l => l.Write() ).ToArray();
+			var files = list.Select( l => l.Write() ).ToArray();
 
 			await garcLearnsets.SetFiles( files );
 		}
@@ -361,8 +364,8 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<IEnumerable<Move>> GetMoves( bool edited = false )
 		{
-			var garcMoves = await this.GetGarc( GarcNames.Moves, edited: edited );
-			IList<byte[]> files = await garcMoves.GetFiles();
+			var           garcMoves = await this.GetGarc( GarcNames.Moves, edited: edited );
+			IList<byte[]> files     = await garcMoves.GetFiles();
 
 			if ( this.Version.IsORAS() || this.Version.IsGen7() )
 			{
@@ -370,7 +373,7 @@ namespace CtrDotNet.Pokemon.Game
 			}
 
 			return files.Select( file => {
-				Move m = new Move( this.Version );
+				var m = new Move( this.Version );
 				m.Read( file );
 				return m;
 			} );
@@ -385,7 +388,7 @@ namespace CtrDotNet.Pokemon.Game
 
 			if ( this.Version.IsORAS() || this.Version.IsGen7() )
 			{
-				byte[] file = Mini.PackMini( list.Select( m => m.Write() ).ToArray(), "WD" );
+				var file = Mini.PackMini( list.Select( m => m.Write() ).ToArray(), "WD" );
 				await garcMoves.SetFile( 0, file );
 			}
 			else
@@ -407,9 +410,9 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<PokemonInfoTable> GetPokemonInfo( bool edited = false )
 		{
-			PokemonInfoTable table = new PokemonInfoTable( this.Version );
+			var table        = new PokemonInfoTable( this.Version );
 			var garcPersonal = await this.GetGarc( GarcNames.PokemonInfo, edited: edited );
-			byte[] data = await garcPersonal.GetFile( garcPersonal.Garc.FileCount - 1 );
+			var data         = await garcPersonal.GetFile( garcPersonal.Garc.FileCount - 1 );
 			table.Read( data );
 			return table;
 		}
@@ -418,7 +421,7 @@ namespace CtrDotNet.Pokemon.Game
 		{
 			Assertions.AssertVersion( this.Version, table.GameVersion );
 
-			byte[][] files = await garcPokeInfo.GetFiles();
+			var files = await garcPokeInfo.GetFiles();
 
 			files[ garcPokeInfo.Garc.FileCount - 1 ] = table.Write();
 
@@ -438,9 +441,9 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<Starters> GetStarters( bool edited = false )
 		{
-			CroFile dllField = await this.GetCroFile( CroNames.Field, edited );
-			CroFile dllPokeSelect = await this.GetCroFile( CroNames.Poke3Select, edited );
-			Starters starters = new Starters( this.Version );
+			var dllField      = await this.GetCroFile( CroNames.Field,       edited );
+			var dllPokeSelect = await this.GetCroFile( CroNames.Poke3Select, edited );
+			var starters      = new Starters( this.Version );
 
 			await starters.Read( dllField, dllPokeSelect );
 
@@ -452,7 +455,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task SaveStarters( Starters starters )
 		{
-			var dllField = await this.GetCroFile( CroNames.Field );
+			var dllField      = await this.GetCroFile( CroNames.Field );
 			var dllPokeSelect = await this.GetCroFile( CroNames.Poke3Select );
 
 			await this.SaveStarters( starters, dllField, dllPokeSelect );
@@ -468,7 +471,7 @@ namespace CtrDotNet.Pokemon.Game
 		public async Task<TmsHms> GetTmsHms( bool edited = false )
 		{
 			var codeBin = await this.GetCodeBin( edited );
-			TmsHms tmsHms = new TmsHms( this.Version );
+			var tmsHms  = new TmsHms( this.Version );
 			tmsHms.ReadFromCodeBin( codeBin );
 			return tmsHms;
 		}
@@ -493,7 +496,7 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<IEnumerable<Gen6.TrainerData>> GetTrainerData( bool edited = false )
 		{
-			var garcTrainerData = await this.GetGarc( GarcNames.TrainerData, edited: edited );
+			var garcTrainerData = await this.GetGarc( GarcNames.TrainerData,    edited: edited );
 			var garcTrainerPoke = await this.GetGarc( GarcNames.TrainerPokemon, edited: edited );
 
 			if ( garcTrainerData.Garc.FileCount != garcTrainerPoke.Garc.FileCount )
@@ -501,11 +504,11 @@ namespace CtrDotNet.Pokemon.Game
 												$"Trainer data had {garcTrainerData.Garc.FileCount}, and trainer team had {garcTrainerPoke.Garc.FileCount}" );
 
 			return await Task.WhenAll( Enumerable.Range( 0, garcTrainerData.Garc.FileCount ).Select( async i => {
-				var files = await Task.WhenAll( garcTrainerData.GetFile( i ), garcTrainerPoke.GetFile( i ) );
+				var files    = await Task.WhenAll( garcTrainerData.GetFile( i ), garcTrainerPoke.GetFile( i ) );
 				var dataFile = files[ 0 ];
 				var pokeFile = files[ 1 ];
 
-				Gen6.TrainerData data = new Gen6.TrainerData( this.Version );
+				var data = new Gen6.TrainerData( this.Version );
 				data.Read( dataFile );
 				data.ReadTeam( pokeFile );
 
@@ -515,11 +518,11 @@ namespace CtrDotNet.Pokemon.Game
 
 		internal async Task SaveTrainerData( IEnumerable<Gen6.TrainerData> trainerData, ReferencedGarc garcTrainerData, ReferencedGarc garcTrainerPoke )
 		{
-			var list = trainerData.ToList();
-			byte[][] trainerFiles = new byte[ list.Count ][];
-			byte[][] pokemonFiles = new byte[ list.Count ][];
+			var list         = trainerData.ToList();
+			var trainerFiles = new byte[ list.Count ][];
+			var pokemonFiles = new byte[ list.Count ][];
 
-			for ( int i = 0; i < list.Count; i++ )
+			for ( var i = 0; i < list.Count; i++ )
 			{
 				trainerFiles[ i ] = list[ i ].Write();
 				pokemonFiles[ i ] = list[ i ].WriteTeam();
@@ -546,12 +549,12 @@ namespace CtrDotNet.Pokemon.Game
 
 		public Task<CroFile> GetCroFile( CroNames name, bool edited = false )
 		{
-			string filename = $"Dll{name}.cro";
-			string path = Path.Combine( this.RomFS, filename );
+			var filename = $"Dll{name}.cro";
+			var path     = Path.Combine( this.RomFS, filename );
 
 			if ( edited && this.IsOverridingOutPath )
 			{
-				string editedPath = Path.Combine( this.OutputPathOverride, "RomFS", filename );
+				var editedPath = Path.Combine( this.OutputPathOverride, "RomFS", filename );
 
 				if ( File.Exists( editedPath ) )
 					path = editedPath;
@@ -569,17 +572,17 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<CodeBin> GetCodeBin( bool edited = false )
 		{
-			string path = this.ExeFS;
+			var path = this.ExeFS;
 
 			if ( edited && this.IsOverridingOutPath )
 			{
-				string editedPath = Path.Combine( this.OutputPathOverride, "ExeFS" );
+				var editedPath = Path.Combine( this.OutputPathOverride, "ExeFS" );
 
 				if ( Directory.GetFiles( editedPath, "*code.bin" ).Length > 0 )
 					path = editedPath;
 			}
 
-			string filename = Directory.GetFiles( path, "*code.bin" ).FirstOrDefault();
+			var filename = Directory.GetFiles( path, "*code.bin" ).FirstOrDefault();
 
 			if ( filename == null )
 				throw new FileNotFoundException( "Could not find code binary file" );
@@ -613,11 +616,11 @@ namespace CtrDotNet.Pokemon.Game
 
 		private string GetGarcPath( GarcReference garcReference, bool edited = false )
 		{
-			string path = this.RomFS;
+			var path = this.RomFS;
 
 			if ( edited && this.IsOverridingOutPath )
 			{
-				string editedPath = Path.Combine( this.OutputPathOverride, "RomFS" );
+				var editedPath = Path.Combine( this.OutputPathOverride, "RomFS" );
 
 				if ( File.Exists( Path.Combine( editedPath, garcReference.RomFsPath ) ) )
 					path = editedPath;
@@ -628,8 +631,8 @@ namespace CtrDotNet.Pokemon.Game
 
 		public async Task<ReferencedGarc> GetGarc( GarcReference gr, bool useLz = false, bool edited = false )
 		{
-			string path = this.GetGarcPath( gr, edited );
-			GarcFile file = await GarcFile.FromFile( path, useLz );
+			var path = this.GetGarcPath( gr, edited );
+			var file = await GarcFile.FromFile( path, useLz );
 			return new ReferencedGarc( file, gr );
 		}
 
@@ -664,6 +667,7 @@ namespace CtrDotNet.Pokemon.Game
 				case FileCountSm:
 					return this.Version == GameVersion.SunMoon;
 			}
+
 			return false;
 		}
 

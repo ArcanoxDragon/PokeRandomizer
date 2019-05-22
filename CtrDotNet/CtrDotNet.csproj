@@ -54,6 +54,7 @@
     <Compile Include="CTR\Exheader.cs" />
     <Compile Include="CTR\FileFormat.cs" />
     <Compile Include="CTR\Garc\BaseGarc.cs" />
+    <Compile Include="CTR\Garc\GarcData.cs" />
     <Compile Include="CTR\Garc\GarcDef.cs" />
     <Compile Include="CTR\Garc\GarcFile.cs" />
     <Compile Include="CTR\Garc\GarcUtil.cs" />
@@ -75,6 +76,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Utility\Assertions.cs" />
+    <Compile Include="Utility\Extensions\Enumerable.cs" />
     <Compile Include="Utility\PathUtil.cs" />
     <Compile Include="Utility\StreamUtil.cs" />
   </ItemGroup>

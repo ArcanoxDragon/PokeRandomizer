@@ -18,7 +18,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6
 
 			var config = this.ValidateAndGetConfig().Starters;
 			var starters = await this.Game.GetStarters();
-			var species = Species.AllSpecies.ToList();
+			var species = Species.ValidSpecies.ToList();
 			var chosen = new List<SpeciesType>( starters.Generations.Count() * 3 );
 
 			if ( config.StartersOnly )

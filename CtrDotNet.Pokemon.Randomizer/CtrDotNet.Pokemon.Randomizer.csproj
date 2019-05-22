@@ -77,6 +77,13 @@
     <Compile Include="Gen6\ORAS\OrasRandomizer.Trainers.cs">
       <DependentUpon>OrasRandomizer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Gen6\XY\XyRandomizer.cs" />
+    <Compile Include="Gen6\XY\XyRandomizer.Encounters.cs">
+      <DependentUpon>XyRandomizer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Gen6\XY\XyRandomizer.Trainers.cs">
+      <DependentUpon>XyRandomizer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Legality\Legendaries.cs" />
     <Compile Include="Legality\Starters.cs" />
     <Compile Include="Progress\ProgressNotifier.cs" />
@@ -87,7 +94,6 @@
     <Compile Include="Tasks\TaskRunner.cs" />
     <Compile Include="Utility\ArrayUtils.cs" />
     <Compile Include="Utility\Assertions.cs" />
-    <Compile Include="Utility\LinqUtils.cs" />
     <Compile Include="Utility\MathUtil.cs" />
     <Compile Include="Utility\ReflectionUtil.cs" />
   </ItemGroup>

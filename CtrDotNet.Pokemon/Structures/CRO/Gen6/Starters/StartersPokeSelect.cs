@@ -9,6 +9,7 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 	{
 		#region Static
 
+		public const int XyOffset  = 0x10;
 		public const int EntrySize = 0x54;
 
 		#endregion
@@ -21,7 +22,7 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 			this.ClearStarters();
 
 			if ( !this.GameVersion.IsORAS() )
-				br.BaseStream.Seek( 10, SeekOrigin.Begin );
+				br.BaseStream.Seek( XyOffset, SeekOrigin.Begin );
 
 			// Generations array is in order of how each generation appears in the file
 			this.Generations.ForEach( gen => {
@@ -38,7 +39,7 @@ namespace CtrDotNet.Pokemon.Structures.CRO.Gen6.Starters
 		public override void WriteData( BinaryWriter bw )
 		{
 			if ( !this.GameVersion.IsORAS() )
-				bw.BaseStream.Seek( 10, SeekOrigin.Begin );
+				bw.BaseStream.Seek( XyOffset, SeekOrigin.Begin );
 
 			// Generations array is in order of how each generation appears in the file
 			this.Generations.ForEach( gen => {

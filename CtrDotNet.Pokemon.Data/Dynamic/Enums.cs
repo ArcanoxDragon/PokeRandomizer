@@ -10,7 +10,7 @@ public sealed class Ability : BaseAbility {
     public static explicit operator Ability( int id ) => Abilities.GetValueFrom( id );
     public static explicit operator int( Ability val ) => val.Id;
 }
-public static class Abilities {
+public static partial class Abilities {
 public static Ability Stench = new Ability( 1, "Stench" );
 public static Ability Drizzle = new Ability( 2, "Drizzle" );
 public static Ability SpeedBoost = new Ability( 3, "Speed Boost" );
@@ -403,7 +403,7 @@ public sealed class Item : BaseItem {
     public static explicit operator Item( int id ) => Items.GetValueFrom( id );
     public static explicit operator int( Item val ) => val.Id;
 }
-public static class Items {
+public static partial class Items {
 public static Item MasterBall = new Item( 1, "Master Ball" );
 public static Item UltraBall = new Item( 2, "Ultra Ball" );
 public static Item GreatBall = new Item( 3, "Great Ball" );
@@ -1944,7 +1944,7 @@ public sealed class Move : BaseMove {
     public static explicit operator Move( int id ) => Moves.GetValueFrom( id );
     public static explicit operator int( Move val ) => val.Id;
 }
-public static class Moves {
+public static partial class Moves {
 public static Move Pound = new Move( 1, "Pound" );
 public static Move KarateChop = new Move( 2, "Karate Chop" );
 public static Move DoubleSlap = new Move( 3, "Double Slap" );
@@ -3197,7 +3197,7 @@ public sealed class SpeciesType : BaseSpeciesType {
     public static explicit operator SpeciesType( int id ) => Species.GetValueFrom( id );
     public static explicit operator int( SpeciesType val ) => val.Id;
 }
-public static class Species {
+public static partial class Species {
 public static SpeciesType Egg = new SpeciesType( 0, "Egg" );
 public static SpeciesType Bulbasaur = new SpeciesType( 1, "Bulbasaur" );
 public static SpeciesType Ivysaur = new SpeciesType( 2, "Ivysaur" );
@@ -4651,7 +4651,7 @@ public sealed class PokemonType : BasePokemonType {
     public static explicit operator PokemonType( int id ) => PokemonTypes.GetValueFrom( id );
     public static explicit operator int( PokemonType val ) => val.Id;
 }
-public static class PokemonTypes {
+public static partial class PokemonTypes {
 public static PokemonType Normal = new PokemonType( 0, "Normal" );
 public static PokemonType Fighting = new PokemonType( 1, "Fighting" );
 public static PokemonType Flying = new PokemonType( 2, "Flying" );

@@ -69,7 +69,7 @@ namespace CtrDotNet.Pokemon.Dynamic
 			sb.AppendLine( $"    public static explicit operator int( {singleName} val ) => val.Id;" );
 			sb.AppendLine( $"}}" );
 
-			sb.AppendLine( $"public static class {pluralName} {{" );
+			sb.AppendLine( $"public static partial class {pluralName} {{" );
 
 			foreach ( var item in items.Where( item => item.Id >= 0 ) )
 			{

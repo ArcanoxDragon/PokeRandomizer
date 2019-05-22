@@ -51,8 +51,10 @@ namespace CtrDotNet.Pokemon.Randomization.Progress
 
 			this.IsComplete = update.Type == ProgressUpdate.UpdateType.Completed;
 			this.IsCancelled = update.Type == ProgressUpdate.UpdateType.Cancelled;
+			this.IsFailed = update.Type == ProgressUpdate.UpdateType.Failed;
 			this.Progress = ( update.Progress >= 0 ) ? update.Progress : this.Progress;
 			this.Status = update.Status ?? this.Status;
+			this.FailureException = update.FailureCause;
 
 			this.Progress = MathUtil.Clamp( this.Progress, 0.0, 1.0 );
 
@@ -88,6 +90,8 @@ namespace CtrDotNet.Pokemon.Randomization.Progress
 
 			foreach ( var source in curAwaiting )
 				source.SetException( e );
+
+			this.ProgressUpdated?.Invoke( this, ProgressUpdate.Failure( e ) );
 		}
 	}
 }

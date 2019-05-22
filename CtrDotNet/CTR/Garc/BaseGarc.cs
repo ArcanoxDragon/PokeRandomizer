@@ -2,24 +2,25 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CtrDotNet.Utility.Extensions;
 
 namespace CtrDotNet.CTR.Garc
 {
 	public abstract class BaseGarc : IGarcFile
 	{
-		public byte[] Data { get; protected set; }
-		public GarcDef Def { get; protected set; }
-		public int FileCount => this.Def.Fato.EntryCount;
+		public byte[]  Data      { get; protected set; }
+		public GarcDef Def       { get; protected set; }
+		public int     FileCount => this.Def.Fato.EntryCount;
 
 		public virtual Task Read( byte[] data )
 		{
 			this.Data = data;
-			this.Def = GarcUtil.UnpackGarc( data );
+			this.Def  = GarcUtil.UnpackGarc( data );
 
 			return Task.CompletedTask;
 		}
 
-	    public virtual bool? IsFileCompressed( int file ) => false;
+		public virtual bool? IsFileCompressed( int file ) => false;
 
 		public virtual Task<byte[]> Write() => Task.FromResult( this.Data );
 
@@ -32,20 +33,25 @@ namespace CtrDotNet.CTR.Garc
 				throw new ArgumentException();
 
 			var memGarc = await GarcUtil.PackGarc( files, this.Def.Version, (int) this.Def.ContentPadToNearest );
-			this.Def = memGarc.Def;
+			this.Def  = memGarc.Def;
 			this.Data = memGarc.Data;
 		}
 
 		public virtual async Task<byte[]> GetFile( int file, int subfile )
 		{
-			var entry = this.Def.Fatb.Entries[ file ];
-			var subEntry = entry.SubEntries[ subfile ];
+			var entry        = this.Def.Fatb.Entries[ file ];
+			var subfileIndex = subfile >= 0 ? subfile : entry.SubEntries.FindIndex( e => e.Exists );
+
+			if ( subfile < 0 && subfileIndex < 0 )
+				throw new ArgumentException( "SubFile does not exist." );
+
+			var subEntry = entry.SubEntries[ subfileIndex ];
 
 			if ( !subEntry.Exists )
 				throw new ArgumentException( "SubFile does not exist." );
 
-			long offset = subEntry.Start + this.Def.DataOffset;
-			byte[] data = new byte[ subEntry.Length ];
+			long   offset = subEntry.Start + this.Def.DataOffset;
+			byte[] data   = new byte[ subEntry.Length ];
 
 			using ( var mainStr = new MemoryStream( this.Data ) )
 			{
@@ -56,7 +62,7 @@ namespace CtrDotNet.CTR.Garc
 			return data;
 		}
 
-		public Task<byte[]> GetFile( int file ) => this.GetFile( file, 0 );
+		public Task<byte[]> GetFile( int file ) => this.GetFile( file, -1 );
 
 		public virtual async Task SetFile( int file, byte[] data )
 		{
@@ -75,7 +81,7 @@ namespace CtrDotNet.CTR.Garc
 			}
 
 			var memGarc = await GarcUtil.PackGarc( data, this.Def.Version, (int) this.Def.ContentPadToNearest );
-			this.Def = memGarc.Def;
+			this.Def  = memGarc.Def;
 			this.Data = memGarc.Data;
 		}
 

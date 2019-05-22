@@ -8,11 +8,11 @@ using CtrDotNet.Pokemon.Randomization.Legality;
 using CtrDotNet.Pokemon.Randomization.Progress;
 using CtrDotNet.Pokemon.Randomization.Utility;
 using CtrDotNet.Pokemon.Reference;
-using CtrDotNet.Pokemon.Structures.RomFS.Gen6.ORAS;
+using CtrDotNet.Pokemon.Structures.RomFS.Gen6.XY;
 
-namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
+namespace CtrDotNet.Pokemon.Randomization.Gen6.XY
 {
-	public partial class OrasRandomizer
+	public partial class XyRandomizer
 	{
 		public override async Task RandomizeEncounters( ProgressNotifier progressNotifier, CancellationToken token )
 		{
@@ -24,7 +24,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 			var species       = Species.ValidSpecies.ToList();
 			var speciesInfo   = await this.Game.GetPokemonInfo( edited: true );
 			var encounterData = await this.Game.GetEncounterData();
-			var encounters    = encounterData.Cast<OrasEncounterWild>().ToList();
+			var encounters    = encounterData.Cast<XyEncounterWild>().ToList();
 			var zoneNames     = ( await this.Game.GetTextFile( TextNames.EncounterZoneNames ) ).Lines;
 
 			if ( !config.AllowLegendaries )
@@ -84,7 +84,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 					}
 				}
 
-				int GetUniqueAllSections() => entryArrays.Sum( ea => ea.Select( e => e.Species ).Distinct().Count( sp => sp > 0 ) );
+				/*int GetUniqueAllSections() => entryArrays.Sum( ea => ea.Select( e => e.Species ).Distinct().Count( sp => sp > 0 ) );
 
 				// DexNav crashes if there are more than 18 unique species in an encounter zone.
 				// If the same species appears in two different sub-zones, it counts as two
@@ -117,7 +117,7 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.ORAS
 						if ( GetUniqueAllSections() == MaxUniqueSpecies )
 							break;
 					}
-				}
+				}*/
 
 				encounter.EntryArrays = entryArrays;
 			}

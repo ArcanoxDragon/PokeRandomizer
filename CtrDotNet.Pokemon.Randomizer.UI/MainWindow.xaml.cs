@@ -31,8 +31,8 @@ namespace CtrDotNet.Pokemon.Randomization.UI
 		{
 			try
 			{
-				string garcPath = Path.Combine( this.gameDirectory, "RomFS", "a" );
-				int garcCount = Directory.GetFiles( garcPath, "*", SearchOption.AllDirectories ).Length;
+				var garcPath = Path.Combine( this.gameDirectory, "RomFS", "a" );
+				var garcCount = Directory.GetFiles( garcPath, "*", SearchOption.AllDirectories ).Length;
 				this.game = new GameConfig( garcCount );
 				this.randomizer = Randomizer.GetRandomizer( this.game, this.config );
 

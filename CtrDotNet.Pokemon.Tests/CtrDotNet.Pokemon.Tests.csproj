@@ -62,6 +62,8 @@
     </Compile>
     <Compile Include="ORAS\ORASConfig.cs" />
     <Compile Include="Utility\StringExtensions.cs" />
+    <Compile Include="XY\CodeBinTests.cs" />
+    <Compile Include="XY\ValueSearchTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -84,6 +86,11 @@
       <Project>{a5facce0-d32d-4271-a92e-18d01ff4418b}</Project>
       <Name>CtrDotNet</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="poketools.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

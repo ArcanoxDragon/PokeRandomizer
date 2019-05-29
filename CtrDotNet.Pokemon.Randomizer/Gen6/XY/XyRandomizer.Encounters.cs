@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,9 +54,6 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.XY
 				// so we pick 18 random and unique species from our current choice list
 				var uniqueList  = new List<SpeciesType>();
 				var entryArrays = encounter.EntryArrays;
-				int[] orderedIndices = entryArrays.OrderByDescending( ea => ea.Length )
-												  .Select( ea => Array.IndexOf( entryArrays, ea ) )
-												  .ToArray();
 
 				while ( uniqueList.Count < MaxUniqueSpecies )
 					// Find a new unique species from our current determined list of choices
@@ -83,41 +79,6 @@ namespace CtrDotNet.Pokemon.Randomization.Gen6.XY
 													 .ToList();
 					}
 				}
-
-				/*int GetUniqueAllSections() => entryArrays.Sum( ea => ea.Select( e => e.Species ).Distinct().Count( sp => sp > 0 ) );
-
-				// DexNav crashes if there are more than 18 unique species in an encounter zone.
-				// If the same species appears in two different sub-zones, it counts as two
-				// unique species.
-				while ( GetUniqueAllSections() > MaxUniqueSpecies )
-				{
-					// Starting with the largest array, reduce the number of unique species taken up by that array by one
-					foreach ( int i in orderedIndices )
-					{
-						var entryArray        = entryArrays[ i ];
-						int uniqueThisSection = entryArray.Select( e => e.Species ).Distinct().Count( sp => sp > 0 );
-
-						// If there are less than two unique species in this array, we don't have enough
-						// species to reduce, so skip it.
-						if ( uniqueThisSection < 2 )
-							continue;
-
-						// Pick a random slot to overwrite
-						int randomTo = -1;
-						while ( randomTo < 0 || entryArray[ randomTo ].Species == 0 )
-							randomTo = this.rand.Next( entryArray.Length );
-
-						// Get a species that's different than the slot we're overwriting so we make a duplicate
-						var donorEntry = entryArray.First( e => e.Species > 0 && e.Species != entryArray[ randomTo ].Species );
-
-						entryArray[ randomTo ].Species = donorEntry.Species;
-						entryArrays[ i ]               = entryArray;
-
-						// Don't bother with the rest of the arrays if we fixed the problem
-						if ( GetUniqueAllSections() == MaxUniqueSpecies )
-							break;
-					}
-				}*/
 
 				encounter.EntryArrays = entryArrays;
 			}

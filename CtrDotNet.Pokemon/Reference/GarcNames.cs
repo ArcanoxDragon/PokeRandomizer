@@ -29,6 +29,7 @@
 		ZoneData,
 		WorldData,
 		StaticEncounters,
-		ItemPickup
+		ItemPickup,
+		Scripts,
 	}
 }

@@ -14,6 +14,7 @@ namespace CtrDotNet.Pokemon.Reference
 				new GarcReference( 040, GarcNames.TrainerPokemon ),
 				new GarcReference( 041, GarcNames.MapGrid ),
 				new GarcReference( 042, GarcNames.MapMatrix ),
+				new GarcReference( 082, GarcNames.Scripts ),
 				new GarcReference( 104, GarcNames.Wallpapers ),
 				new GarcReference( 165, GarcNames.TitleScreen ),
 				new GarcReference( 203, GarcNames.MaisonPokemonN ),

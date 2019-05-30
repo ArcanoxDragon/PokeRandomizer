@@ -1,0 +1,1 @@
+export { ife } from "./ife";

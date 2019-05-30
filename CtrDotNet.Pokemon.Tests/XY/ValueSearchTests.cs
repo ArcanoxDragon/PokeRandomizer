@@ -94,9 +94,6 @@ namespace CtrDotNet.Pokemon.Tests.XY
 
 					File.WriteAllBytes( fileOutPath, file );
 
-					if ( garcIdx == 012 && fileIdx == 1 )
-						Debugger.Break();
-
 					if ( DoSearchValues( file, SearchValues.Select( BitConverter.GetBytes ), out var matches, out _ ) )
 					{
 						foreach ( var (i, match) in matches.Pairs() )

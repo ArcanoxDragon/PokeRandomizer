@@ -46,16 +46,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Extensions\TmsHms.cs" />
-    <Compile Include="Partial\Species.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Data\Abilities.db" />
-    <None Include="Data\Items.db" />
-    <None Include="Data\Moves.db" />
-    <None Include="Data\PokemonTypes.db" />
-    <None Include="Data\Species.db" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Dynamic\Enums.tt">
@@ -71,6 +62,9 @@
       <Project>{b3267c79-99ba-4151-ae7f-ee5657fd1c77}</Project>
       <Name>CtrDotNet.Pokemon</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

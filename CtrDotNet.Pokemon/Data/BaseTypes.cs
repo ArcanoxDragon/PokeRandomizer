@@ -1,28 +1,26 @@
-﻿using CtrDotNet.Pokemon.Dynamic;
-
-namespace CtrDotNet.Pokemon.Data
+﻿namespace CtrDotNet.Pokemon.Data
 {
-	public abstract class BaseAbility : DynamicType
+	public abstract class BaseAbility : EnumType
 	{
 		protected BaseAbility( int id, string name ) : base( id, name ) { }
 	}
 
-	public abstract class BaseItem : DynamicType
+	public abstract class BaseItem : EnumType
 	{
 		protected BaseItem( int id, string name ) : base( id, name ) { }
 	}
 
-	public abstract class BaseMove : DynamicType
+	public abstract class BaseMove : EnumType
 	{
 		protected BaseMove( int id, string name ) : base( id, name ) { }
 	}
 
-	public abstract class BaseSpeciesType : DynamicType
+	public abstract class BaseSpeciesType : EnumType
 	{
 		protected BaseSpeciesType( int id, string name ) : base( id, name ) { }
 	}
 
-	public abstract class BasePokemonType : DynamicType
+	public abstract class BasePokemonType : EnumType
 	{
 		protected BasePokemonType( int id, string name ) : base( id, name ) { }
 	}

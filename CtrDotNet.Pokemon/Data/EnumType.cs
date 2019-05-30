@@ -1,19 +1,19 @@
-﻿namespace CtrDotNet.Pokemon.Dynamic
+﻿namespace CtrDotNet.Pokemon.Data
 {
-	public abstract class DynamicType
+	public abstract class EnumType
 	{
-		protected DynamicType( int id, string name )
+		protected EnumType( int id, string name )
 		{
-			this.Id = id;
+			this.Id   = id;
 			this.Name = name;
 		}
 
-		public int Id { get; }
+		public int    Id   { get; }
 		public string Name { get; }
 
 		#region Equality
 
-		protected bool Equals( DynamicType other )
+		protected bool Equals( EnumType other )
 		{
 			return this.Id == other.Id;
 		}
@@ -25,7 +25,7 @@
 			if ( object.ReferenceEquals( this, obj ) )
 				return true;
 
-			return obj.GetType() == this.GetType() && this.Equals( (DynamicType) obj );
+			return obj.GetType() == this.GetType() && this.Equals( (EnumType) obj );
 		}
 
 		public override int GetHashCode()
@@ -33,12 +33,12 @@
 			return this.Id;
 		}
 
-		public static bool operator ==( DynamicType left, DynamicType right )
+		public static bool operator ==( EnumType left, EnumType right )
 		{
 			return object.Equals( left, right );
 		}
 
-		public static bool operator !=( DynamicType left, DynamicType right )
+		public static bool operator !=( EnumType left, EnumType right )
 		{
 			return !object.Equals( left, right );
 		}

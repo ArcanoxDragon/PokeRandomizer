@@ -43,10 +43,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\BaseTypes.cs" />
-    <Compile Include="Dynamic\DynamicHelpers.cs" />
-    <Compile Include="Dynamic\DynamicType.cs" />
+    <Compile Include="Data\Enums.cs" />
+    <Compile Include="Data\Partial\Species.cs" />
+    <Compile Include="Data\EnumType.cs" />
     <Compile Include="ExeFS\CodeBin.cs" />
     <Compile Include="ExeFS\ExeFSExtensions.cs" />
+    <Compile Include="Data\Extensions\TmsHms.cs" />
     <Compile Include="Game\GameConfig.cs" />
     <Compile Include="Game\GameGeneration.cs" />
     <Compile Include="Game\GameRng.cs" />
@@ -125,6 +127,30 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Datasource\Abilities.db" />
+    <None Include="Data\Datasource\Items.db" />
+    <None Include="Data\Datasource\Moves.db" />
+    <None Include="Data\Datasource\PokemonTypes.db" />
+    <None Include="Data\Datasource\Species.db" />
+    <None Include="Data\Generate\templates\enum.hbs" />
+    <None Include="Data\Generate\templates\enums.hbs" />
+    <None Include="yarn.lock" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="Data\Generate\DataItem.ts" />
+    <TypeScriptCompile Include="Data\Generate\EnumSpec.ts" />
+    <TypeScriptCompile Include="Data\Generate\generateEnums.ts" />
+    <TypeScriptCompile Include="Data\Generate\handlebarsInst.ts" />
+    <TypeScriptCompile Include="Data\Generate\helpers\ife.ts" />
+    <TypeScriptCompile Include="Data\Generate\helpers\index.ts" />
+    <TypeScriptCompile Include="Data\Generate\loadEnum.ts" />
+    <TypeScriptCompile Include="gulpfile.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="package.json" />
+    <Content Include="tsconfig.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

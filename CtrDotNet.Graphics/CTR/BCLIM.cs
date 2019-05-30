@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using CtrDotNet.CTR;
 
-namespace CtrDotNet.CTR
+namespace CtrDotNet.Graphics.CTR
 {
 	public static class Bclim
 	{
@@ -43,8 +45,7 @@ namespace CtrDotNet.CTR
 				}
 				catch ( Exception e )
 				{
-					System.Media.SystemSounds.Beep.Play();
-					System.Diagnostics.Debug.WriteLine( e.ToString() );
+					Debug.WriteLine( e.ToString() );
 				}
 			}
 
@@ -99,7 +100,6 @@ namespace CtrDotNet.CTR
 			Clim bclim = Bclim.Analyze( path );
 			if ( bclim.Magic != 0x4D494C43 )
 			{
-				System.Media.SystemSounds.Beep.Play();
 				return null;
 			}
 
@@ -107,7 +107,6 @@ namespace CtrDotNet.CTR
 			int f = bclim.FileFormat;
 			if ( f > 13 )
 			{
-				System.Media.SystemSounds.Exclamation.Play();
 				return null;
 			}
 
@@ -124,7 +123,7 @@ namespace CtrDotNet.CTR
 				return null;
 			Rectangle cropRect = new Rectangle( 0, 0, bclim.Width, bclim.Height );
 			Bitmap cropBmp = new Bitmap( cropRect.Width, cropRect.Height );
-			using ( Graphics g = Graphics.FromImage( cropBmp ) )
+			using ( System.Drawing.Graphics g = System.Drawing.Graphics.FromImage( cropBmp ) )
 			{
 				g.DrawImage( img,
 							 new Rectangle( 0, 0, cropBmp.Width, cropBmp.Height ),

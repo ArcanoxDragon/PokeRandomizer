@@ -14,7 +14,7 @@ namespace CtrDotNet.Pokemon.Tests.ORAS
 		[ OneTimeSetUp ]
 		public async Task SetUp()
 		{
-			string romPath = Path.GetFullPath( Properties.Settings.Default.RomPathORAS );
+			string romPath = Path.GetFullPath( Settings.RomPathOras );
 			string romFsPath = Path.Combine( romPath, "RomFS" );
 			string exeFsPath = Path.Combine( romPath, "ExeFS" );
 

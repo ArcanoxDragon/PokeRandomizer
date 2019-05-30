@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
+using Icon = CtrDotNet.CTR.Icon;
 
-namespace CtrDotNet.CTR
+namespace CtrDotNet.Graphics.CTR
 {
 	public static class SmdhExtensions
 	{

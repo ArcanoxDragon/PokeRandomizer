@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Reference;
-using PokemonDataDump.Properties;
 
 namespace PokemonDataDump
 {
@@ -14,7 +13,7 @@ namespace PokemonDataDump
 	{
 		private static readonly Regex BlankLineRegex = new Regex( @"\[~ (\d+)\]" );
 
-		private static string OutPath;
+		private static string     OutPath;
 		private static GameConfig Config;
 
 		private static void Main()
@@ -26,19 +25,18 @@ namespace PokemonDataDump
 		{
 			try
 			{
-				if ( !Enum.TryParse<GameVersion>( Settings.Default.GameType, out var gameType ) )
+				if ( !Enum.TryParse<GameVersion>( Settings.GameType, out var gameType ) )
 				{
 					Console.WriteLine( "Could not parse game type" );
 					return;
 				}
 
-				OutPath = Path.Combine( Path.GetDirectoryName( Process.GetCurrentProcess().MainModule.FileName ),
-										Settings.Default.OutputPath );
+				OutPath = Path.Combine( Directory.GetCurrentDirectory(), Settings.OutputPath );
 
 				if ( !Directory.Exists( OutPath ) )
 					Directory.CreateDirectory( OutPath );
 
-				string romPath = Path.GetFullPath( Settings.Default.RomPath );
+				string romPath = Path.GetFullPath( Settings.RomPath );
 
 				Config = new GameConfig( gameType );
 				await Config.Initialize( romPath, Language.English );
@@ -71,7 +69,7 @@ namespace PokemonDataDump
 				return;
 			}
 
-			var strings = textFile.Lines;
+			var    strings  = textFile.Lines;
 			string filePath = Path.Combine( OutPath, $"{fileName}.db" );
 
 			File.Delete( filePath );
@@ -89,8 +87,8 @@ namespace PokemonDataDump
 
 		private static Task DumpSpeciesNames() => Program.DumpStringTable( TextNames.SpeciesNames, "Species" );
 		private static Task DumpAbilityNames() => Program.DumpStringTable( TextNames.AbilityNames, "Abilities" );
-		private static Task DumpItemNames() => Program.DumpStringTable( TextNames.ItemNames, "Items" );
-		private static Task DumpMoveNames() => Program.DumpStringTable( TextNames.MoveNames, "Moves" );
-		private static Task DumpTypeNames() => Program.DumpStringTable( TextNames.Types, "PokemonTypes" );
+		private static Task DumpItemNames() => Program.DumpStringTable( TextNames.ItemNames,       "Items" );
+		private static Task DumpMoveNames() => Program.DumpStringTable( TextNames.MoveNames,       "Moves" );
+		private static Task DumpTypeNames() => Program.DumpStringTable( TextNames.Types,           "PokemonTypes" );
 	}
 }

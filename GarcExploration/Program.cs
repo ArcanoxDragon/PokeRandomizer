@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using CtrDotNet.Pokemon.Game;
 using CtrDotNet.Pokemon.Garc;
 using CtrDotNet.Pokemon.Reference;
-using GarcExploration.Properties;
 
 namespace GarcExploration
 {
@@ -17,7 +16,7 @@ namespace GarcExploration
 
 		private static async Task AsyncMain()
 		{
-			string romPath = Path.GetFullPath( Settings.Default.RomPath );
+			string romPath = Path.GetFullPath( Settings.RomPath );
 
 			GameConfig game = new GameConfig( GameVersion.ORAS );
 			await game.Initialize( romPath, Language.English );

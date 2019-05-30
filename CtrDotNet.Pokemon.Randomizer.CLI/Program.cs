@@ -9,28 +9,50 @@ using CtrDotNet.Pokemon.Randomization.Common;
 using CtrDotNet.Pokemon.Randomization.Config;
 using Newtonsoft.Json;
 
-namespace CtrDotNet.Pokemon.RandomizerCLI
+namespace CtrDotNet.Pokemon.Randomizer.CLI
 {
 	class Program
 	{
 		private static OptionSet OptionSet;
-		private static string ConfigFile;
-		private static string RomPath;
-		private static string GameLanguage;
-		private static string OutputDir;
+		private static string    ConfigFile;
+		private static string    RomPath;
+		private static string    GameLanguage;
+		private static string    OutputDir;
 
-		private static void Main( string[] args )
+		private static void Main( IEnumerable<string> args )
 		{
 			List<Action> actions = new List<Action>();
 
 			OptionSet = new OptionSet {
-				{ "output-dir=|out-dir|output|out", "Specifies the output directory to which the patched files will be written", ( v ) => OutputDir = v },
-				{ "language=", "Specifies the game language to use", ( v ) => GameLanguage = v },
-				{ "rom-path=|rom", "Specifies the path to the ROM (must be an extracted 3DS ROM)", ( v ) => RomPath = v },
-				{ "config=|cfg", "Specifies the path to a JSON configuration file for the randomizer", ( v ) => ConfigFile = v },
-				{ "randomize", "Runs the randomizer on the specified ROM", s => actions.Add( Program.Randomize ) },
-				{ "write-default-config|default-config", "Writes the default Randomizer configuration to a new JSON file", s => actions.Add( Program.WriteDefaultConfig ) },
-				{ "help", "Prints this help message", s => actions.Add( Program.PrintHelp ) }
+				{
+					"output-dir=|out-dir|output|out",
+					"Specifies the output directory to which the patched files will be written",
+					v => OutputDir = v
+				}, {
+					"language=",
+					"Specifies the game language to use",
+					v => GameLanguage = v
+				}, {
+					"rom-path=|rom",
+					"Specifies the path to the ROM (must be an extracted 3DS ROM)",
+					v => RomPath = v
+				}, {
+					"config=|cfg",
+					"Specifies the path to a JSON configuration file for the randomizer",
+					v => ConfigFile = v
+				}, {
+					"randomize",
+					"Runs the randomizer on the specified ROM",
+					s => actions.Add( Program.Randomize )
+				}, {
+					"write-default-config|default-config",
+					"Writes the default Randomizer configuration to a new JSON file",
+					s => actions.Add( Program.WriteDefaultConfig )
+				}, {
+					"help",
+					"Prints this help message",
+					s => actions.Add( Program.PrintHelp )
+				}
 			};
 
 			try
@@ -54,7 +76,7 @@ namespace CtrDotNet.Pokemon.RandomizerCLI
 
 		private static void Randomize()
 		{
-			RandomizeAsync().Wait();
+			Program.RandomizeAsync().Wait();
 		}
 
 		private static async Task RandomizeAsync()
@@ -72,7 +94,7 @@ namespace CtrDotNet.Pokemon.RandomizerCLI
 			}
 
 			RandomizerConfig config;
-			Language lang = Language.English;
+			Language         lang = Language.English;
 
 			if ( !string.IsNullOrEmpty( GameLanguage ) )
 			{
@@ -109,9 +131,9 @@ namespace CtrDotNet.Pokemon.RandomizerCLI
 
 			try
 			{
-				int fileCount = Directory.GetFiles( Path.Combine( RomPath, "RomFS", "a" ), "*", SearchOption.AllDirectories ).Length;
-				GameConfig game = new GameConfig( fileCount );
-				IRandomizer randomizer = Randomizer.GetRandomizer( game, config );
+				int         fileCount  = Directory.GetFiles( Path.Combine( RomPath, "RomFS", "a" ), "*", SearchOption.AllDirectories ).Length;
+				GameConfig  game       = new GameConfig( fileCount );
+				IRandomizer randomizer = Randomization.Common.Randomizer.GetRandomizer( game, config );
 
 				await game.Initialize( RomPath, lang );
 
@@ -129,7 +151,7 @@ namespace CtrDotNet.Pokemon.RandomizerCLI
 		private static void WriteDefaultConfig()
 		{
 			var jsonSettings = new JsonSerializerSettings { Formatting = Formatting.Indented };
-			var json = JsonSerializer.Create( jsonSettings );
+			var json         = JsonSerializer.Create( jsonSettings );
 
 			using ( var fs = new FileStream( "Config.Default.json", FileMode.Create, FileAccess.Write, FileShare.None ) )
 			using ( var sw = new StreamWriter( fs ) )

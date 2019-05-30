@@ -1,156 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B3267C79-99BA-4151-AE7F-EE5657FD1C77}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CtrDotNet.Pokemon</RootNamespace>
-    <AssemblyName>CtrDotNet.Pokemon</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <Compile Remove="node_modules\**" />
+    <EmbeddedResource Remove="node_modules\**" />
+    <None Remove="node_modules\**" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Data\BaseTypes.cs" />
-    <Compile Include="Data\Enums.cs" />
-    <Compile Include="Data\Partial\Species.cs" />
-    <Compile Include="Data\EnumType.cs" />
-    <Compile Include="ExeFS\CodeBin.cs" />
-    <Compile Include="ExeFS\ExeFSExtensions.cs" />
-    <Compile Include="Data\Extensions\TmsHms.cs" />
-    <Compile Include="Game\GameConfig.cs" />
-    <Compile Include="Game\GameGeneration.cs" />
-    <Compile Include="Game\GameRng.cs" />
-    <Compile Include="Game\GameVersion.cs" />
-    <Compile Include="Game\Language.cs" />
-    <Compile Include="Garc\ReferencedGarc.cs" />
-    <Compile Include="Reference\CroNames.cs" />
-    <Compile Include="Reference\Forms.cs" />
-    <Compile Include="Reference\GarcNames.cs" />
-    <Compile Include="Structures\BaseDataStructure.cs" />
-    <Compile Include="Structures\CRO\Common\BaseCroDataStructure.cs" />
-    <Compile Include="Structures\CRO\Gen6\Starters\BaseStarters.cs" />
-    <Compile Include="Structures\CRO\Gen6\Starters\Starters.cs" />
-    <Compile Include="Structures\CRO\Gen6\Starters\StartersPokeSelect.cs" />
-    <Compile Include="Structures\CRO\Gen6\Starters\StartersField.cs" />
-    <Compile Include="Structures\RomFS\Common\TextFile.cs" />
-    <Compile Include="Reference\TextNames.cs" />
-    <Compile Include="Structures\RomFS\Gen6\EncounterWild.cs" />
-    <Compile Include="Structures\RomFS\Gen6\ORAS\OrasEncounterWild.cs" />
-    <Compile Include="Structures\RomFS\Gen6\XY\XyEncounterWild.cs" />
-    <Compile Include="Structures\RomFS\Gen6\ZoneData.cs" />
-    <Compile Include="Utility\ArrayStream.cs" />
-    <Compile Include="Utility\Assertions.cs" />
-    <Compile Include="Utility\Enumerable.cs" />
-    <Compile Include="Utility\Number.cs" />
-    <Compile Include="Utility\String.cs" />
-    <Compile Include="Utility\TextFileHelper.cs" />
-    <Compile Include="Reference\GarcReference.cs" />
-    <Compile Include="Reference\TextReference.cs" />
-    <Compile Include="Reference\TextVariableCode.cs" />
-    <Compile Include="Reference\ReferenceLists.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\InternalsVisibleTo.cs" />
-    <Compile Include="Structures\ExeFS\Common\BaseExeFsStructure.cs" />
-    <Compile Include="Structures\ExeFS\Common\TmsHms.cs" />
-    <Compile Include="Structures\RomFS\Gen7\EggMoves.cs" />
-    <Compile Include="Structures\RomFS\Gen6\EggMoves.cs" />
-    <Compile Include="Structures\RomFS\Common\EvolutionSet.cs" />
-    <Compile Include="Structures\IDataStructure.cs" />
-    <Compile Include="Structures\RomFS\Gen7\Learnset.cs" />
-    <Compile Include="Structures\RomFS\Gen6\Learnset.cs" />
-    <Compile Include="Structures\RomFS\Common\EggMoves.cs" />
-    <Compile Include="Structures\RomFS\Common\EncounterStatic.cs" />
-    <Compile Include="Structures\RomFS\Gen6\EncounterGift.cs" />
-    <Compile Include="Structures\RomFS\Gen6\EncounterStatic.cs" />
-    <Compile Include="Structures\RomFS\Gen6\EvolutionSet.cs" />
-    <Compile Include="Structures\RomFS\Gen6\Item.cs" />
-    <Compile Include="Structures\RomFS\Gen6\Maison.cs" />
-    <Compile Include="Structures\RomFS\Common\MegaEvolution.cs" />
-    <Compile Include="Structures\RomFS\Common\Move.cs" />
-    <Compile Include="Structures\RomFS\Gen6\TrainerData.cs" />
-    <Compile Include="Structures\RomFS\Gen7\EncounterGift.cs" />
-    <Compile Include="Structures\RomFS\Gen7\EncounterStatic.cs" />
-    <Compile Include="Structures\RomFS\Gen7\EncounterTrade.cs" />
-    <Compile Include="Structures\RomFS\Gen7\EvolutionSet.cs" />
-    <Compile Include="Structures\RomFS\Gen7\Maison.cs" />
-    <Compile Include="Structures\RomFS\Gen7\TrainerData.cs" />
-    <Compile Include="Structures\RomFS\Gen7\Pokemon.cs" />
-    <Compile Include="Structures\RomFS\Gen7\ZoneData.cs" />
-    <Compile Include="Structures\RomFS\Common\Learnset.cs" />
-    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfo.cs" />
-    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfoORAS.cs" />
-    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfoSM.cs" />
-    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfoXY.cs" />
-    <Compile Include="Structures\RomFS\PokemonInfo\PokemonInfoTable.cs" />
-    <Compile Include="Structures\RomFS\Common\TypeChart.cs" />
-    <Compile Include="Utility\Array.cs" />
-    <Compile Include="Utility\Bitwise.cs" />
-    <Compile Include="Utility\Random.cs" />
+    <ProjectReference Include="..\CtrDotNet\CtrDotNet.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CtrDotNet\CtrDotNet.csproj">
-      <Project>{a5facce0-d32d-4271-a92e-18d01ff4418b}</Project>
-      <Name>CtrDotNet</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Data\Datasource\Abilities.db" />
-    <None Include="Data\Datasource\Items.db" />
-    <None Include="Data\Datasource\Moves.db" />
-    <None Include="Data\Datasource\PokemonTypes.db" />
-    <None Include="Data\Datasource\Species.db" />
-    <None Include="Data\Generate\templates\enum.hbs" />
-    <None Include="Data\Generate\templates\enums.hbs" />
-    <None Include="yarn.lock" />
-  </ItemGroup>
-  <ItemGroup>
-    <TypeScriptCompile Include="Data\Generate\DataItem.ts" />
-    <TypeScriptCompile Include="Data\Generate\EnumSpec.ts" />
-    <TypeScriptCompile Include="Data\Generate\generateEnums.ts" />
-    <TypeScriptCompile Include="Data\Generate\handlebarsInst.ts" />
-    <TypeScriptCompile Include="Data\Generate\helpers\ife.ts" />
-    <TypeScriptCompile Include="Data\Generate\helpers\index.ts" />
-    <TypeScriptCompile Include="Data\Generate\loadEnum.ts" />
-    <TypeScriptCompile Include="gulpfile.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="package.json" />
-    <Content Include="tsconfig.json" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

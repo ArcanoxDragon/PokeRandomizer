@@ -19,19 +19,14 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
             <Image Source="Resources/Pokeball.ico" Width="32" Height="32" Margin="0,0,16,-8"/>
-            <TextBlock FontSize="24"
-                       TextWrapping="Wrap"
-                       TextAlignment="Center" Margin="0,8,0,0">
+            <TextBlock FontSize="24" TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,0">
                 Welcome to the
                 <LineBreak />
                 Pokémon Randomizer!
             </TextBlock>
         </StackPanel>
 
-        <TextBlock Grid.Row="2"
-                   TextAlignment="Center"
-                   TextWrapping="Wrap"
-                   Margin="0,8,0,0">
+        <TextBlock Grid.Row="2" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0">
             Choose a game language and game folder to get started
         </TextBlock>
 
@@ -48,6 +43,6 @@
             <ComboBoxItem Content="Chinese (Traditional)" Tag="{x:Static game:Language.ChineseTraditional}" />
         </ComboBox>
 
-        <Button Grid.Row="4" Content="_Browse..." Margin="100,8,100,0" Click="BrowseButton_Click" Height="24" />
+        <Button Grid.Row="4" Content="_Choose Game Folder..." Margin="80,8,80,0" Click="BrowseButton_Click" Height="24" />
     </Grid>
 </Window>

@@ -31,7 +31,7 @@ namespace CtrDotNet.Pokemon.Randomizer.Tests
 
 			Game = new GameConfig( GameVersion.ORAS );
 
-			string romPath = Path.GetFullPath( Properties.Settings.Default.RomPathORAS );
+			string romPath = Path.GetFullPath( Settings.RomPathOras );
 			string romFsPath = Path.Combine( romPath, "RomFS" );
 			string exeFsPath = Path.Combine( romPath, "ExeFS" );
 

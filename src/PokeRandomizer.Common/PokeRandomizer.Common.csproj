@@ -14,4 +14,8 @@
     <ProjectReference Include="..\CtrDotNet\CtrDotNet.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Scripts\" />
+  </ItemGroup>
+
 </Project>

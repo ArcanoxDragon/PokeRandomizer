@@ -1,0 +1,4 @@
+[submodule "external/pkNX"]
+	path = external/pkNX
+	url = https://github.com/kwsch/pkNX.git
+	branch = master

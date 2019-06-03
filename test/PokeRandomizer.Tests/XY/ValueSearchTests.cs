@@ -1,23 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using CtrDotNet.Utility.Extensions;
+using CtrDotNet.CTR.Cro;
 using NUnit.Framework;
+using pkNX.Structures;
 using PokeRandomizer.Common.Game;
 using PokeRandomizer.Common.Garc;
 using PokeRandomizer.Common.Reference;
+using GameVersion = PokeRandomizer.Common.Game.GameVersion;
+using TextFile = PokeRandomizer.Common.Structures.RomFS.Common.TextFile;
 
 namespace PokeRandomizer.Tests.XY
 {
 	[ TestFixture ]
 	public class ValueSearchTests
 	{
-		private static readonly int[] SearchValues = {
-			0x0A0AF1E0 // Code
-			//0x0A0AF1EF // Debug
+		private static readonly uint[] SearchValues = {
+			0x0A0AF1E0, // Code (32-bit)
+			0x0A0AF1E1, // Code (64-bit)
+			0x0A0AF1E2, // Code (16-bit)
+			0x0A0AF1EF, // Debug
+		};
+
+		private static readonly byte[] SearchBytes = {
+			0x5A,
+			0x4F,
+			0x04,
+			0x00,
+			0x18,
+			0x00,
 		};
 
 		private static readonly string[] SkipGarcs = {
@@ -71,6 +85,26 @@ namespace PokeRandomizer.Tests.XY
 			} );
 		}
 
+		private async Task ForEachCro( Func<CroNames, CroFile, Task> action )
+		{
+			foreach ( var croName in Enum.GetValues( typeof( CroNames ) ).Cast<CroNames>() )
+			{
+				TestContext.Progress.WriteLine( $"Processing CRO file {croName}..." );
+				CroFile cro;
+
+				try
+				{
+					cro = await this.Game.GetCroFile( croName );
+				}
+				catch ( FileNotFoundException )
+				{
+					continue;
+				}
+
+				await action( croName, cro );
+			}
+		}
+
 		private void CleanAndMakeDir( string dir )
 		{
 			if ( Directory.Exists( dir ) )
@@ -88,58 +122,141 @@ namespace PokeRandomizer.Tests.XY
 				var garcData    = await garc.Write();
 				var garcOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.bin".Replace( '\\', '_' ) );
 
-				File.WriteAllBytes( garcOutPath, garcData );
+				await File.WriteAllBytesAsync( garcOutPath, garcData );
 
 				await this.ForEachGarcFile( garc, async ( file, fileIdx ) => {
 					var fileOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.{fileIdx}.bin".Replace( '\\', '_' ) );
 
-					File.WriteAllBytes( fileOutPath, file );
+					await File.WriteAllBytesAsync( fileOutPath, file );
 
-					if ( ValueSearchTests.DoSearchValues( file, SearchValues.Select( BitConverter.GetBytes ), out var matches, out _ ) )
+					if ( DoSearchValues( file, SearchValues.Select( BitConverter.GetBytes ), out var matches, out _ ) )
 					{
-						foreach ( var (i, match) in matches.Pairs() )
-						{
-							TestContext.Progress.WriteLine( $"\t!!!!!!!!!!!!! FOUND SCRIPT MAGIC: {gRef.RomFsPath}:{fileIdx} @ 0x{match:X} !!!!!!!!!!!!!" );
+						TestContext.Progress.WriteLine( $"\t!!!!!!!!!!!!! FOUND SCRIPT MAGIC: {gRef.RomFsPath}:{fileIdx} @ 0x{matches[ 0 ]:X} !!!!!!!!!!!!!" );
 
-							if ( match < 4 )
-							{
-								// Probably not an actual script file; skip the whole file
-								TestContext.Error.WriteLine( $"File {gRef.RomFsPath}.{fileIdx} had invalid match @ 0x{match:X}" );
-								return;
-							}
+						if ( matches[ 0 ] < 4 )
+							// Need 4 bytes before magic; if not, it's not a real script
+							return;
 
-							// 4-byte length, then 4-byte magic
-							var length        = BitConverter.ToInt32( file, match - 4 );
-							var roundedLength = (int) Math.Ceiling( length / 4.0 ) * 4;
+						var outFileName = $"{gRef.RomFsPath}.{fileIdx}.script.bin".Replace( '\\', '_' );
+						var outFilePath = Path.Combine( "Script", outFileName );
 
-							if ( match - 4 + roundedLength > file.Length )
-							{
-								if ( match - 4 + length <= file.Length )
-								{
-									// Some files don't round up to the 4-byte boundary if the script ends at the end of the file
-									roundedLength = length;
-								}
-								else
-								{
-									// Probably not an actual script file; skip the whole file
-									TestContext.Error.WriteLine( $"File {gRef.RomFsPath}.{fileIdx} had invalid length 0x{length:X}" );
-									return;
-								}
-							}
+						await File.WriteAllBytesAsync( outFilePath, file.Skip( matches[ 0 ] - 4 ).ToArray() );
 
-							var alignedData = file.Skip( match - 4 ).Take( roundedLength ).ToArray();
-							var outFileName = $"{gRef.RomFsPath}.{fileIdx}.script.{i}.bin".Replace( '\\', '_' );
-							var outFilePath = Path.Combine( "Script", outFileName );
+						var outScriptPath = Path.Combine( "Script", outFileName.Replace( ".bin", ".txt" ) );
 
-							File.WriteAllBytes( outFilePath, alignedData );
-
-							var outScriptPath = Path.Combine( "Script", outFileName.Replace( ".bin", ".txt" ) );
-
-							await this.WriteScript( outFilePath, outScriptPath );
-						}
+						await this.DisassembleScript( outFilePath, outScriptPath );
 					}
 				} );
-			}, 000, 031 );
+			} );
+		}
+
+		[ Test ]
+		public async Task SearchGarcs()
+		{
+			this.CleanAndMakeDir( "Garc" );
+			this.CleanAndMakeDir( "Found" );
+
+			await this.ForEachGarc( async ( gRef, garc, garcIdx ) => {
+				var garcData    = await garc.Write();
+				var garcOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.bin".Replace( '\\', '_' ) );
+
+				await File.WriteAllBytesAsync( garcOutPath, garcData );
+
+				if ( DoSearchValues( garcData, new List<byte[]>{ SearchBytes }, out var matches, out _ ) )
+				{
+					TestContext.Progress.WriteLine( $"\t!!!!!!!!!!!!! FOUND PATTERN: {gRef.RomFsPath} @ 0x{matches[ 0 ]:X} !!!!!!!!!!!!!" );
+
+					var outFileName = $"{gRef.RomFsPath}.found.bin".Replace( '\\', '_' );
+					var outFilePath = Path.Combine( "Found", outFileName );
+
+					await File.WriteAllBytesAsync( outFilePath, garcData );
+				}
+
+				await this.ForEachGarcFile( garc, async ( file, fileIdx ) => {
+					var fileOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.{fileIdx}.bin".Replace( '\\', '_' ) );
+
+					await File.WriteAllBytesAsync( fileOutPath, file );
+
+					if ( DoSearchValues( file, new List<byte[]>{ SearchBytes }, out matches, out _ ) )
+					{
+						TestContext.Progress.WriteLine( $"\t!!!!!!!!!!!!! FOUND PATTERN: {gRef.RomFsPath}:{fileIdx} @ 0x{matches[ 0 ]:X} !!!!!!!!!!!!!" );
+
+						var outFileName = $"{gRef.RomFsPath}.{fileIdx}.found.bin".Replace( '\\', '_' );
+						var outFilePath = Path.Combine( "Found", outFileName );
+
+						await File.WriteAllBytesAsync( outFilePath, file );
+					}
+				} );
+			} );
+		}
+
+		[ Test ]
+		public async Task FindGarcText()
+		{
+			this.CleanAndMakeDir( "Garc" );
+			this.CleanAndMakeDir( "Text" );
+
+			await this.ForEachGarc( async ( gRef, garc, garcIdx ) => {
+				var garcData    = await garc.Write();
+				var garcOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.bin".Replace( '\\', '_' ) );
+
+				await File.WriteAllBytesAsync( garcOutPath, garcData );
+
+				await this.ForEachGarcFile( garc, async ( file, fileIdx ) => {
+					var fileOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.{fileIdx}.bin".Replace( '\\', '_' ) );
+
+					await File.WriteAllBytesAsync( fileOutPath, file );
+
+					try
+					{
+						var textFile = new TextFile( this.Game.Version );
+
+						textFile.Read( file );
+
+						TestContext.Progress.WriteLine( $"Found valid text file: {gRef.RomFsPath}:{fileIdx}" );
+
+						var outFileName = $"{gRef.RomFsPath}.{fileIdx}.txt".Replace( '\\', '_' );
+						var outFilePath = Path.Combine( "Text", outFileName );
+
+						await File.WriteAllLinesAsync( outFilePath, textFile.Lines );
+					}
+					catch
+					{
+						// Ignored
+					}
+				} );
+			} );
+		}
+
+		[ Test ]
+		public async Task FindScripts2()
+		{
+			var searchBytesAmxL    = Encoding.ASCII.GetBytes( "amx" );
+			var searchBytesAmxU    = Encoding.ASCII.GetBytes( "AMX" );
+			var searchBytesFldItem = Encoding.ASCII.GetBytes( "fld_item" );
+
+			await this.ForEachCro( async ( name, file ) => {
+				if ( DoSearchValues( file.Data, new List<byte[]> { searchBytesAmxL, searchBytesAmxU }, out var matches, out _ ) )
+				{
+					var addresses = string.Join( ", ", matches.Select( m => $"{m:X4}" ) );
+
+					TestContext.Progress.WriteLine( $"Found \"amx\" in file {name}: {addresses}" );
+				}
+
+				if ( DoSearchValues( file.Data, new List<byte[]> { searchBytesFldItem }, out matches, out _ ) )
+				{
+					var addresses = string.Join( ", ", matches.Select( m => $"0x{m:X6}" ) );
+
+					TestContext.Progress.WriteLine( $"Found \"fld_item\" in file {name}: {addresses}" );
+				}
+
+				if ( DoSearchValues( file.Data, SearchValues.Select( BitConverter.GetBytes ), out matches, out _ ) )
+				{
+					var addresses = string.Join( ", ", matches.Select( m => $"0x{m:X6}" ) );
+
+					TestContext.Progress.WriteLine( $"Found AMX header in file {name}: {addresses}" );
+				}
+			} );
 		}
 
 		/*[ Test ]
@@ -150,44 +267,104 @@ namespace PokeRandomizer.Tests.XY
 			}, 012, 012 );
 		}*/
 
-		private async Task WriteScript( string binaryPath, string scriptPath )
+		private async Task DisassembleScript( string binaryPath, string scriptPath )
 		{
-			var startInfo = new ProcessStartInfo {
-				FileName               = "poketools.exe",
-				UseShellExecute        = false,
-				CreateNoWindow         = true,
-				Arguments              = binaryPath,
-				RedirectStandardOutput = true,
-				RedirectStandardError  = true,
-			};
-			var process = Process.Start( startInfo );
-
-			if ( process == null )
-				throw new Exception( "Could not start poketools.exe" );
-
-			var standardOutput = "";
-			var standardError  = "";
-
-			process.OutputDataReceived += ( sender, args ) => standardOutput += args.Data + Environment.NewLine;
-			process.ErrorDataReceived  += ( sender, args ) => standardError  += args.Data + Environment.NewLine;
-
-			process.BeginOutputReadLine();
-			process.BeginErrorReadLine();
-
-			if ( !process.WaitForExit( 5000 ) )
+			try
 			{
-				TestContext.Error.WriteLine( $"poketools.exe timed out for script file \"{binaryPath}\"" );
-				return;
+				var scriptBinaryData = await File.ReadAllBytesAsync( binaryPath );
+				var amx              = new Amx( scriptBinaryData );
+
+				if ( !amx.DataChunk.Any() && !amx.ParseScript.Any() )
+				{
+					// Not a script
+					try { File.Delete( binaryPath ); }
+					catch
+					{
+						/**/
+					}
+
+					return;
+				}
+
+				using var scriptTextStream = new FileStream( scriptPath, FileMode.Create, FileAccess.Write );
+				using var writer           = new StreamWriter( scriptTextStream );
+
+				Task Line( string line = "" ) => writer.WriteLineAsync( line );
+
+				// Write summary header
+				await Line( "/**" );
+				await Line( " * Script Information: " );
+
+				foreach ( var line in amx.SummaryLines )
+					await Line( $" * {line}" );
+
+				await Line( " */" + Environment.NewLine );
+
+				if ( amx.Publics != null )
+				{
+					// Write publics
+					await Line( "/** Publics */" + Environment.NewLine );
+
+					foreach ( var @public in amx.Publics.Where( p => p != null ) )
+						await Line( $"0x{@public.Address:X8}: {@public.Name}" );
+
+					await Line();
+				}
+
+				if ( amx.Natives != null )
+				{
+					// Write natives
+					await Line( "/** Natives */" + Environment.NewLine );
+
+					foreach ( var native in amx.Natives.Where( p => p != null ) )
+						await Line( $"0x{native.Address:X8}: {native.Name}" );
+
+					await Line();
+				}
+
+				if ( amx.Libraries != null )
+				{
+					// Write libraries
+					await Line( "/** Libraries */" + Environment.NewLine );
+
+					foreach ( var library in amx.Libraries.Where( p => p != null ) )
+						await Line( $"0x{library.Address:X8}: {library.Name}" );
+
+					await Line();
+				}
+
+				if ( amx.PublicVars != null )
+				{
+					// Write public vars
+					await Line( "/** PublicVars */" + Environment.NewLine );
+
+					foreach ( var publicVar in amx.PublicVars.Where( p => p != null ) )
+						await Line( $"0x{publicVar.Address:X8}: {publicVar.Name}" );
+
+					await Line();
+				}
+
+				// Write data section
+				await Line( "/** Data Section */" + Environment.NewLine );
+
+				foreach ( var line in amx.DataChunk )
+					await Line( line );
+
+				await Line();
+
+				// Write code section
+				await Line( "/** Code Section */" + Environment.NewLine );
+
+				foreach ( var line in amx.ParseScript )
+					await Line( line );
+
+				// Newline at end of file
+				await Line();
 			}
-
-			if ( standardError.Contains( "No blocks read!" ) )
-				return;
-
-			using ( var scriptStream = new FileStream( scriptPath, FileMode.Create, FileAccess.Write ) )
-			using ( var scriptWriter = new StreamWriter( scriptStream ) )
+			catch ( Exception ex )
 			{
-				await scriptWriter.WriteAsync( standardOutput );
-				await scriptWriter.FlushAsync();
+				TestContext.Error.WriteLine( $"Could not process script file: {binaryPath}" );
+				TestContext.Error.WriteLine( ex );
 			}
 		}
 

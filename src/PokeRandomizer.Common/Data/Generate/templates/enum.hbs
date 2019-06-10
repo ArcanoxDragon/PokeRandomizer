@@ -1,0 +1,26 @@
+
+public sealed class {{singleName}} : Base{{singleName}} {
+    public {{singleName}}( int id, string name ) : base( id, name ) { }
+    
+    public static explicit operator {{singleName}}( int id ) => {{pluralName}}.GetValueFrom( id );
+    public static explicit operator int( {{singleName}} val ) => val.Id;
+}
+
+public static partial class {{pluralName}} {
+    {{#each items}}
+    {{#ife id ">=" 0}}
+    public static readonly {{../singleName}} {{safeName}} = new {{../singleName}}( {{id}}, "{{name}}" );
+    {{/ife}}
+    {{/each}}
+    
+    private static readonly {{singleName}}[] staticValues = {
+        {{#each items}}
+        {{#ife id ">=" 0}}
+        {{safeName}},
+        {{/ife}}
+        {{/each}}
+    };
+    
+    public static {{singleName}} GetValueFrom( int id ) => staticValues.SingleOrDefault( v => v.Id == id );
+    public static IEnumerable<{{singleName}}> All{{pluralName}} => staticValues.AsEnumerable();
+}

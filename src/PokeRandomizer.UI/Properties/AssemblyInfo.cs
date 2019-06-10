@@ -7,12 +7,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "CtrDotNet.Pokemon.Randomizer.UI" )]
+[assembly: AssemblyTitle( "PokeRandomizer" )]
 [assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
-[assembly: AssemblyProduct( "CtrDotNet.Pokemon.Randomizer.UI" )]
-[assembly: AssemblyCopyright( "Copyright ©  2017" )]
+[assembly: AssemblyProduct( "PokeRandomizer" )]
+[assembly: AssemblyCopyright( "Copyright ©  2019" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 

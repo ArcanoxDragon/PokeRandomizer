@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:vc="clr-namespace:PokeRandomizer.UI.ValueConverters">
+	<vc:InvertValueConverter x:Key="InvertValueConverter" />
+	<vc:GameLanguageValueConverter x:Key="LanguageValueConverter" />
+	<vc:GameVersionValueConverter x:Key="VersionValueConverter" />
+	<vc:BooleanLogicValueConverter x:Key="LogicalAndValueConverter" Operation="And" />
+	<vc:PercentageValueConverter x:Key="PercentageValueConverter" />
+</ResourceDictionary>

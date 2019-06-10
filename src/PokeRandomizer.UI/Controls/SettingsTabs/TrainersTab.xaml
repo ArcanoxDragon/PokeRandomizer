@@ -1,0 +1,94 @@
+﻿<UserControl x:Class="PokeRandomizer.UI.Controls.SettingsTabs.TrainersTab"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:dependencyProperties="clr-namespace:PokeRandomizer.UI.DependencyProperties"
+			 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:common="clr-namespace:PokeRandomizer.Common;assembly=PokeRandomizer"
+			 mc:Ignorable="d"
+			 d:DesignWidth="500"
+			 d:DesignHeight="200"
+			 d:DataContext="{d:DesignInstance common:BaseRandomizer}"
+			 Padding="8,4">
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../../Resources/ValueConverters.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</UserControl.Resources>
+
+	<Grid Background="{x:Static SystemColors.WindowBrush}">
+		<GroupBox Padding="8">
+			<GroupBox.Header>
+				<CheckBox IsChecked="{Binding Config.Trainers.RandomizeTrainers}">
+					Randomize Trainer Encounters
+					<dependencyProperties:Properties.HintText>
+						Randomize the Pokémon and moves of each trainer's party
+						for any trainers the player may encounter throughout the
+						game. This includes gym leaders, the Elite Four, and the
+						League Champion!
+					</dependencyProperties:Properties.HintText>
+				</CheckBox>
+			</GroupBox.Header>
+			<StackPanel>
+				<CheckBox IsChecked="{Binding Config.Trainers.FriendKeepsStarter}"
+						  IsEnabled="{Binding Config.Trainers.RandomizeTrainers}">
+					Friend/rival keeps starter Pokémon
+					<dependencyProperties:Properties.HintText>
+						When this option is enabled, the player's Friend(s)/Rival(s)
+						will keep the same species as they would have chosen for their
+						starter throughout the game. If the species can evolve, it
+						will evolve whenever the player's starter would evolve in a
+						non-randomized version of the game.
+					</dependencyProperties:Properties.HintText>
+				</CheckBox>
+				<CheckBox Name="TrainersTypeThemedTeams"
+						  IsChecked="{Binding Config.Trainers.TypeThemed}"
+						  IsEnabled="{Binding Config.Trainers.RandomizeTrainers}">
+					Type-themed teams
+					<dependencyProperties:Properties.HintText>
+						When this option is enabled, the team for each trainer will
+						have a common type theme, and all Pokémon in the team will
+						have that type as either their Primary or Secondary type.
+					</dependencyProperties:Properties.HintText>
+				</CheckBox>
+				<CheckBox Margin="16,0,0,0" IsChecked="{Binding Config.Trainers.TypeThemedGyms}">
+					<CheckBox.IsEnabled>
+						<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+							<Binding Path="Config.Trainers.RandomizeTrainers" />
+							<Binding ElementName="TrainersTypeThemedTeams" Path="IsChecked" />
+						</MultiBinding>
+					</CheckBox.IsEnabled>
+					Type-themed gyms
+					<dependencyProperties:Properties.HintText>
+						When this option is enabled, a type will be chosen for each
+						Gym in the region. Every trainer in each Gym will have their
+						party's type theme set to their Gym's type theme, meaning every
+						trainer in that gym has Pokémon sharing at least one type. This
+						makes it easier to predict which types of Pokémon the leader will
+						have.
+						\n\n
+						This setting has no effect if "Type-themed teams" is not enabled.
+					</dependencyProperties:Properties.HintText>
+				</CheckBox>
+				<WrapPanel Margin="0,8,0,0">
+					<Label Content="Level multiplier" />
+					<xctk:DecimalUpDown Minimum="0.5"
+										Maximum="4.0"
+										Width="50"
+										Value="{Binding Config.Trainers.LevelMultiplier}"
+										IsEnabled="{Binding Config.Trainers.RandomizeTrainers}"
+										Increment="0.1" />
+					<dependencyProperties:Properties.HintText>
+						Each Pokémon on a trainer's team will have its level multiplied
+						by this value.
+						\n\n
+						Levels will be capped at Level 100.
+					</dependencyProperties:Properties.HintText>
+				</WrapPanel>
+			</StackPanel>
+		</GroupBox>
+	</Grid>
+</UserControl>

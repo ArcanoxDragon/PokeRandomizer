@@ -23,22 +23,23 @@ namespace PokeRandomizer.UI.Pages
 	public partial class RandomizerPage : INotifyPropertyChanged
 	{
 		private readonly List<UIElement> hintElements;
-		private string defaultHintText;
-		private int lastTab = -1;
+
 		private string outputPath;
+		private string defaultHintText;
+		private int    lastTab = -1;
 
 		public RandomizerPage( IRandomizer randomizer )
 		{
 			this.hintElements = new List<UIElement>();
 
-			this.Randomizer = randomizer;
+			this.Randomizer  = randomizer;
 			this.DataContext = this.Randomizer;
 
 			this.InitializeComponent();
 		}
 
-		public RandomizerConfig Config => this.Randomizer.Config;
-		public IRandomizer Randomizer { get; }
+		public RandomizerConfig Config     => this.Randomizer.Config;
+		public IRandomizer      Randomizer { get; }
 
 		public string OutputPath
 		{
@@ -46,14 +47,14 @@ namespace PokeRandomizer.UI.Pages
 			private set
 			{
 				this.outputPath = value;
-				this.OnPropertyChanged( nameof(this.OutputPath) );
-				this.OnPropertyChanged( nameof(this.HasOutputPath) );
+				this.OnPropertyChanged();
 				this.OnPropertyChanged( nameof(this.OutputPathDisplay) );
+				this.OnPropertyChanged( nameof(this.CanRandomize) );
 			}
 		}
 
-		public bool HasOutputPath => !string.IsNullOrEmpty( this.OutputPath );
 		public string OutputPathDisplay => this.OutputPath ?? "None";
+		public bool   CanRandomize      => !string.IsNullOrEmpty( this.OutputPath );
 
 		private void RefreshHintElements()
 		{
@@ -115,7 +116,7 @@ namespace PokeRandomizer.UI.Pages
 		{
 			var dialog = new CommonOpenFileDialog {
 				EnsureFileExists = true,
-				Filters = { new CommonFileDialogFilter( "JSON Files (.json)", ".json" ) },
+				Filters          = { new CommonFileDialogFilter( "JSON Files (.json)", ".json" ) },
 				CookieIdentifier = App.FileDialogCookieConfigFile
 			};
 			var result = dialog.ShowDialog( this.Parent as Window );
@@ -151,10 +152,10 @@ namespace PokeRandomizer.UI.Pages
 		{
 			var dialog = new CommonSaveFileDialog {
 				AlwaysAppendDefaultExtension = true,
-				OverwritePrompt = true,
-				Filters = { new CommonFileDialogFilter( "JSON Files (.json)", ".json" ) },
-				DefaultExtension = ".json",
-				CookieIdentifier = App.FileDialogCookieConfigFile
+				OverwritePrompt              = true,
+				Filters                      = { new CommonFileDialogFilter( "JSON Files (.json)", ".json" ) },
+				DefaultExtension             = ".json",
+				CookieIdentifier             = App.FileDialogCookieConfigFile
 			};
 			var result = dialog.ShowDialog( this.Parent as Window );
 
@@ -201,7 +202,7 @@ namespace PokeRandomizer.UI.Pages
 		private void SetOutputPath_Click( object sender, RoutedEventArgs e )
 		{
 			var dialog = new CommonOpenFileDialog {
-				IsFolderPicker = true,
+				IsFolderPicker   = true,
 				EnsurePathExists = true,
 				CookieIdentifier = App.FileDialogCookieOutputFolder
 			};
@@ -217,15 +218,15 @@ namespace PokeRandomizer.UI.Pages
 		{
 			var progressBar = new TaskDialogProgressBar( 0, 100, 0 );
 			var dialog = new TaskDialog {
-				Cancelable = false,
-				Caption = "Randomizing Game",
-				ExpansionMode = TaskDialogExpandedDetailsLocation.Hide,
-				Icon = TaskDialogStandardIcon.Information,
-				InstructionText = "Randomizing game...this may take a few minutes",
-				ProgressBar = progressBar,
+				Cancelable        = false,
+				Caption           = "Randomizing Game",
+				ExpansionMode     = TaskDialogExpandedDetailsLocation.Hide,
+				Icon              = TaskDialogStandardIcon.Information,
+				InstructionText   = "Randomizing game...this may take a few minutes",
+				ProgressBar       = progressBar,
 				OwnerWindowHandle = new WindowInteropHelper( this.Parent as Window ).Handle,
-				StartupLocation = TaskDialogStartupLocation.CenterOwner,
-				StandardButtons = TaskDialogStandardButtons.Cancel
+				StartupLocation   = TaskDialogStartupLocation.CenterOwner,
+				StandardButtons   = TaskDialogStandardButtons.Cancel
 			};
 
 			var cancelSource = new CancellationTokenSource();
@@ -242,7 +243,7 @@ namespace PokeRandomizer.UI.Pages
 					if ( update.Type == ProgressUpdate.UpdateType.Status )
 						await this.Dispatcher.InvokeAsync( () => {
 							progressBar.Value = (int) ( progress.Progress * 100.0 );
-							dialog.Text = update.Status ?? progress.Status;
+							dialog.Text       = update.Status ?? progress.Status;
 						} );
 				}
 
@@ -296,7 +297,7 @@ namespace PokeRandomizer.UI.Pages
 					ev.Cancel = true;
 					cancelSource.Cancel();
 					progressBar.State = TaskDialogProgressBarState.Marquee;
-					dialog.Text = "Cancelling...";
+					dialog.Text       = "Cancelling...";
 				}
 			};
 			dialog.Show();

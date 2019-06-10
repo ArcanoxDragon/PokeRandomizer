@@ -1,0 +1,303 @@
+﻿<UserControl x:Class="PokeRandomizer.UI.Controls.SettingsTabs.PokemonTab"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:dependencyProperties="clr-namespace:PokeRandomizer.UI.DependencyProperties"
+			 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:common="clr-namespace:PokeRandomizer.Common;assembly=PokeRandomizer"
+			 mc:Ignorable="d"
+			 d:DesignWidth="500"
+			 d:DesignHeight="600"
+			 d:DataContext="{d:DesignInstance common:BaseRandomizer}"
+			 Padding="8,4">
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../../Resources/ValueConverters.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</UserControl.Resources>
+
+	<ScrollViewer VerticalScrollBarVisibility="Auto" Background="{x:Static SystemColors.WindowBrush}">
+		<StackPanel>
+			<GroupBox Margin="4" Padding="8">
+				<GroupBox.Header>
+					<CheckBox IsChecked="{Binding Config.PokemonInfo.RandomizeAbilities}">
+						Randomize Abilities
+						<dependencyProperties:Properties.HintText>
+							Randomize the possible abilities (including the Hidden Ability)
+							of every Pokémon in the game. The number of abilities that a
+							given Pokémon can have will remain the same as in an unmodified
+							version of the game.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+				</GroupBox.Header>
+				<StackPanel>
+					<CheckBox IsChecked="{Binding Config.PokemonInfo.AllowWonderGuard}"
+							  IsEnabled="{Binding Config.PokemonInfo.RandomizeAbilities}">
+						Allow &quot;Wonder Guard&quot; ability
+						<dependencyProperties:Properties.HintText>
+							Allow Pokémon to possess the &quot;Wonder Guard&quot; ability,
+							which makes them immune to any attack moves which are not directly
+							super-effective on them.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+				</StackPanel>
+			</GroupBox>
+			<GroupBox Margin="4" Padding="8">
+				<GroupBox.Header>
+					<CheckBox IsChecked="{Binding Config.PokemonInfo.RandomizeTypes}">
+						Randomize Types
+						<dependencyProperties:Properties.HintText>
+							Randomize the types of each Pokémon. The number of types that any
+							given Pokémon possesses will not change from an unmodified game,
+							but the actual type in either slot may.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+				</GroupBox.Header>
+				<StackPanel>
+					<CheckBox IsChecked="{Binding Config.PokemonInfo.RandomizePrimaryTypes}"
+							  IsEnabled="{Binding Config.PokemonInfo.RandomizeTypes}">
+						Randomize Primary Types
+						<dependencyProperties:Properties.HintText>
+							Allow the primary type of a Pokémon to be changed when randomizing
+							types.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+					<CheckBox IsChecked="{Binding Config.PokemonInfo.RandomizeSecondaryTypes}"
+							  IsEnabled="{Binding Config.PokemonInfo.RandomizeTypes}">
+						Randomize Secondary Types
+						<dependencyProperties:Properties.HintText>
+							Allow the secondary type of a Pokémon, if applicable, to be changed
+							when randomizing types.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+				</StackPanel>
+			</GroupBox>
+			<GroupBox Margin="4" Padding="8">
+				<GroupBox.Header>
+					<CheckBox IsChecked="{Binding Config.EggMoves.RandomizeEggMoves}">
+						Randomize Egg Moves
+						<dependencyProperties:Properties.HintText>
+							Randomize the possible moves that Pokémon can know immediately
+							after hatching from an Egg, provided one of its parents also
+							knows that move at the time the Egg was laid.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+				</GroupBox.Header>
+				<StackPanel>
+					<CheckBox Name="EggMovesFavorSameType"
+							  IsChecked="{Binding Config.EggMoves.FavorSameType}"
+							  IsEnabled="{Binding Config.EggMoves.RandomizeEggMoves}">
+						Favor same-type
+						<dependencyProperties:Properties.HintText>
+							When assigning new egg moves, try and assign moves of which the type
+							matches one of the Pokémon's types, so that there is a higher chance
+							of that Pokémon's egg moves containing STAB moves.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+					<WrapPanel Margin="16,8,0,8">
+						<Label>Same-type chance</Label>
+						<xctk:IntegerUpDown Minimum="5"
+											Maximum="100"
+											Width="50"
+											Value="{Binding Config.EggMoves.SameTypePercentage, Converter={StaticResource PercentageValueConverter}}">
+							<UIElement.IsEnabled>
+								<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+									<Binding Path="Config.EggMoves.RandomizeEggMoves" />
+									<Binding ElementName="EggMovesFavorSameType" Path="IsChecked" />
+								</MultiBinding>
+							</UIElement.IsEnabled>
+						</xctk:IntegerUpDown>
+						<Label>%</Label>
+						<dependencyProperties:Properties.HintText>
+							The percentage chance that a selected move will match one of the
+							Pokémon's types. Higher values increase the chance of the Pokémon
+							knowing STAB moves when hatching from an Egg.
+							\n\n
+							Default value: 50%\n
+							Minimum value: 5%\n
+							Maximum value: 100%
+							\n\n
+							This setting has no effect if "Favor same-type" is not enabled.
+						</dependencyProperties:Properties.HintText>
+					</WrapPanel>
+				</StackPanel>
+			</GroupBox>
+			<GroupBox Margin="4" Padding="8">
+				<GroupBox.Header>
+					<CheckBox IsChecked="{Binding Config.Learnsets.RandomizeLearnsets}">
+						Randomize Learnsets
+						<dependencyProperties:Properties.HintText>
+							Randomize the possible moves a Pokémon can learn by leveling up.
+							The number of moves that the Pokémon can learn will not change,
+							but the moves themselves as well as the levels at which each move
+							can be learned may be randomized.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+				</GroupBox.Header>
+				<StackPanel>
+					<CheckBox Name="LearnsetsFavorSameType"
+							  IsChecked="{Binding Config.Learnsets.FavorSameType}"
+							  IsEnabled="{Binding Config.Learnsets.RandomizeLearnsets}">
+						Favor same-type
+						<dependencyProperties:Properties.HintText>
+							When assigning new learnsets, try and assign moves of which the type
+							matches one of the Pokémon's types, so that there is a higher chance
+							of that Pokémon learning STAB moves.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+					<WrapPanel Margin="16,8,0,8">
+						<Label>Same-type chance</Label>
+						<xctk:IntegerUpDown Minimum="5"
+											Maximum="100"
+											Width="50"
+											Value="{Binding Config.Learnsets.SameTypePercentage, Converter={StaticResource PercentageValueConverter}}">
+							<UIElement.IsEnabled>
+								<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+									<Binding Path="Config.Learnsets.RandomizeLearnsets" />
+									<Binding ElementName="LearnsetsFavorSameType" Path="IsChecked" />
+								</MultiBinding>
+							</UIElement.IsEnabled>
+						</xctk:IntegerUpDown>
+						<Label>%</Label>
+						<dependencyProperties:Properties.HintText>
+							The percentage chance that a selected move will match one of the
+							Pokémon's types. Higher values increase the chance of the Pokémon
+							learning STAB moves.
+							\n\n
+							Default value: 50%\n
+							Minimum value: 5%\n
+							Maximum value: 100%
+							\n\n
+							This setting has no effect if "Favor same-type" is not enabled.
+						</dependencyProperties:Properties.HintText>
+					</WrapPanel>
+					<CheckBox IsChecked="{Binding Config.Learnsets.AtLeast4Moves}"
+							  IsEnabled="{Binding Config.Learnsets.RandomizeLearnsets}">
+						At least 4 moves
+						<dependencyProperties:Properties.HintText>
+							Ensure that each Pokémon will always have at least 4 moves at Level 1.
+							This prevents situations where a wild or starter Pokémon has, for
+							example, Explosion or Selfdestruct as its only move.
+							\n\n
+							Note: Regardless of whether this option is set or not, every Pokémon will
+							be guaranteed to have at least one attack move at Level 1 which is either
+							Normal-type, or a type that matches one of the Pokémon's types.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+					<CheckBox Name="LearnsetsRandomizeLevels"
+							  IsChecked="{Binding Config.Learnsets.RandomizeLevels}"
+							  IsEnabled="{Binding Config.Learnsets.RandomizeLearnsets}">
+						Randomize levels
+						<dependencyProperties:Properties.HintText>
+							Randomize the levels at which the Pokémon learns the moves in its
+							learnset. This does not change the number of moves in the learnset;
+							it only changes the levels at which they are learned.
+							\n\n
+							The levels chosen will be randomly picked between Level 1 and the level
+							specified in the "Learn all moves by" option.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+					<WrapPanel Margin="16,8,0,8">
+						<Label Content="Learn all moves by level" />
+						<xctk:IntegerUpDown Minimum="10"
+											Maximum="100"
+											Width="50"
+											Value="{Binding Config.Learnsets.LearnAllMovesBy}">
+							<UIElement.IsEnabled>
+								<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+									<Binding Path="Config.Learnsets.RandomizeLearnsets" />
+									<Binding ElementName="LearnsetsRandomizeLevels" Path="IsChecked" />
+								</MultiBinding>
+							</UIElement.IsEnabled>
+						</xctk:IntegerUpDown>
+						<dependencyProperties:Properties.HintText>
+							Ensure all moves are learned by this level.
+							\n\n
+							Default value: Level 65\n
+							Minimum value: Level 10\n
+							Maximum value: Level 100
+							\n\n
+							This setting has no effect if "Randomize levels" is not enabled.
+						</dependencyProperties:Properties.HintText>
+					</WrapPanel>
+				</StackPanel>
+			</GroupBox>
+			<GroupBox Margin="4" Padding="8">
+				<GroupBox.Header>
+					<CheckBox IsChecked="{Binding Config.Starters.RandomizeStarters}">
+						Randomize Starters
+						<dependencyProperties:Properties.HintText>
+							Randomize the choices the player will have when picking a starter
+							Pokémon. This not only applies to the starter the player chooses
+							at the beginning of the game, but also to any starters the player
+							may get to pick later on, such as in X and Y when the player first
+							meets Professor Sycamore in Lumiose City.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+				</GroupBox.Header>
+				<StackPanel>
+					<CheckBox Name="StartersOnlyStarters"
+							  IsChecked="{Binding Config.Starters.StartersOnly}"
+							  IsEnabled="{Binding Config.Starters.RandomizeStarters}">
+						Only starter Pokémon
+						<dependencyProperties:Properties.HintText>
+							When choosing new starters for the player to choose from,
+							only pick from Pokémon which are actual starters in this
+							game or other games.
+							\n\n
+							In Generation 6, this list contains the following Pokémon:
+							\n\n
+							Bulbasaur, Charmander, Squirtle,
+							Chikorita, Cyndaquil, Totodile,
+							Treecko, Torchic, Mudkip,
+							Turtwig, Chimchar, Piplup,
+							Snivy, Tepig, Oshawott,
+							Chespin, Fennekin, Froakie
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+					<CheckBox
+						IsChecked="{Binding Config.Starters.OnlyElementalTypes}">
+						<CheckBox.IsEnabled>
+							<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+								<Binding Path="Config.Starters.RandomizeStarters" />
+								<Binding ElementName="StartersOnlyStarters" Path="IsChecked"
+										 Converter="{StaticResource InvertValueConverter}" />
+							</MultiBinding>
+						</CheckBox.IsEnabled>
+						Only elemental types
+						<dependencyProperties:Properties.HintText>
+							Only consider Pokémon which posess the "Fire", "Water", or "Grass"
+							type when randomizing the list of starter Pokémon the player may
+							choose from. This will not ensure that the "type triangle" remains
+							the same, so in some cases, your rival may end up with a type
+							advantage against you, or all the options could be the same elemental
+							type!
+							\n\n
+							This setting has no effect when "Only starter Pokémon" is enabled.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+					<CheckBox
+						IsChecked="{Binding Config.Starters.AllowLegendaries}">
+						<CheckBox.IsEnabled>
+							<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+								<Binding Path="Config.Starters.RandomizeStarters" />
+								<Binding ElementName="StartersOnlyStarters" Path="IsChecked"
+										 Converter="{StaticResource InvertValueConverter}" />
+							</MultiBinding>
+						</CheckBox.IsEnabled>
+						Allow Legendary Pokémon
+						<dependencyProperties:Properties.HintText>
+							Allow Legendary Pokémon to be considered when randomizing the list of
+							starter Pokémon the player may choose from.
+							\n\n
+							This setting has no effect when "Only starter Pokémon" is enabled.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+				</StackPanel>
+			</GroupBox>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

@@ -92,6 +92,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\RandomizerActions.xaml.cs">
+      <DependentUpon>RandomizerActions.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SettingsTabs\OverworldTab.xaml.cs">
+      <DependentUpon>OverworldTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SettingsTabs\PokemonTab.xaml.cs">
+      <DependentUpon>PokemonTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SettingsTabs\TrainersTab.xaml.cs">
+      <DependentUpon>TrainersTab.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DependencyProperties\Properties.cs" />
     <Compile Include="DependencyProperties\Properties.HintText.cs">
       <DependentUpon>Properties.cs</DependentUpon>
@@ -103,15 +115,36 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\Annotations.cs" />
+    <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Utility\VisualTreeExtensions.cs" />
     <Compile Include="ValueConverters\BooleanAndValueConverter.cs" />
     <Compile Include="ValueConverters\GameVersionValueConverter.cs" />
     <Compile Include="ValueConverters\GameLanguageValueConverter.cs" />
     <Compile Include="ValueConverters\InvertValueConverter.cs" />
     <Compile Include="ValueConverters\PercentageValueConverter.cs" />
+    <Page Include="Controls\RandomizerActions.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Pages\RandomizerPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\SettingsTabs\OverworldTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\SettingsTabs\TrainersTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\SettingsTabs\PokemonTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\ValueConverters.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="StartupWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

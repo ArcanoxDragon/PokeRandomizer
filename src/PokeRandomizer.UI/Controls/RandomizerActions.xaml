@@ -1,0 +1,78 @@
+﻿<UserControl x:Class="PokeRandomizer.UI.Controls.RandomizerActions"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:common="clr-namespace:PokeRandomizer.Common;assembly=PokeRandomizer"
+			 mc:Ignorable="d"
+			 d:DesignWidth="200"
+			 d:DesignHeight="400"
+			 d:DataContext="{d:DesignInstance common:BaseRandomizer}"
+			 Background="{x:Static SystemColors.WindowBrush}"
+			 HorizontalAlignment="Stretch"
+			 VerticalAlignment="Stretch"
+			 Name="Control">
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Resources/ValueConverters.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</UserControl.Resources>
+
+	<StackPanel>
+		<WrapPanel>
+			<Label FontWeight="Bold">Game Version:</Label>
+			<Label Content="{Binding Game.Version, Converter={StaticResource VersionValueConverter}}" />
+		</WrapPanel>
+		<WrapPanel>
+			<Label FontWeight="Bold">Game Language:</Label>
+			<Label Content="{Binding Game.Language, Converter={StaticResource LanguageValueConverter}}" />
+		</WrapPanel>
+
+		<Separator />
+
+		<Button Margin="4" Height="24" Click="LoadConfigFile_Click">
+			<StackPanel Orientation="Horizontal">
+				<Image Source="../Resources/Open.png" Margin="0,0,8,0" />
+				<Label Padding="0">_Load config file...</Label>
+			</StackPanel>
+		</Button>
+		<Button Margin="4" Height="24" Click="SaveConfigFile_Click">
+			<StackPanel Orientation="Horizontal">
+				<Image Source="../Resources/Save.png" Margin="0,0,8,0" />
+				<Label Padding="0">_Save config file...</Label>
+			</StackPanel>
+		</Button>
+		<Button Margin="4" Height="24" Click="ResetConfig_Click">
+			<StackPanel Orientation="Horizontal">
+				<Image Source="../Resources/Revert.png" Margin="0,0,8,0" />
+				<Label Padding="0">_Reset to default settings...</Label>
+			</StackPanel>
+		</Button>
+
+		<Separator />
+
+		<Button Margin="4" Height="24" Click="SetOutputPath_Click">
+			<StackPanel Orientation="Horizontal">
+				<Image Source="../Resources/OutputDir.png" Margin="0,0,8,0" />
+				<Label Padding="0">Set _output path...</Label>
+			</StackPanel>
+		</Button>
+		<Label>Current output path:</Label>
+		<TextBlock TextWrapping="WrapWithOverflow"
+				   Text="{Binding ElementName=Control, Path=OutputPath}"
+				   Margin="8,0,8,8" />
+
+		<Separator />
+
+		<Button Margin="4" Height="24"
+				IsEnabled="{Binding ElementName=Control, Path=CanRandomize}"
+				Click="Randomize_Click">
+			<StackPanel Orientation="Horizontal">
+				<Image Source="../Resources/Start.png" Margin="0,0,8,0" />
+				<Label Padding="0">_Randomize!</Label>
+			</StackPanel>
+		</Button>
+	</StackPanel>
+</UserControl>

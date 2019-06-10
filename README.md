@@ -26,3 +26,20 @@ Once you have adjusted the settings to your liking, you should click the `Set ou
 Once you have chosen an output folder, click the `Randomize!` button on the left. The randomizer will begin processing the game files and outputting the patch files. Depending on the settings you chose and how fast your computer's processor and hard drive are, this may take several minutes.
 
 After the randomizer finishes, it will display a message indicating that the randomization is complete. You will find patched game files in the output folder you chose. You can use these game files for LayeredFS patching (e.g. with Luma3DS), or copy them into an extracted game folder to rebuild it back into a ROM.
+
+# Screenshots
+Splash Screen:
+  
+![Splash Screen](https://i.imgur.com/ow6v5un.png)
+
+Pokémon Options:
+  
+![Pokémon Options](https://i.imgur.com/ALRr8un.png)
+
+Trainer Options:
+  
+![Trainer Options](https://i.imgur.com/6cm8QLw.png)
+
+Overworld Options:
+  
+![Overworld Options](https://i.imgur.com/jPW39Kk.png)

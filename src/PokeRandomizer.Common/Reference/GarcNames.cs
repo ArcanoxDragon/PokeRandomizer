@@ -31,5 +31,6 @@
 		StaticEncounters,
 		ItemPickup,
 		Scripts,
+		AmxFiles,
 	}
 }

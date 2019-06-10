@@ -17,23 +17,22 @@ namespace PokeRandomizer.Common
 	{
 		private const int NumSubOperations = 6;
 
-		protected readonly Random rand;
-
 		protected BaseRandomizer()
 		{
 			this.RandomSeed = Environment.TickCount; // Default constructor of Random uses this
-			this.rand       = new Random( this.RandomSeed );
+			this.Random     = new Random( this.RandomSeed );
 		}
 
 		protected BaseRandomizer( int seed )
 		{
 			this.RandomSeed = seed;
-			this.rand       = new Random( seed );
+			this.Random     = new Random( seed );
 		}
 
 		public RandomizerConfig Config     { get; set; }
 		public GameConfig       Game       { get; private set; }
 		public int              RandomSeed { get; }
+		public Random           Random     { get; }
 
 		internal void Initialize( GameConfig game, RandomizerConfig randomizerConfig )
 		{
@@ -49,14 +48,7 @@ namespace PokeRandomizer.Common
 
 		public async Task RandomizeAll( ProgressNotifier progress, CancellationToken token )
 		{
-			var runner = new TaskRunner {
-				this.RandomizeAbilities,
-				this.RandomizeEggMoves,
-				this.RandomizeEncounters,
-				this.RandomizeLearnsets,
-				this.RandomizeStarters,
-				this.RandomizeTrainers,
-			};
+			var runner = new TaskRunner( this.GetRandomizationTasks() );
 
 			if ( progress != null )
 				runner.ProgressNotifier.ProgressUpdated += ( s, u ) => progress.NotifyUpdate( u );
@@ -68,7 +60,17 @@ namespace PokeRandomizer.Common
 
 		#region Randomization tasks
 
-		public abstract Task RandomizeAbilities( ProgressNotifier progressNotifier, CancellationToken token );
+		protected virtual IEnumerable<TaskRunner.TaskFunction> GetRandomizationTasks()
+		{
+			yield return this.RandomizePokemonInfo;
+			yield return this.RandomizeEggMoves;
+			yield return this.RandomizeEncounters;
+			yield return this.RandomizeLearnsets;
+			yield return this.RandomizeStarters;
+			yield return this.RandomizeTrainers;
+		}
+
+		public abstract Task RandomizePokemonInfo( ProgressNotifier progressNotifier, CancellationToken token );
 		public abstract Task RandomizeEggMoves( ProgressNotifier progressNotifier, CancellationToken token );
 		public abstract Task RandomizeEncounters( ProgressNotifier progressNotifier, CancellationToken token );
 		public abstract Task RandomizeLearnsets( ProgressNotifier progressNotifier, CancellationToken token );
@@ -87,7 +89,7 @@ namespace PokeRandomizer.Common
 			if ( available.Count <= 0 )
 				throw new InvalidDataException( "No species available matching the given constraints" );
 
-			return available.GetRandom( this.rand );
+			return available.GetRandom( this.Random );
 		}
 
 		#endregion

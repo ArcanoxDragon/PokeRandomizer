@@ -9,13 +9,10 @@ namespace PokeRandomizer.UI.ValueConverters
 	{
 		public object Convert( object value, Type targetType, object parameter, CultureInfo culture )
 		{
-			if ( targetType != typeof( bool ) )
+			if ( !( value is bool from ) )
+				throw new NotSupportedException( $"Value must be a boolean" );
+			if ( targetType != typeof( bool ) && targetType != typeof( object ) )
 				throw new NotSupportedException( $"Cannot convert to type: {targetType.Name}" );
-
-			bool? from = value as bool?;
-
-			if ( from == null )
-				throw new ArgumentNullException( nameof(value), "Cannot convert a null value" );
 
 			return !from;
 		}

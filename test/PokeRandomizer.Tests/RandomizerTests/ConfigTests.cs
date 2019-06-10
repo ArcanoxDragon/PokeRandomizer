@@ -4,7 +4,7 @@ using NUnit.Framework;
 using PokeRandomizer.Config;
 using PokeRandomizer.Tests.Utility;
 
-namespace PokeRandomizer.Tests.Randomizer
+namespace PokeRandomizer.Tests.RandomizerTests
 {
 	[ TestFixture ]
 	public class ConfigTests
@@ -19,11 +19,11 @@ namespace PokeRandomizer.Tests.Randomizer
 		[ Test ]
 		public void TestNullValue()
 		{
-			this.config.Abilities = null;
+			this.config.PokemonInfo = null;
 
 			Assert.Catch<ArgumentNullException>( () => Validator.ValidateConfig( this.config ), "Null value was not caught by the validator" );
 
-			this.config.Abilities = new AbilitiesConfig();
+			this.config.PokemonInfo = new PokemonInfoConfig();
 		}
 
 		[ Test ]

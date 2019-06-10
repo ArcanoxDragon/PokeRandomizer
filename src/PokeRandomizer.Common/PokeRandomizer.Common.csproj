@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\external\pkNX\pkNX.Structures\pkNX.Structures.csproj" />
     <ProjectReference Include="..\CtrDotNet\CtrDotNet.csproj" />
   </ItemGroup>
 

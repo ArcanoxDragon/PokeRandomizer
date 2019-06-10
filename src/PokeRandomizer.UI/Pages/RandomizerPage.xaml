@@ -1,332 +1,624 @@
 ﻿<Page x:Class="PokeRandomizer.UI.Pages.RandomizerPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+	  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	  xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
 	  xmlns:common1="clr-namespace:PokeRandomizer.Common;assembly=PokeRandomizer"
 	  xmlns:valueConverters="clr-namespace:PokeRandomizer.UI.ValueConverters"
 	  xmlns:dependencyProperties="clr-namespace:PokeRandomizer.UI.DependencyProperties"
 	  mc:Ignorable="d"
-      d:DesignWidth="800"
-      d:DesignHeight="480"
-      d:DataContext="{d:DesignInstance common1:BaseRandomizer}"
-      Name="Page"
-      Title="RandomizerPage"
-      Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
-      Loaded="MainPage_Loaded">
-    <Page.Resources>
-        <valueConverters:InvertValueConverter x:Key="InvertValueConverter" />
-        <valueConverters:GameLanguageValueConverter x:Key="LanguageValueConverter" />
-        <valueConverters:GameVersionValueConverter x:Key="VersionValueConverter" />
-    </Page.Resources>
+	  d:DesignWidth="800"
+	  d:DesignHeight="800"
+	  d:DataContext="{d:DesignInstance common1:BaseRandomizer}"
+	  Name="Page"
+	  Title="RandomizerPage"
+	  Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+	  Loaded="MainPage_Loaded">
+	<Page.Resources>
+		<valueConverters:InvertValueConverter x:Key="InvertValueConverter" />
+		<valueConverters:GameLanguageValueConverter x:Key="LanguageValueConverter" />
+		<valueConverters:GameVersionValueConverter x:Key="VersionValueConverter" />
+		<valueConverters:BooleanLogicValueConverter x:Key="LogicalAndValueConverter" Operation="And" />
+		<valueConverters:PercentageValueConverter x:Key="PercentageValueConverter" />
+	</Page.Resources>
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" MinWidth="200" />
-            <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="3*" MinWidth="550" />
-        </Grid.ColumnDefinitions>
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*" MinWidth="200" />
+			<ColumnDefinition Width="5" />
+			<ColumnDefinition Width="3*" MinWidth="550" />
+		</Grid.ColumnDefinitions>
 
-        <!-- Randomizer Actions -->
-        <Grid>
-            <StackPanel>
-                <WrapPanel>
-                    <Label FontWeight="Bold">Game Version:</Label>
-                    <Label Content="{Binding Game.Version, Converter={StaticResource VersionValueConverter}}" />
-                </WrapPanel>
-                <WrapPanel>
-                    <Label FontWeight="Bold">Game Language:</Label>
-                    <Label Content="{Binding Game.Language, Converter={StaticResource LanguageValueConverter}}" />
-                </WrapPanel>
+		<!-- Randomizer Actions -->
+		<StackPanel>
+			<WrapPanel>
+				<Label FontWeight="Bold">Game Version:</Label>
+				<Label Content="{Binding Game.Version, Converter={StaticResource VersionValueConverter}}" />
+			</WrapPanel>
+			<WrapPanel>
+				<Label FontWeight="Bold">Game Language:</Label>
+				<Label Content="{Binding Game.Language, Converter={StaticResource LanguageValueConverter}}" />
+			</WrapPanel>
 
-                <Separator />
+			<Separator />
 
-                <Button Margin="4" Height="24" Click="LoadConfigFile_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="../Resources/Open.png" Margin="0,0,8,0"></Image>
-                        <Label Padding="0">_Load config file...</Label>
-                    </StackPanel>
-                </Button>
-                <Button Margin="4" Height="24" Click="SaveConfigFile_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="../Resources/Save.png" Margin="0,0,8,0"></Image>
-                        <Label Padding="0">_Save config file...</Label>
-                    </StackPanel>
-                </Button>
-                <Button Margin="4" Height="24" Click="ResetConfig_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="../Resources/Revert.png" Margin="0,0,8,0"></Image>
-                        <Label Padding="0">_Reset to default settings...</Label>
-                    </StackPanel>
-                </Button>
+			<Button Margin="4" Height="24" Click="LoadConfigFile_Click">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="../Resources/Open.png" Margin="0,0,8,0" />
+					<Label Padding="0">_Load config file...</Label>
+				</StackPanel>
+			</Button>
+			<Button Margin="4" Height="24" Click="SaveConfigFile_Click">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="../Resources/Save.png" Margin="0,0,8,0" />
+					<Label Padding="0">_Save config file...</Label>
+				</StackPanel>
+			</Button>
+			<Button Margin="4" Height="24" Click="ResetConfig_Click">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="../Resources/Revert.png" Margin="0,0,8,0" />
+					<Label Padding="0">_Reset to default settings...</Label>
+				</StackPanel>
+			</Button>
 
-                <Separator />
+			<Separator />
 
-                <Button Margin="4" Height="24" Click="SetOutputPath_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="../Resources/OutputDir.png" Margin="0,0,8,0"></Image>
-                        <Label Padding="0">Set _output path...</Label>
-                    </StackPanel>
-                </Button>
-                <Label>Current output path:</Label>
-                <TextBlock TextWrapping="WrapWithOverflow"
-                           Text="{Binding ElementName=Page, Path=OutputPathDisplay}" 
-                           Margin="8"/>
+			<Button Margin="4" Height="24" Click="SetOutputPath_Click">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="../Resources/OutputDir.png" Margin="0,0,8,0" />
+					<Label Padding="0">Set _output path...</Label>
+				</StackPanel>
+			</Button>
+			<Label>Current output path:</Label>
+			<TextBlock TextWrapping="WrapWithOverflow"
+					   Text="{Binding ElementName=Page, Path=OutputPathDisplay}"
+					   Margin="8" />
 
-                <Separator />
+			<Separator />
 
-                <Button Margin="4" Height="24"
-                        IsEnabled="{Binding ElementName=Page, Path=HasOutputPath}"
-                        Click="Randomize_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="../Resources/Start.png" Margin="0,0,8,0"></Image>
-                        <Label Padding="0">_Randomize!</Label>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </Grid>
+			<Button Margin="4" Height="24"
+					IsEnabled="{Binding ElementName=Page, Path=HasOutputPath}"
+					Click="Randomize_Click">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="../Resources/Start.png" Margin="0,0,8,0" />
+					<Label Padding="0">_Randomize!</Label>
+				</StackPanel>
+			</Button>
+		</StackPanel>
 
-        <!-- Splitter -->
-        <GridSplitter Grid.Column="1"
-                      Width="5"
-                      ResizeBehavior="PreviousAndNext"
-                      VerticalAlignment="Stretch"
-                      HorizontalAlignment="Center" />
+		<!-- Splitter -->
+		<GridSplitter Grid.Column="1"
+					  Width="5"
+					  ResizeBehavior="PreviousAndNext"
+					  VerticalAlignment="Stretch"
+					  HorizontalAlignment="Center" />
 
-        <!-- Randomizer Options -->
-        <Grid Grid.Column="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="24" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="1*" />
-            </Grid.RowDefinitions>
-            <Label>Randomization Options</Label>
-            <TabControl Grid.Row="1" Name="Tabs" Margin="4" LayoutUpdated="Tabs_LayoutUpdated">
-                <TabItem Header="Pokémon" Padding="8,4">
-                    <Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <GroupBox Grid.Row="0" Header="Abilities" Margin="4" Padding="8">
-                            <StackPanel>
-                                <CheckBox IsChecked="{Binding Config.Abilities.AllowWonderGuard}">
-                                    Allow &quot;Wonder Guard&quot; ability
-                                    <dependencyProperties:Properties.HintText>
-                                        Allow Pokémon to possess the &quot;Wonder Guard&quot; ability,
-                                        which makes them immune to any attack moves which are not directly
-                                        super-effective on them.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                            </StackPanel>
-                        </GroupBox>
-                        <GroupBox Grid.Row="1" Header="Egg Moves" Margin="4" Padding="8">
-                            <StackPanel>
-                                <CheckBox IsChecked="{Binding Config.EggMoves.FavorSameType}">
-                                    Favor same-type
-                                    <dependencyProperties:Properties.HintText>
-                                        When assigning new egg moves, try and assign moves of which the type
-                                        matches one of the Pokémon's types, so that there is a higher chance
-                                        of that Pokémon's egg moves containing STAB moves.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                            </StackPanel>
-                        </GroupBox>
-                        <GroupBox Grid.Row="2" Header="Learnsets" Margin="4" Padding="8">
-                            <StackPanel>
-                                <CheckBox IsChecked="{Binding Config.Learnsets.FavorSameType}">
-                                    Favor same-type
-                                    <dependencyProperties:Properties.HintText>
-                                        When assigning new learnsets, try and assign moves of which the type
-                                        matches one of the Pokémon's types, so that there is a higher chance
-                                        of that Pokémon learning STAB moves.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                                <CheckBox IsChecked="{Binding Config.Learnsets.AtLeast4Moves}">
-                                    At least 4 moves
-                                    <dependencyProperties:Properties.HintText>
-                                        Ensure that each Pokémon will always have at least 4 moves at Level 1.
-                                        This prevents situations where a wild or starter Pokémon has, for
-                                        example, Explosion or Selfdestruct as its only move.
-                                        \n\n
-                                        Note: Regardless of whether this option is set or not, every Pokémon will
-                                        be guaranteed to have at least one attack move at Level 1 which is either
-                                        Normal-type, or a type that matches one of the Pokémon's types.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                                <CheckBox Name="LearnsetsRandomizeLevels"
-                                          IsChecked="{Binding Config.Learnsets.RandomizeLevels}">
-                                    Randomize levels
-                                    <dependencyProperties:Properties.HintText>
-                                        Randomize the levels at which the Pokémon learns the moves in its
-                                        learnset. This does not change the number of moves in the learnset;
-                                        it only changes the levels at which they are learned.
-                                        \n\n
-                                        The levels chosen will be randomly picked between Level 1 and the level
-                                        specified in the "Learn all moves by" option.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                                <WrapPanel Margin="16,8,0,0">
-                                    <Label Content="Learn all moves by level" />
-                                    <xctk:IntegerUpDown Minimum="10"
-                                                        Maximum="100"
-                                                        Width="50"
-                                                        IsEnabled="{Binding ElementName=LearnsetsRandomizeLevels, Path=IsChecked}"
-                                                        Value="{Binding Config.Learnsets.LearnAllMovesBy}" />
-                                    <dependencyProperties:Properties.HintText>
-                                        Ensure all moves are learned by this level.
-                                        \n\n
-                                        Default value: Level 65\n
-                                        Minimum value: Level 10\n
-                                        Maximum value: Level 100
-                                        \n\n
-                                        This setting has no effect if "Randomize levels" is not enabled.
-                                    </dependencyProperties:Properties.HintText>
-                                </WrapPanel>
-                            </StackPanel>
-                        </GroupBox>
-                        <GroupBox Grid.Row="3" Header="Starters" Margin="4" Padding="8">
-                            <StackPanel>
-                                <CheckBox Name="StartersOnlyStarters"
-                                          IsChecked="{Binding Config.Starters.StartersOnly}">
-                                    Only starter Pokémon
-                                    <dependencyProperties:Properties.HintText>
-                                        When choosing new starters for the player to choose from,
-                                        only pick from Pokémon which are actual starters in this
-                                        game or other games.
-                                        \n\n
-                                        In Generation 6, this list contains the following Pokémon:
-                                        \n\n
-                                        Bulbasaur, Charmander, Squirtle,
-                                        Chikorita, Cyndaquil, Totodile,
-                                        Treecko, Torchic, Mudkip,
-                                        Turtwig, Chimchar, Piplup,
-                                        Snivy, Tepig, Oshawott,
-                                        Chespin, Fennekin, Froakie
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                                <CheckBox
-                                    IsEnabled="{Binding ElementName=StartersOnlyStarters, 
-                                            Path=IsChecked, 
-                                            Converter={StaticResource InvertValueConverter}}"
-                                    IsChecked="{Binding Config.Starters.AllowLegendaries}">
-                                    Allow Legendary Pokémon
-                                    <dependencyProperties:Properties.HintText>
-                                        Allow Legendary Pokémon to be chosen as options for the player's
-                                        Starter Pokémon when they get to choose.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                            </StackPanel>
-                        </GroupBox>
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Trainers" Padding="8,4">
-                    <Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                        <GroupBox Header="Trainer Battles" Padding="8">
-                            <StackPanel>
-                                <CheckBox IsChecked="{Binding Config.Trainers.FriendKeepsStarter}">
-                                    Friend/rival keeps Starter Pokémon
-                                    <dependencyProperties:Properties.HintText>
-                                        When this option is enabled, the player's Friend(s)/Rival(s)
-                                        will keep the same species as they would have chosen for their
-                                        starter throughout the game. If the species can evolve, it
-                                        will evolve whenever the player's starter would evolve in a
-                                        non-randomized version of the game.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                                <CheckBox IsChecked="{Binding Config.Trainers.TypeThemed}">
-                                    Type-themed teams
-                                    <dependencyProperties:Properties.HintText>
-                                        When this option is enabled, the team for each trainer will
-                                        have a common type theme, and all Pokémon in the team will
-                                        have that type as either their Primary or Secondary type.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                                <WrapPanel Margin="0,8,0,0">
-                                    <Label Content="Level multiplier" />
-                                    <xctk:DecimalUpDown Minimum="0.5"
-                                                        Maximum="4.0"
-                                                        Width="50"
-                                                        Value="{Binding Config.Trainers.LevelMultiplier}"
-                                                        Increment="0.1" />
-                                    <dependencyProperties:Properties.HintText>
-                                        Each Pokémon on a trainer's team will have its level multiplied
-                                        by this value.
-                                        \n\n
-                                        Levels will be capped at Level 100.
-                                    </dependencyProperties:Properties.HintText>
-                                </WrapPanel>
-                            </StackPanel>
-                        </GroupBox>
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Wild Encounters" Padding="8,4">
-                    <Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                        <GroupBox Header="Wild Encounters" Padding="8">
-                            <StackPanel>
-                                <CheckBox IsChecked="{Binding Config.Encounters.AllowLegendaries}">
-                                    Allow Legendary Pokémon
-                                    <dependencyProperties:Properties.HintText>
-                                        Determines whether or not Legendary Pokémon will be
-                                        considered when picking the Pokémon species that will
-                                        appear in the game's encounter zones.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                                <CheckBox Name="EncountersTypeThemedAreas"
-                                          IsChecked="{Binding Config.Encounters.TypeThemedAreas}">
-                                    Type-themed areas
-                                    <dependencyProperties:Properties.HintText>
-                                        When this option is enabled, each encounter zone will
-                                        have a type assigned to it, and all Pokémon which appear
-                                        in that encounter zone will have that type as either its
-                                        Primary or Secondary type.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                                <CheckBox Margin="16,0,0,0"
-                                          IsEnabled="{Binding ElementName=EncountersTypeThemedAreas, Path=IsChecked}"
-                                          IsChecked="{Binding Config.Encounters.TypeThemedAreas}">
-                                    Each sub-area has its own type
-                                    <dependencyProperties:Properties.HintText>
-                                        When this option is enabled, each sub-area in an encounter
-                                        zone will have its own type theme, instead of all sub-areas
-                                        sharing a type with the main encounter zone.
-                                        \n\n
-                                        Examples of types of encounter sub-zone include Surf areas,
-                                        Fishing areas, Red/Yellow/Purple flowers in X/Y, and
-                                        Very Tall Grass in OmegaRuby/AlphaSapphire.
-                                        \n\n
-                                        This option has no effect if "Type-themed areas" is not enabled.
-                                    </dependencyProperties:Properties.HintText>
-                                </CheckBox>
-                                <WrapPanel Margin="0,8,0,0">
-                                    <Label Content="Level multiplier" />
-                                    <xctk:DecimalUpDown Minimum="0.5"
-                                                        Maximum="4.0"
-                                                        Width="50"
-                                                        Value="{Binding Config.Encounters.LevelMultiplier}"
-                                                        Increment="0.1" />
-                                    <dependencyProperties:Properties.HintText>
-                                        Each Pokémon encounter entry in an area will have its minimum and
-                                        maximum level multiplied by this value. Early areas will have very
-                                        little difference, as the minimum and maximum encounter levels are
-                                        usually in the range of 2-4.
-                                        \n\n
-                                        Levels will be capped at Level 100.
-                                    </dependencyProperties:Properties.HintText>
-                                </WrapPanel>
-                            </StackPanel>
-                        </GroupBox>
-                    </Grid>
-                </TabItem>
-            </TabControl>
-            <Grid Grid.Row="2">
-                <TextBlock Name="HintBox" Margin="8" TextWrapping="WrapWithOverflow">
-                    Roll over an option to see more detailed information on it
-                </TextBlock>
-            </Grid>
-        </Grid>
-    </Grid>
+		<!-- Randomizer Options -->
+		<Grid Grid.Column="2" VerticalAlignment="Stretch">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="24" />
+				<RowDefinition Height="1*" />
+				<RowDefinition Height="150" />
+			</Grid.RowDefinitions>
+
+			<Label Grid.Row="0">Randomization Options</Label>
+
+			<ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1">
+				<TabControl Name="Tabs" Margin="4" LayoutUpdated="Tabs_LayoutUpdated">
+					<TabItem Padding="8,4">
+						<TabItem.Header>
+							<TextBlock>
+								Pokémon
+								<dependencyProperties:Properties.HintText>
+									Settings pertaining to Pokémon themselves, such as move sets,
+									species traits, or starter Pokémon selection.
+								</dependencyProperties:Properties.HintText>
+							</TextBlock>
+						</TabItem.Header>
+						<Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<GroupBox Grid.Row="0" Margin="4" Padding="8">
+								<GroupBox.Header>
+									<CheckBox IsChecked="{Binding Config.PokemonInfo.RandomizeAbilities}">
+										Randomize Abilities
+										<dependencyProperties:Properties.HintText>
+											Randomize the possible abilities (including the Hidden Ability)
+											of every Pokémon in the game. The number of abilities that a
+											given Pokémon can have will remain the same as in an unmodified
+											version of the game.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</GroupBox.Header>
+								<StackPanel>
+									<CheckBox IsChecked="{Binding Config.PokemonInfo.AllowWonderGuard}"
+											  IsEnabled="{Binding Config.PokemonInfo.RandomizeAbilities}">
+										Allow &quot;Wonder Guard&quot; ability
+										<dependencyProperties:Properties.HintText>
+											Allow Pokémon to possess the &quot;Wonder Guard&quot; ability,
+											which makes them immune to any attack moves which are not directly
+											super-effective on them.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</StackPanel>
+							</GroupBox>
+							<GroupBox Grid.Row="1" Margin="4" Padding="8">
+								<GroupBox.Header>
+									<CheckBox IsChecked="{Binding Config.PokemonInfo.RandomizeTypes}">
+										Randomize Types
+										<dependencyProperties:Properties.HintText>
+											Randomize the types of each Pokémon. The number of types that any
+											given Pokémon possesses will not change from an unmodified game,
+											but the actual type in either slot may.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</GroupBox.Header>
+								<StackPanel>
+									<CheckBox IsChecked="{Binding Config.PokemonInfo.RandomizePrimaryTypes}"
+											  IsEnabled="{Binding Config.PokemonInfo.RandomizeTypes}">
+										Randomize Primary Types
+										<dependencyProperties:Properties.HintText>
+											Allow the primary type of a Pokémon to be changed when randomizing
+											types.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox IsChecked="{Binding Config.PokemonInfo.RandomizeSecondaryTypes}"
+											  IsEnabled="{Binding Config.PokemonInfo.RandomizeTypes}">
+										Randomize Secondary Types
+										<dependencyProperties:Properties.HintText>
+											Allow the secondary type of a Pokémon, if applicable, to be changed
+											when randomizing types.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</StackPanel>
+							</GroupBox>
+							<GroupBox Grid.Row="2" Margin="4" Padding="8">
+								<GroupBox.Header>
+									<CheckBox IsChecked="{Binding Config.EggMoves.RandomizeEggMoves}">
+										Randomize Egg Moves
+										<dependencyProperties:Properties.HintText>
+											Randomize the possible moves that Pokémon can know immediately
+											after hatching from an Egg, provided one of its parents also
+											knows that move at the time the Egg was laid.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</GroupBox.Header>
+								<StackPanel>
+									<CheckBox Name="EggMovesFavorSameType"
+											  IsChecked="{Binding Config.EggMoves.FavorSameType}"
+											  IsEnabled="{Binding Config.EggMoves.RandomizeEggMoves}">
+										Favor same-type
+										<dependencyProperties:Properties.HintText>
+											When assigning new egg moves, try and assign moves of which the type
+											matches one of the Pokémon's types, so that there is a higher chance
+											of that Pokémon's egg moves containing STAB moves.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<WrapPanel Margin="16,8,0,8">
+										<Label Content="Same-type chance" />
+										<xctk:IntegerUpDown Minimum="5"
+															Maximum="100"
+															Width="50"
+															Value="{Binding Config.EggMoves.SameTypePercentage, Converter={StaticResource PercentageValueConverter}}">
+											<UIElement.IsEnabled>
+												<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+													<Binding Path="Config.EggMoves.RandomizeEggMoves" />
+													<Binding ElementName="EggMovesFavorSameType" Path="IsChecked" />
+												</MultiBinding>
+											</UIElement.IsEnabled>
+										</xctk:IntegerUpDown>
+										<dependencyProperties:Properties.HintText>
+											The percentage chance that a selected move will match one of the
+											Pokémon's types. Higher values increase the chance of the Pokémon
+											knowing STAB moves when hatching from an Egg.
+											\n\n
+											Default value: 50%\n
+											Minimum value: 5%\n
+											Maximum value: 100%
+											\n\n
+											This setting has no effect if "Favor same-type" is not enabled.
+										</dependencyProperties:Properties.HintText>
+									</WrapPanel>
+								</StackPanel>
+							</GroupBox>
+							<GroupBox Grid.Row="3" Margin="4" Padding="8">
+								<GroupBox.Header>
+									<CheckBox IsChecked="{Binding Config.Learnsets.RandomizeLearnsets}">
+										Randomize Learnsets
+										<dependencyProperties:Properties.HintText>
+											Randomize the possible moves a Pokémon can learn by leveling up.
+											The number of moves that the Pokémon can learn will not change,
+											but the moves themselves as well as the levels at which each move
+											can be learned may be randomized.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</GroupBox.Header>
+								<StackPanel>
+									<CheckBox Name="LearnsetsFavorSameType"
+											  IsChecked="{Binding Config.Learnsets.FavorSameType}"
+											  IsEnabled="{Binding Config.Learnsets.RandomizeLearnsets}">
+										Favor same-type
+										<dependencyProperties:Properties.HintText>
+											When assigning new learnsets, try and assign moves of which the type
+											matches one of the Pokémon's types, so that there is a higher chance
+											of that Pokémon learning STAB moves.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<WrapPanel Margin="16,8,0,8">
+										<Label Content="Same-type chance" />
+										<xctk:IntegerUpDown Minimum="5"
+															Maximum="100"
+															Width="50"
+															Value="{Binding Config.Learnsets.SameTypePercentage, Converter={StaticResource PercentageValueConverter}}">
+											<UIElement.IsEnabled>
+												<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+													<Binding Path="Config.Learnsets.RandomizeLearnsets" />
+													<Binding ElementName="LearnsetsFavorSameType" Path="IsChecked" />
+												</MultiBinding>
+											</UIElement.IsEnabled>
+										</xctk:IntegerUpDown>
+										<dependencyProperties:Properties.HintText>
+											The percentage chance that a selected move will match one of the
+											Pokémon's types. Higher values increase the chance of the Pokémon
+											learning STAB moves.
+											\n\n
+											Default value: 50%\n
+											Minimum value: 5%\n
+											Maximum value: 100%
+											\n\n
+											This setting has no effect if "Favor same-type" is not enabled.
+										</dependencyProperties:Properties.HintText>
+									</WrapPanel>
+									<CheckBox IsChecked="{Binding Config.Learnsets.AtLeast4Moves}"
+											  IsEnabled="{Binding Config.Learnsets.RandomizeLearnsets}">
+										At least 4 moves
+										<dependencyProperties:Properties.HintText>
+											Ensure that each Pokémon will always have at least 4 moves at Level 1.
+											This prevents situations where a wild or starter Pokémon has, for
+											example, Explosion or Selfdestruct as its only move.
+											\n\n
+											Note: Regardless of whether this option is set or not, every Pokémon will
+											be guaranteed to have at least one attack move at Level 1 which is either
+											Normal-type, or a type that matches one of the Pokémon's types.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox Name="LearnsetsRandomizeLevels"
+											  IsChecked="{Binding Config.Learnsets.RandomizeLevels}"
+											  IsEnabled="{Binding Config.Learnsets.RandomizeLearnsets}">
+										Randomize levels
+										<dependencyProperties:Properties.HintText>
+											Randomize the levels at which the Pokémon learns the moves in its
+											learnset. This does not change the number of moves in the learnset;
+											it only changes the levels at which they are learned.
+											\n\n
+											The levels chosen will be randomly picked between Level 1 and the level
+											specified in the "Learn all moves by" option.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<WrapPanel Margin="16,8,0,8">
+										<Label Content="Learn all moves by level" />
+										<xctk:IntegerUpDown Minimum="10"
+															Maximum="100"
+															Width="50"
+															Value="{Binding Config.Learnsets.LearnAllMovesBy}">
+											<UIElement.IsEnabled>
+												<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+													<Binding Path="Config.Learnsets.RandomizeLearnsets" />
+													<Binding ElementName="LearnsetsRandomizeLevels" Path="IsChecked" />
+												</MultiBinding>
+											</UIElement.IsEnabled>
+										</xctk:IntegerUpDown>
+										<dependencyProperties:Properties.HintText>
+											Ensure all moves are learned by this level.
+											\n\n
+											Default value: Level 65\n
+											Minimum value: Level 10\n
+											Maximum value: Level 100
+											\n\n
+											This setting has no effect if "Randomize levels" is not enabled.
+										</dependencyProperties:Properties.HintText>
+									</WrapPanel>
+								</StackPanel>
+							</GroupBox>
+							<GroupBox Grid.Row="4" Margin="4" Padding="8">
+								<GroupBox.Header>
+									<CheckBox IsChecked="{Binding Config.Starters.RandomizeStarters}">
+										Randomize Starters
+										<dependencyProperties:Properties.HintText>
+											Randomize the choices the player will have when picking a starter
+											Pokémon. This not only applies to the starter the player chooses
+											at the beginning of the game, but also to any starters the player
+											may get to pick later on, such as in X and Y when the player first
+											meets Professor Sycamore in Lumiose City.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</GroupBox.Header>
+								<StackPanel>
+									<CheckBox Name="StartersOnlyStarters"
+											  IsChecked="{Binding Config.Starters.StartersOnly}"
+											  IsEnabled="{Binding Config.Starters.RandomizeStarters}">
+										Only starter Pokémon
+										<dependencyProperties:Properties.HintText>
+											When choosing new starters for the player to choose from,
+											only pick from Pokémon which are actual starters in this
+											game or other games.
+											\n\n
+											In Generation 6, this list contains the following Pokémon:
+											\n\n
+											Bulbasaur, Charmander, Squirtle,
+											Chikorita, Cyndaquil, Totodile,
+											Treecko, Torchic, Mudkip,
+											Turtwig, Chimchar, Piplup,
+											Snivy, Tepig, Oshawott,
+											Chespin, Fennekin, Froakie
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox
+										IsChecked="{Binding Config.Starters.OnlyElementalTypes}">
+										<CheckBox.IsEnabled>
+											<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+												<Binding Path="Config.Starters.RandomizeStarters" />
+												<Binding ElementName="StartersOnlyStarters" Path="IsChecked"
+														 Converter="{StaticResource InvertValueConverter}" />
+											</MultiBinding>
+										</CheckBox.IsEnabled>
+										Only elemental types
+										<dependencyProperties:Properties.HintText>
+											Only consider Pokémon which posess the "Fire", "Water", or "Grass"
+											type when randomizing the list of starter Pokémon the player may
+											choose from. This will not ensure that the "type triangle" remains
+											the same, so in some cases, your rival may end up with a type
+											advantage against you, or all the options could be the same elemental
+											type!
+											\n\n
+											This setting has no effect when "Only starter Pokémon" is enabled.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox
+										IsChecked="{Binding Config.Starters.AllowLegendaries}">
+										<CheckBox.IsEnabled>
+											<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+												<Binding Path="Config.Starters.RandomizeStarters" />
+												<Binding ElementName="StartersOnlyStarters" Path="IsChecked"
+														 Converter="{StaticResource InvertValueConverter}" />
+											</MultiBinding>
+										</CheckBox.IsEnabled>
+										Allow Legendary Pokémon
+										<dependencyProperties:Properties.HintText>
+											Allow Legendary Pokémon to be considered when randomizing the list of
+											starter Pokémon the player may choose from.
+											\n\n
+											This setting has no effect when "Only starter Pokémon" is enabled.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</StackPanel>
+							</GroupBox>
+						</Grid>
+					</TabItem>
+					<TabItem Padding="8,4">
+						<TabItem.Header>
+							<TextBlock>
+								Trainers
+								<dependencyProperties:Properties.HintText>
+									Settings pertaining to trainers the player may encounter throughout
+									the game, as well as their Pokémon parties.
+								</dependencyProperties:Properties.HintText>
+							</TextBlock>
+						</TabItem.Header>
+						<Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+							<GroupBox Padding="8">
+								<GroupBox.Header>
+									<CheckBox IsChecked="{Binding Config.Trainers.RandomizeTrainers}">
+										Randomize Trainer Encounters
+										<dependencyProperties:Properties.HintText>
+											Randomize the Pokémon and moves of each trainer's party
+											for any trainers the player may encounter throughout the
+											game. This includes gym leaders, the Elite Four, and the
+											League Champion!
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</GroupBox.Header>
+								<StackPanel>
+									<CheckBox IsChecked="{Binding Config.Trainers.FriendKeepsStarter}"
+											  IsEnabled="{Binding Config.Trainers.RandomizeTrainers}">
+										Friend/rival keeps starter Pokémon
+										<dependencyProperties:Properties.HintText>
+											When this option is enabled, the player's Friend(s)/Rival(s)
+											will keep the same species as they would have chosen for their
+											starter throughout the game. If the species can evolve, it
+											will evolve whenever the player's starter would evolve in a
+											non-randomized version of the game.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox Name="TrainersTypeThemedTeams"
+											  IsChecked="{Binding Config.Trainers.TypeThemed}"
+											  IsEnabled="{Binding Config.Trainers.RandomizeTrainers}">
+										Type-themed teams
+										<dependencyProperties:Properties.HintText>
+											When this option is enabled, the team for each trainer will
+											have a common type theme, and all Pokémon in the team will
+											have that type as either their Primary or Secondary type.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox IsChecked="{Binding Config.Trainers.TypeThemedGyms}">
+										<CheckBox.IsEnabled>
+											<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+												<Binding Path="Config.Trainers.RandomizeTrainers" />
+												<Binding ElementName="TrainersTypeThemedTeams" Path="IsChecked" />
+											</MultiBinding>
+										</CheckBox.IsEnabled>
+										Type-themed gyms
+										<dependencyProperties:Properties.HintText>
+											When this option is enabled, a type will be chosen for each
+											Gym in the region. Every trainer in each Gym will have their
+											party's type theme set to their Gym's type theme, meaning every
+											trainer in that gym has Pokémon sharing at least one type. This
+											makes it easier to predict which types of Pokémon the leader will
+											have.
+											\n\n
+											This setting has no effect if "Type-themed teams" is not enabled.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<WrapPanel Margin="0,8,0,0">
+										<Label Content="Level multiplier" />
+										<xctk:DecimalUpDown Minimum="0.5"
+															Maximum="4.0"
+															Width="50"
+															Value="{Binding Config.Trainers.LevelMultiplier}"
+															IsEnabled="{Binding Config.Trainers.RandomizeTrainers}"
+															Increment="0.1" />
+										<dependencyProperties:Properties.HintText>
+											Each Pokémon on a trainer's team will have its level multiplied
+											by this value.
+											\n\n
+											Levels will be capped at Level 100.
+										</dependencyProperties:Properties.HintText>
+									</WrapPanel>
+								</StackPanel>
+							</GroupBox>
+						</Grid>
+					</TabItem>
+					<TabItem Padding="8,4">
+						<TabItem.Header>
+							<TextBlock>
+								Overworld
+								<dependencyProperties:Properties.HintText>
+									Settings pertaining to the "overworld", or the areas of the game the player
+									may walk around in when not in a battle (such as towns, buildings, gyms, etc.)
+								</dependencyProperties:Properties.HintText>
+							</TextBlock>
+						</TabItem.Header>
+						<Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+
+							<GroupBox Padding="8">
+								<GroupBox.Header>
+									<CheckBox IsChecked="{Binding Config.Encounters.RandomizeEncounters}">
+										Randomize Wild Pokémon Encounters
+										<dependencyProperties:Properties.HintText>
+											Randomize the selection of wild Pokémon each area in the
+											game will have. An "area" could be a route, a cave, or any
+											other area where wild Pokémon may be encountered. A "sub-area"
+											refers to the different types of encounters in an area, such
+											as tall grass, fishing, surfing, Rock Smash boulders, etc.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</GroupBox.Header>
+								<StackPanel>
+									<CheckBox IsChecked="{Binding Config.Encounters.AllowLegendaries}"
+											  IsEnabled="{Binding Config.Encounters.RandomizeEncounters}">
+										Allow Legendary Pokémon
+										<dependencyProperties:Properties.HintText>
+											Determines whether or not Legendary Pokémon will be
+											considered when picking the Pokémon species that will
+											appear in the game's encounter zones.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox Name="EncountersTypeThemedAreas"
+											  IsChecked="{Binding Config.Encounters.TypeThemedAreas}"
+											  IsEnabled="{Binding Config.Encounters.RandomizeEncounters}">
+										Type-themed areas
+										<dependencyProperties:Properties.HintText>
+											When this option is enabled, each encounter zone will
+											have a type assigned to it, and all Pokémon which appear
+											in that encounter zone will have that type as either its
+											Primary or Secondary type.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox Margin="16,0,0,0"
+											  IsChecked="{Binding Config.Encounters.TypeThemedAreas}">
+										<CheckBox.IsEnabled>
+											<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
+												<Binding Path="Config.Encounters.RandomizeEncounters" />
+												<Binding ElementName="EncountersTypeThemedAreas" Path="IsChecked" />
+											</MultiBinding>
+										</CheckBox.IsEnabled>
+										Each sub-area has its own type
+										<dependencyProperties:Properties.HintText>
+											When this option is enabled, each sub-area in an encounter
+											zone will have its own type theme, instead of all sub-areas
+											sharing a type with the main encounter zone.
+											\n\n
+											Examples of types of encounter sub-zone include Surf areas,
+											Fishing areas, Red/Yellow/Purple flowers in X/Y, and
+											Very Tall Grass in OmegaRuby/AlphaSapphire.
+											\n\n
+											This option has no effect if "Type-themed areas" is not enabled.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<WrapPanel Margin="0,8,0,0">
+										<Label Content="Level multiplier" />
+										<xctk:DecimalUpDown Minimum="0.5"
+															Maximum="4.0"
+															Width="50"
+															Value="{Binding Config.Encounters.LevelMultiplier}"
+															Increment="0.1" />
+										<dependencyProperties:Properties.HintText>
+											Each Pokémon encounter entry in an area will have its minimum and
+											maximum level multiplied by this value. Early areas will have very
+											little difference, as the minimum and maximum encounter levels are
+											usually in the range of 2-4.
+											\n\n
+											Levels will be capped at Level 100.
+										</dependencyProperties:Properties.HintText>
+									</WrapPanel>
+								</StackPanel>
+							</GroupBox>
+
+							<GroupBox Grid.Row="1" Padding="8">
+								<GroupBox.Header>
+									<CheckBox IsChecked="{Binding Config.OverworldItems.RandomizeOverworldItems}">
+										Randomize Items
+										<dependencyProperties:Properties.HintText>
+											Randomize the items the player might find in Pokéballs laying
+											around the world. This currently only affects visible items,
+											not the hidden ones found using the Dowsing Machine.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</GroupBox.Header>
+								<StackPanel>
+									<CheckBox IsChecked="{Binding Config.OverworldItems.AllowMasterBalls}"
+											  IsEnabled="{Binding Config.OverworldItems.RandomizeOverworldItems}">
+										Allow Master Balls
+										<dependencyProperties:Properties.HintText>
+											Allow randomized item Pokéballs to potentially contain a Master Ball.
+											Even when this option is enabled, the chances of an item containing
+											a Master Ball are very low.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox IsChecked="{Binding Config.OverworldItems.AllowTMs}"
+											  IsEnabled="{Binding Config.OverworldItems.RandomizeOverworldItems}">
+										Allow TMs
+										<dependencyProperties:Properties.HintText>
+											Allow randomized item Pokéballs to potentially contain TM moves.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+									<CheckBox IsChecked="{Binding Config.OverworldItems.AllowMegaStones}"
+											  IsEnabled="{Binding Config.OverworldItems.RandomizeOverworldItems}">
+										Allow Mega Stones
+										<dependencyProperties:Properties.HintText>
+											Allow randomized item Pokéballs to potentially contain mega stones.
+										</dependencyProperties:Properties.HintText>
+									</CheckBox>
+								</StackPanel>
+							</GroupBox>
+						</Grid>
+					</TabItem>
+				</TabControl>
+			</ScrollViewer>
+
+			<TextBlock Grid.Row="2" Name="HintBox" Margin="8" TextWrapping="WrapWithOverflow" VerticalAlignment="Stretch">
+				Roll over an option to see more detailed information on it
+			</TextBlock>
+		</Grid>
+	</Grid>
 </Page>

@@ -16,11 +16,13 @@ namespace PokeRandomizer.Gen6.XY
 	{
 		public override async Task RandomizeEncounters( ProgressNotifier progressNotifier, CancellationToken token )
 		{
-			const int MaxUniqueSpecies = 18;
+			var config = this.ValidateAndGetConfig().Encounters;
+
+			if ( !config.RandomizeEncounters )
+				return;
 
 			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing wild Pokémon encounters..." ) );
 
-			var config        = this.ValidateAndGetConfig().Encounters;
 			var species       = Species.ValidSpecies.ToList();
 			var speciesInfo   = await this.Game.GetPokemonInfo( edited: true );
 			var encounterData = await this.Game.GetEncounterData();
@@ -46,25 +48,18 @@ namespace PokeRandomizer.Gen6.XY
 
 				if ( config.TypeThemedAreas )
 				{
-					var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.rand );
+					var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.Random );
 					speciesChoose = speciesChoose.Where( s => speciesInfo[ s.Id ].HasType( areaType ) )
 												 .ToList();
 				}
 
-				// DexNav can only handle up to 18 unique species per encounter area,
-				// so we pick 18 random and unique species from our current choice list
-				var uniqueList  = new List<SpeciesType>();
 				var entryArrays = encounter.EntryArrays;
-
-				while ( uniqueList.Count < MaxUniqueSpecies )
-					// Find a new unique species from our current determined list of choices
-					uniqueList.Add( this.GetRandomSpecies( speciesChoose.Except( uniqueList ) ) );
 
 				foreach ( var entryArray in entryArrays )
 				{
 					foreach ( var entry in entryArray.Where( entry => entry.Species > 0 ) )
 					{
-						entry.Species = (ushort) this.GetRandomSpecies( uniqueList ).Id;
+						entry.Species = (ushort) this.GetRandomSpecies( speciesChoose ).Id;
 
 						if ( config.LevelMultiplier != 1.0m )
 						{
@@ -75,7 +70,7 @@ namespace PokeRandomizer.Gen6.XY
 
 					if ( config.TypeThemedAreas && config.TypePerSubArea ) // Re-generate type for the new sub-area
 					{
-						var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.rand );
+						var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.Random );
 						speciesChoose = speciesChoose.Where( s => speciesInfo[ s.Id ].HasType( areaType ) )
 													 .ToList();
 					}

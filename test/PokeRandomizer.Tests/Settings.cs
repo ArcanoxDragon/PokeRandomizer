@@ -15,5 +15,7 @@ namespace PokeRandomizer.Tests
 		public static IConfiguration Instance { get; }
 
 		public static string RomPathOras => Instance.GetValue<string>( "RomPathOras" );
+		public static string RomPathXy   => Instance.GetValue<string>( "RomPathXy" );
+		public static string RomPathSm   => Instance.GetValue<string>( "RomPathSm" );
 	}
 }

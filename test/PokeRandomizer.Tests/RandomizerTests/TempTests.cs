@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using CtrDotNet.Utility.Extensions;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using PokeRandomizer.Common;
 using PokeRandomizer.Common.Game;
-using PokeRandomizer.Common.Reference;
 using PokeRandomizer.Config;
 using PokeRandomizer.Progress;
 
-namespace PokeRandomizer.Tests.Randomizer
+namespace PokeRandomizer.Tests.RandomizerTests
 {
 	[ TestFixture ]
 	public class TempTests
@@ -42,7 +42,7 @@ namespace PokeRandomizer.Tests.Randomizer
 		public async Task TestRandomizer()
 		{
 			var (game, config) = await this.GetGameAndConfigAsync();
-			var randomizer = Common.Randomizer.GetRandomizer( game, config );
+			var randomizer = Randomizer.GetRandomizer( game, config );
 			var progress   = new ProgressNotifier();
 
 			await randomizer.RandomizeAll( progress, CancellationToken.None );
@@ -69,19 +69,19 @@ namespace PokeRandomizer.Tests.Randomizer
 		[ Test ]
 		public async Task TestEditedEncounters()
 		{
-			var (game, config) = await this.GetGameAndConfigAsync();
+			var (game, _/*config*/) = await this.GetGameAndConfigAsync();
 			var whitelist  = await this.GetOriginalNullEncounters();
-			var randomizer = Common.Randomizer.GetRandomizer( game, config, 407643609 );
-			var progress = new ProgressNotifier();
+			//var randomizer = Randomizer.GetRandomizer( game, config, 407643609 );
+			//var progress = new ProgressNotifier();
 
 			//await randomizer.RandomizeEncounters( progress, CancellationToken.None );
 
 			var encounters = await game.GetEncounterData( false );
-			var zoneNames = ( await game.GetTextFile( TextNames.EncounterZoneNames ) ).Lines;
+			//var zoneNames = ( await game.GetTextFile( TextNames.EncounterZoneNames ) ).Lines;
 
 			foreach ( var (iEnc, encounter) in encounters.Pairs() )
 			{
-				var name = zoneNames[ encounter.ZoneId ];
+				//var name = zoneNames[ encounter.ZoneId ];
 				
 				foreach ( var (iEnt, entry) in encounter.GetAllEntries().Pairs() )
 				{

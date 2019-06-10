@@ -20,6 +20,11 @@ namespace PokeRandomizer.Tasks
 			this.ProgressNotifier = new ProgressNotifier();
 		}
 
+		public TaskRunner( IEnumerable<TaskFunction> tasks ) : this()
+		{
+			this.tasks.AddRange( tasks );
+		}
+
 		public ProgressNotifier ProgressNotifier { get; }
 
 		public void Clear() => this.tasks.Clear();

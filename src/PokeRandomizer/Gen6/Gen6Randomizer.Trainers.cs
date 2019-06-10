@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CtrDotNet.Utility.Extensions;
 using PokeRandomizer.Common.Data;
+using PokeRandomizer.Common.Game;
 using PokeRandomizer.Common.Reference;
 using PokeRandomizer.Progress;
 using PokeRandomizer.Utility;
@@ -15,49 +16,67 @@ namespace PokeRandomizer.Gen6
 	{
 		public override async Task RandomizeTrainers( ProgressNotifier progressNotifier, CancellationToken token )
 		{
+			var config = this.ValidateAndGetConfig().Trainers;
+
+			if ( !config.RandomizeTrainers )
+				return;
+
 			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing trainer teams..." ) );
 
-			var config = this.ValidateAndGetConfig().Trainers;
-			var trainers = ( await this.Game.GetTrainerData() ).ToList();
-			var trainerNames = await this.Game.GetTextFile( TextNames.TrainerNames );
-			var evolutions = ( await this.Game.GetEvolutions() ).ToList();
-			var species = Species.ValidSpecies.ToList();
+			var trainers              = ( await this.Game.GetTrainerData() ).ToList();
+			var trainerNames          = await this.Game.GetTextFile( TextNames.TrainerNames, languageOverride: Language.English );
+			var localizedTrainerNames = await this.Game.GetTextFile( TextNames.TrainerNames );
+			var evolutions            = ( await this.Game.GetEvolutions() ).ToList();
+			var availableSpecies      = Species.ValidSpecies.ToList();
+			var availableTypes        = PokemonTypes.AllPokemonTypes.ToList();
 
 			// Get already-edited versions of the info so that we get the shuffled version
-			var starters = await this.Game.GetStarters( edited: true );
-			var pokeInfo = await this.Game.GetPokemonInfo( edited: true );
+			var starters  = await this.Game.GetStarters( edited: true );
+			var pokeInfo  = await this.Game.GetPokemonInfo( edited: true );
 			var learnsets = ( await this.Game.GetLearnsets( edited: true ) ).ToList();
+
+			// Decide a type for each gym for use later on if the user has chosen to type-theme entire gyms
+			var gymTypes = Enumerable.Range( 0, 8 ).Select( gymId => availableTypes.GetRandom( this.Random ) ).ToArray();
 
 			ushort GetEvolutionOf( ushort speciesId, int evoIndex )
 			{
 				if ( evoIndex == 0 )
 					return speciesId;
 
-				var evoSet = evolutions[ speciesId ];
+				var evoSet   = evolutions[ speciesId ];
 				var possible = evoSet.PossibleEvolutions.Where( e => e.Species > 0 ).ToArray();
 
 				if ( possible.Length == 0 )
 					return speciesId;
 
-				var evo = possible.GetRandom( this.rand );
+				var evo = possible.GetRandom( this.Random );
 
 				return GetEvolutionOf( (ushort) evo.Species, evoIndex - 1 );
 			}
 
-			int[] friendStarterGender = { -1, -1, -1 };
-			int[] friendStarterAbility = { -1, -1, -1 };
+			var friendStarterGender  = new[] { -1, -1, -1 };
+			var friendStarterAbility = new[] { -1, -1, -1 };
 
 			foreach ( var (i, trainer) in trainers.Pairs() )
 			{
-				string name = i < trainerNames.LineCount ? trainerNames[ i ] : "UNKNOWN";
-				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing trainer teams...\n{name}", i / (double) trainers.Count ) );
+				var name          = i < trainerNames.LineCount ? trainerNames[ i ] : "UNKNOWN";
+				var localizedName = i < localizedTrainerNames.LineCount ? localizedTrainerNames[ i ] : "UNKNOWN";
 
-				bool isFriend = this.IsTrainerFriend( name );
-				var chooseFrom = species;
+				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing trainer teams...\n{localizedName}", i / (double) trainers.Count ) );
+
+				var isFriend   = this.IsTrainerFriend( name );
+				var gymId      = this.GetGymId( name, i );
+				var chooseFrom = availableSpecies;
 
 				if ( config.TypeThemed )
 				{
-					var type = PokemonTypes.AllPokemonTypes.ToList().GetRandom( this.rand );
+					PokemonType type;
+
+					if ( config.TypeThemedGyms && gymId >= 0 )
+						type = gymTypes[ gymId ];
+					else
+						type = availableTypes.GetRandom( this.Random );
+
 					chooseFrom = chooseFrom.Where( s => pokeInfo[ s.Id ].HasType( type ) ).ToList();
 				}
 
@@ -75,8 +94,8 @@ namespace PokeRandomizer.Gen6
 						// if it needs to be evolved at all
 						var (starterSlot, starterEvo) = this.GetStarterIndexAndEvolution( pokemon.Species );
 						var newStarterBaseSpecies = starters.StarterSpecies[ this.MainStarterGen - 1 ][ starterSlot ];
-						var newStarter = GetEvolutionOf( newStarterBaseSpecies, starterEvo );
-						var info = pokeInfo[ newStarter ];
+						var newStarter            = GetEvolutionOf( newStarterBaseSpecies, starterEvo );
+						var info                  = pokeInfo[ newStarter ];
 
 						pokemon.Species = newStarter;
 
@@ -84,9 +103,9 @@ namespace PokeRandomizer.Gen6
 							friendStarterGender[ starterSlot ] = info.GetRandomGender();
 
 						if ( friendStarterAbility[ starterSlot ] < 0 )
-							friendStarterAbility[ starterSlot ] = info.Abilities.GetRandom( this.rand );
+							friendStarterAbility[ starterSlot ] = info.Abilities.GetRandom( this.Random );
 
-						pokemon.Gender = friendStarterGender[ starterSlot ];
+						pokemon.Gender  = friendStarterGender[ starterSlot ];
 						pokemon.Ability = friendStarterAbility[ starterSlot ];
 					}
 					else
@@ -96,8 +115,8 @@ namespace PokeRandomizer.Gen6
 
 						var info = pokeInfo[ pokemon.Species ];
 
-						pokemon.Gender = info.GetRandomGender();
-						pokemon.Ability = info.Abilities.GetRandom( this.rand );
+						pokemon.Gender  = info.GetRandomGender();
+						pokemon.Ability = info.Abilities.GetRandom( this.Random );
 					}
 
 					pokemon.Level = (ushort) MathUtil.Clamp( (int) ( pokemon.Level * config.LevelMultiplier ), 2, 100 );
@@ -107,11 +126,11 @@ namespace PokeRandomizer.Gen6
 
 					if ( trainer.Moves )
 					{
-						pokemon.HasItem = false;
+						pokemon.HasItem  = false;
 						pokemon.HasMoves = true;
-						pokemon.Moves = new ushort[] { 0, 0, 0, 0 };
-						for ( int m = 0; m < Math.Min( moveset.Count, 4 ); m++ )
-							pokemon.Moves[ m ] = moveset.Except( pokemon.Moves ).ToList().GetRandom( this.rand );
+						pokemon.Moves    = new ushort[] { 0, 0, 0, 0 };
+						for ( var m = 0; m < Math.Min( moveset.Count, 4 ); m++ )
+							pokemon.Moves[ m ] = moveset.Except( pokemon.Moves ).ToList().GetRandom( this.Random );
 					}
 				}
 			}
@@ -119,10 +138,19 @@ namespace PokeRandomizer.Gen6
 			await this.Game.SaveTrainerData( trainers );
 		}
 
+		#region Starter Methods
+
 		public abstract int MainStarterGen { get; }
 		public abstract (int Slot, int Evolution) GetStarterIndexAndEvolution( int speciesId );
-		public abstract bool IsTrainerFriend( string trainerName );
-
 		public bool IsStarter( int speciesId ) => this.GetStarterIndexAndEvolution( speciesId ).Slot >= 0;
+
+		#endregion
+
+		#region Trainer Methods
+
+		public abstract bool IsTrainerFriend( string trainerName );
+		public abstract int GetGymId( string trainerName, int trainerId );
+
+		#endregion
 	}
 }

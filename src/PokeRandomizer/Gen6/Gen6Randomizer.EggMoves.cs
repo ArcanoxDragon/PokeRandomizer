@@ -11,23 +11,28 @@ namespace PokeRandomizer.Gen6
 	{
 		public override async Task RandomizeEggMoves( ProgressNotifier progressNotifier, CancellationToken token )
 		{
+			var config = this.ValidateAndGetConfig().EggMoves;
+
+			if ( !config.RandomizeEggMoves )
+				return;
+
 			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing egg moves..." ) );
 
-			var config = this.ValidateAndGetConfig().EggMoves;
 			var eggMovesList = await this.Game.GetEggMoves();
-			var speciesInfo = await this.Game.GetPokemonInfo( edited: true );
-			var moves = ( await this.Game.GetMoves() ).ToList();
-			var pokeNames = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
+			var speciesInfo  = await this.Game.GetPokemonInfo( edited: true );
+			var moves        = ( await this.Game.GetMoves() ).ToList();
+			var pokeNames    = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
 
 			for ( var i = 0; i < eggMovesList.Length; i++ )
 			{
-				string name = pokeNames[ speciesInfo.GetSpeciesForEntry( i ) ];
+				var name = pokeNames[ speciesInfo.GetSpeciesForEntry( i ) ];
+
 				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing egg moves...\n{name}", i / (double) eggMovesList.Length ) );
 
-				var species = speciesInfo[ i ];
-				var eggMoves = eggMovesList[ i ];
-				var chooseFrom = moves.ToList();
-				bool preferSameType = config.FavorSameType && this.rand.Next( 2 ) == 0;
+				var species        = speciesInfo[ i ];
+				var eggMoves       = eggMovesList[ i ];
+				var chooseFrom     = moves.ToList();
+				var preferSameType = config.FavorSameType && this.Random.NextDouble() < (double) config.SameTypePercentage;
 
 				if ( eggMoves.Empty || eggMoves.Count == 0 )
 					continue;
@@ -35,9 +40,9 @@ namespace PokeRandomizer.Gen6
 				if ( preferSameType )
 					chooseFrom = chooseFrom.Where( m => species.Types.Any( t => t == m.Type ) ).ToList();
 
-				for ( int m = 0; m < eggMoves.Count; m++ )
+				for ( var m = 0; m < eggMoves.Count; m++ )
 				{
-					var move = chooseFrom.GetRandom( this.rand );
+					var move = chooseFrom.GetRandom( this.Random );
 					eggMoves.Moves[ m ] = (ushort) moves.IndexOf( move );
 				}
 

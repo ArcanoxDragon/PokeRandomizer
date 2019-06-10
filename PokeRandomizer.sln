@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0 - External", "0 - Externa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "pkNX.Structures", "external\pkNX\pkNX.Structures\pkNX.Structures.csproj", "{6D722BF9-7AC7-486F-B95F-FCBF93F9796E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GarcExploration", "tools\GarcExploration\GarcExploration.csproj", "{E0800754-FD69-43A2-810B-D9D099EE969B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,12 @@ Global
 		{6D722BF9-7AC7-486F-B95F-FCBF93F9796E}.DebugNoDynamic|Any CPU.Build.0 = Debug|Any CPU
 		{6D722BF9-7AC7-486F-B95F-FCBF93F9796E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D722BF9-7AC7-486F-B95F-FCBF93F9796E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0800754-FD69-43A2-810B-D9D099EE969B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0800754-FD69-43A2-810B-D9D099EE969B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0800754-FD69-43A2-810B-D9D099EE969B}.DebugNoDynamic|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0800754-FD69-43A2-810B-D9D099EE969B}.DebugNoDynamic|Any CPU.Build.0 = Debug|Any CPU
+		{E0800754-FD69-43A2-810B-D9D099EE969B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0800754-FD69-43A2-810B-D9D099EE969B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +103,7 @@ Global
 		{AEF8828C-844F-45FF-B0FB-7478DBDA43E1} = {A3CF3295-0335-4EB2-BE31-E5320FA325CB}
 		{401B7E06-A981-4868-9B3C-112137C674C7} = {473097C4-F733-40A3-A7A1-B44858C84211}
 		{6D722BF9-7AC7-486F-B95F-FCBF93F9796E} = {26A9EF8C-A758-4215-B0AE-E427CFCE3BE1}
+		{E0800754-FD69-43A2-810B-D9D099EE969B} = {473097C4-F733-40A3-A7A1-B44858C84211}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7BC29846-AA41-42BB-AECA-4A3B07477693}

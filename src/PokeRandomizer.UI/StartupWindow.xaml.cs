@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Navigation;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using PokeRandomizer.Common.Game;
 using MessageBox = System.Windows.MessageBox;
@@ -30,9 +32,9 @@ namespace PokeRandomizer.UI
 
 			var language = (Language) selLanguage.Tag;
 			var dialog = new CommonOpenFileDialog {
-				IsFolderPicker = true,
+				IsFolderPicker   = true,
 				EnsurePathExists = true,
-				Title = "Pick game folder",
+				Title            = "Pick game folder",
 				CookieIdentifier = App.FileDialogCookieRomPath
 			};
 
@@ -41,8 +43,8 @@ namespace PokeRandomizer.UI
 			if ( result == CommonFileDialogResult.Ok )
 			{
 				var fullPath = Path.GetFullPath( dialog.FileName );
-				var romFS = Path.Combine( fullPath, "RomFS" );
-				var exeFS = Path.Combine( fullPath, "ExeFS" );
+				var romFS    = Path.Combine( fullPath, "RomFS" );
+				var exeFS    = Path.Combine( fullPath, "ExeFS" );
 
 				if ( !Directory.Exists( romFS ) || !Directory.Exists( exeFS ) )
 				{
@@ -58,6 +60,14 @@ namespace PokeRandomizer.UI
 				this.Hide();
 				window.Show();
 			}
+		}
+
+		private void Hyperlink_OnRequestNavigate( object sender, RequestNavigateEventArgs e )
+		{
+			var startInfo = new ProcessStartInfo( e.Uri.AbsoluteUri );
+
+			Process.Start( startInfo );
+			e.Handled = true;
 		}
 	}
 }

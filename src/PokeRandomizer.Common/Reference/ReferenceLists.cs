@@ -9,6 +9,7 @@ namespace PokeRandomizer.Common.Reference
 			public static readonly GarcReference[] Xy = {
 				new GarcReference( 005, GarcNames.MoveSprites ),
 				new GarcReference( 012, GarcNames.EncounterData ),
+				new GarcReference( 031, GarcNames.AmxFiles ),
 				new GarcReference( 038, GarcNames.TrainerData ),
 				new GarcReference( 039, GarcNames.TrainerClasses ),
 				new GarcReference( 040, GarcNames.TrainerPokemon ),
@@ -30,12 +31,13 @@ namespace PokeRandomizer.Common.Reference
 				new GarcReference( 220, GarcNames.Items ),
 
 				// Varied
-				new GarcReference( 072, GarcNames.GameText, true ),
+				new GarcReference( 072, GarcNames.GameText,  true ),
 				new GarcReference( 080, GarcNames.StoryText, true ),
 			};
 
 			public static readonly GarcReference[] Oras = {
 				new GarcReference( 013, GarcNames.EncounterData ),
+				new GarcReference( 029, GarcNames.AmxFiles ),
 				new GarcReference( 036, GarcNames.TrainerData ),
 				new GarcReference( 037, GarcNames.TrainerClasses ),
 				new GarcReference( 038, GarcNames.TrainerPokemon ),
@@ -57,7 +59,7 @@ namespace PokeRandomizer.Common.Reference
 				new GarcReference( 197, GarcNames.Items ),
 
 				// Varied
-				new GarcReference( 071, GarcNames.GameText, true ),
+				new GarcReference( 071, GarcNames.GameText,  true ),
 				new GarcReference( 079, GarcNames.StoryText, true ),
 			};
 
@@ -78,7 +80,7 @@ namespace PokeRandomizer.Common.Reference
 				new GarcReference( 103, GarcNames.TrainerPokemon ),
 
 				// Varied
-				new GarcReference( 030, GarcNames.GameText, true ),
+				new GarcReference( 030, GarcNames.GameText,  true ),
 				new GarcReference( 040, GarcNames.StoryText, true ),
 			};
 
@@ -108,7 +110,7 @@ namespace PokeRandomizer.Common.Reference
 				new GarcReference( 280, GarcNames.MaisonTrainerS ),
 
 				// Varied
-				new GarcReference( 030, GarcNames.GameText, true ),
+				new GarcReference( 030, GarcNames.GameText,  true ),
 				new GarcReference( 040, GarcNames.StoryText, true ),
 			};
 
@@ -349,6 +351,17 @@ namespace PokeRandomizer.Common.Reference
 				new TextVariableCode( 0x0206, "NUM7" ),
 				new TextVariableCode( 0x0207, "NUM8" ),
 				new TextVariableCode( 0x0208, "NUM9" ),
+			};
+		}
+
+		public static class Amx
+		{
+			public static readonly AmxReference[] Xy = {
+				new AmxReference( 0x11, AmxNames.FldItem ),
+			};
+
+			public static readonly AmxReference[] Oras = {
+				new AmxReference( 0x27, AmxNames.FldItem ),
 			};
 		}
 	}

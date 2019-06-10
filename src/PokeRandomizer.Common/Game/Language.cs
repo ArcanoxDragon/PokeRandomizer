@@ -11,7 +11,10 @@
 		Spanish,
 		Korean,
 		ChineseSimplified,
-		ChineseTraditional
+		ChineseTraditional,
+
+		// For Overrides
+		None = -2,
 	}
 
 	public static class LanguageExtensions

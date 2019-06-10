@@ -19,9 +19,13 @@ namespace PokeRandomizer.Gen6.ORAS
 		{
 			const int MaxUniqueSpecies = 18;
 
+			var config = this.ValidateAndGetConfig().Encounters;
+
+			if ( !config.RandomizeEncounters )
+				return;
+
 			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing wild Pokémon encounters..." ) );
 
-			var config        = this.ValidateAndGetConfig().Encounters;
 			var species       = Species.ValidSpecies.ToList();
 			var speciesInfo   = await this.Game.GetPokemonInfo( edited: true );
 			var encounterData = await this.Game.GetEncounterData();
@@ -47,7 +51,7 @@ namespace PokeRandomizer.Gen6.ORAS
 
 				if ( config.TypeThemedAreas )
 				{
-					var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.rand );
+					var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.Random );
 					speciesChoose = speciesChoose.Where( s => speciesInfo[ s.Id ].HasType( areaType ) )
 												 .ToList();
 				}
@@ -79,7 +83,7 @@ namespace PokeRandomizer.Gen6.ORAS
 
 					if ( config.TypeThemedAreas && config.TypePerSubArea ) // Re-generate type for the new sub-area
 					{
-						var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.rand );
+						var areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.Random );
 						speciesChoose = speciesChoose.Where( s => speciesInfo[ s.Id ].HasType( areaType ) )
 													 .ToList();
 					}
@@ -106,7 +110,7 @@ namespace PokeRandomizer.Gen6.ORAS
 						// Pick a random slot to overwrite
 						int randomTo = -1;
 						while ( randomTo < 0 || entryArray[ randomTo ].Species == 0 )
-							randomTo = this.rand.Next( entryArray.Length );
+							randomTo = this.Random.Next( entryArray.Length );
 
 						// Get a species that's different than the slot we're overwriting so we make a duplicate
 						var donorEntry = entryArray.First( e => e.Species > 0 && e.Species != entryArray[ randomTo ].Species );

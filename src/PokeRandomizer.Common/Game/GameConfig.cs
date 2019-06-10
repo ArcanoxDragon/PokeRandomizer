@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CtrDotNet.CTR;
 using CtrDotNet.CTR.Cro;
 using CtrDotNet.CTR.Garc;
+using pkNX.Structures;
 using PokeRandomizer.Common.ExeFS;
 using PokeRandomizer.Common.Garc;
 using PokeRandomizer.Common.Reference;
@@ -17,7 +18,12 @@ using PokeRandomizer.Common.Structures.RomFS.PokemonInfo;
 using Assertions = PokeRandomizer.Common.Utility.Assertions;
 using EggMoves = PokeRandomizer.Common.Structures.RomFS.Common.EggMoves;
 using EvolutionSet = PokeRandomizer.Common.Structures.RomFS.Common.EvolutionSet;
+using Item = PokeRandomizer.Common.Structures.RomFS.Gen6.Item;
 using Learnset = PokeRandomizer.Common.Structures.RomFS.Common.Learnset;
+using Move = PokeRandomizer.Common.Structures.RomFS.Common.Move;
+using TextFile = PokeRandomizer.Common.Structures.RomFS.Common.TextFile;
+using TextVariableCode = PokeRandomizer.Common.Reference.TextVariableCode;
+using TrainerData = PokeRandomizer.Common.Structures.RomFS.Gen6.TrainerData;
 
 namespace PokeRandomizer.Common.Game
 {
@@ -71,6 +77,7 @@ namespace PokeRandomizer.Common.Game
 
 		public GameVersion        Version             { get; }
 		public GarcReference[]    GarcFiles           { get; private set; }
+		public AmxReference[]     AmxFiles            { get; private set; }
 		public TextVariableCode[] Variables           { get; private set; }
 		public TextReference[]    TextFiles           { get; private set; }
 		public string             RomPath             { get; private set; }
@@ -84,14 +91,15 @@ namespace PokeRandomizer.Common.Game
 
 		#region Initialization
 
-		private void GetGameData( GameVersion game )
+		private void GetGameData( GameVersion version )
 		{
-			switch ( game )
+			switch ( version )
 			{
 				case GameVersion.XY:
 					this.GarcFiles = ReferenceLists.Garc.Xy;
 					this.Variables = ReferenceLists.Variables.Xy;
 					this.TextFiles = ReferenceLists.Text.Xy;
+					this.AmxFiles  = ReferenceLists.Amx.Xy;
 					break;
 
 				case GameVersion.ORASDemo:
@@ -99,6 +107,7 @@ namespace PokeRandomizer.Common.Game
 					this.GarcFiles = ReferenceLists.Garc.Oras;
 					this.Variables = ReferenceLists.Variables.Oras;
 					this.TextFiles = ReferenceLists.Text.Oras;
+					this.AmxFiles  = ReferenceLists.Amx.Oras;
 					break;
 
 				case GameVersion.SunMoonDemo:
@@ -113,6 +122,8 @@ namespace PokeRandomizer.Common.Game
 					this.Variables = ReferenceLists.Variables.SunMoon;
 					this.TextFiles = ReferenceLists.Text.SunMoon;
 					break;
+				default:
+					throw new ArgumentOutOfRangeException( nameof(version), version, null );
 			}
 		}
 
@@ -282,9 +293,9 @@ namespace PokeRandomizer.Common.Game
 			} ).ToArray();
 		}
 
-		public async Task<TextFile> GetTextFile( int textFile, bool edited = false )
+		public async Task<TextFile> GetTextFile( int textFile, bool edited = false, Language languageOverride = Language.None )
 		{
-			var garcGameText = await this.GetGarc( GarcNames.GameText, edited: edited );
+			var garcGameText = await this.GetGarc( GarcNames.GameText, edited: edited, languageOverride: languageOverride );
 			var file         = await garcGameText.GetFile( textFile );
 
 			var tf = new TextFile( this.Version, this.Variables );
@@ -292,11 +303,11 @@ namespace PokeRandomizer.Common.Game
 			return tf;
 		}
 
-		public Task<TextFile> GetTextFile( TextNames name, bool edited = false )
+		public Task<TextFile> GetTextFile( TextNames name, bool edited = false, Language languageOverride = Language.None )
 		{
 			var reference = this.GetTextReference( name );
 
-			return reference == null ? null : this.GetTextFile( reference.Index, edited );
+			return reference == null ? null : this.GetTextFile( reference.Index, edited, languageOverride );
 		}
 
 		internal async Task SaveTextFiles( IEnumerable<TextFile> textFiles, ReferencedGarc garcGameText )
@@ -323,6 +334,43 @@ namespace PokeRandomizer.Common.Game
 			var garcGameText = await this.GetGarc( GarcNames.GameText );
 			await this.SaveTextFile( fileNum, textFile, garcGameText );
 			await this.SaveFile( garcGameText );
+		}
+
+		#endregion
+
+		#region Items
+
+		public async Task<IEnumerable<Item>> GetItems( bool edited = false )
+		{
+			var garcItems = await this.GetGarc( GarcNames.Items, edited: edited );
+			var files     = await garcItems.GetFiles();
+
+			return files.Select( f => {
+				var i = new Structures.RomFS.Gen6.Item( this.Version );
+
+				i.Read( f );
+
+				return i;
+			} );
+		}
+
+		internal async Task SaveItems( IEnumerable<Item> items, ReferencedGarc garcItems )
+		{
+			var list = items.ToList();
+
+			foreach ( var i in list )
+				Assertions.AssertVersion( this.Version, i.GameVersion );
+
+			var files = list.Select( l => l.Write() ).ToArray();
+
+			await garcItems.SetFiles( files );
+		}
+
+		public async Task SaveItems( IEnumerable<Item> items )
+		{
+			var garcItems = await this.GetGarc( GarcNames.Items );
+			await this.SaveItems( items, garcItems );
+			await this.SaveFile( garcItems );
 		}
 
 		#endregion
@@ -405,6 +453,25 @@ namespace PokeRandomizer.Common.Game
 			var garcMoves = await this.GetGarc( GarcNames.Moves );
 			await this.SaveMoves( moves, garcMoves );
 			await this.SaveFile( garcMoves );
+		}
+
+		#endregion
+
+		#region Overworld Items
+
+		public async Task<OverworldItems> GetOverworldItems( bool edited = false )
+		{
+			var itemsAmxFile = await this.GetAmxFile( AmxNames.FldItem, edited );
+			var items        = new OverworldItems( this.Version );
+			items.Read( itemsAmxFile );
+			return items;
+		}
+
+		public async Task SaveOverworldItems( OverworldItems items )
+		{
+			var data = items.Write();
+
+			await this.SaveAmxFile( AmxNames.FldItem, data );
 		}
 
 		#endregion
@@ -601,7 +668,7 @@ namespace PokeRandomizer.Common.Game
 
 		#region Garc
 
-		public GarcReference GetGarcReference( GarcNames garcName )
+		public GarcReference GetGarcReference( GarcNames garcName, Language languageOverride = Language.None )
 		{
 			var garcRef = this.GarcFiles.FirstOrDefault( f => f.Name == garcName );
 
@@ -609,7 +676,7 @@ namespace PokeRandomizer.Common.Game
 				throw new FileNotFoundException( $"GARC file not found: {garcName}" );
 
 			if ( garcRef.HasLanguageVariant )
-				garcRef = garcRef.GetRelativeGarc( (int) this.Language );
+				garcRef = garcRef.GetRelativeGarc( (int) ( languageOverride == Language.None ? this.Language : languageOverride ) );
 
 			return garcRef;
 		}
@@ -639,11 +706,47 @@ namespace PokeRandomizer.Common.Game
 			return new ReferencedGarc( file, gr );
 		}
 
-		public async Task<ReferencedGarc> GetGarc( GarcNames garcName, bool useLz = false, bool edited = false )
+		public async Task<ReferencedGarc> GetGarc( GarcNames garcName, bool useLz = false, bool edited = false, Language languageOverride = Language.None )
 		{
-			var gr = this.GetGarcReference( garcName );
+			var gr = this.GetGarcReference( garcName, languageOverride );
 			return await this.GetGarc( gr, useLz, edited );
 		}
+
+		#endregion
+
+		#region Scripts
+
+		public async Task<byte[]> GetAmxFile( AmxNames amxName, bool edited = false )
+		{
+			var garc   = await this.GetGarc( GarcNames.AmxFiles, edited: edited );
+			var amxRef = this.AmxFiles.SingleOrDefault( amx => amx.Name == amxName );
+
+			if ( amxRef == null )
+				throw new NotSupportedException( $"The game version \"{this.Version}\" does not support the AMX file \"{amxName}\"" );
+
+			return await garc.GetFile( amxRef.FileNumber );
+		}
+
+		public async Task<Amx> GetAmxScript( AmxNames amxName, bool edited = false )
+		{
+			var amxFile = await this.GetAmxFile( amxName, edited );
+
+			return new Amx( amxFile );
+		}
+
+		public async Task SaveAmxFile( AmxNames amxName, byte[] fileData )
+		{
+			var garc   = await this.GetGarc( GarcNames.AmxFiles );
+			var amxRef = this.AmxFiles.SingleOrDefault( amx => amx.Name == amxName );
+
+			if ( amxRef == null )
+				throw new NotSupportedException( $"The game version \"{this.Version}\" does not support the AMX file \"{amxName}\"" );
+
+			await garc.SetFile( amxRef.FileNumber, fileData );
+			await this.SaveFile( garc );
+		}
+
+		public Task SaveAmxScript( AmxNames amxName, Amx amxScript ) => this.SaveAmxFile( amxName, amxScript.Data );
 
 		#endregion
 

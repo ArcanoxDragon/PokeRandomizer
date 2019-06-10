@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using PokeRandomizer.Config.Abstract;
 using PokeRandomizer.Utility;
 
 namespace PokeRandomizer.Config

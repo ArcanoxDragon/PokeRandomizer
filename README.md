@@ -68,7 +68,7 @@ This randomizer tries to be very versatile while remaining easy to use. The foll
   - Give a type theme to each region (or sub-region) of the game so all Pokémon in that region share a type
   - Apply a level boost multiplier to every wild Pokémon to increase the difficulty of the game
 - Randomize Item Pokéballs scattered about the world
-  - Any item that can exist in the Items, Medicines, or TMs/HMs case can be found in a Pokéball!'
+  - Any item that can exist in the Items, Medicines, or TMs/HMs case can be found in a Pokéball!
   - Choose whether or not Master Balls can be found
   - Choose whether or not TMs can be found where they aren't supposed to be
   - Choose whether or not Mega Stones can be found in regular Pokéballs

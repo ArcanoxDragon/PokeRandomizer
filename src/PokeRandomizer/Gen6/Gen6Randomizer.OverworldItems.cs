@@ -33,6 +33,13 @@ namespace PokeRandomizer.Gen6
 			{
 				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( progressNotifier.Status, i / (double) overworldItems.Items.Count ) );
 
+				if ( Legality.Items.HM_ORAS.Any( id => id == item.ItemId ) ||
+					 Legality.Items.HM_XY.Any( id => id == item.ItemId ) )
+				{
+					// Don't randomize HMs! Might strand the player!
+					continue;
+				}
+
 				item.ItemId = availableItemIds.GetRandom( this.Random );
 			}
 

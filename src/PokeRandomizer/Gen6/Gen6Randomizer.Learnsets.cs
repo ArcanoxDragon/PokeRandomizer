@@ -38,7 +38,7 @@ namespace PokeRandomizer.Gen6
 
 				var learnset           = learnsets[ i ];
 				var species            = speciesInfo[ i ];
-				var chooseFrom         = moves;
+				var chooseFrom         = moves.Skip( 1 ).ToList(); // Always skip the first move (it's the Null move and breaks the game)
 				var chooseFromSameType = chooseFrom.Where( mv => species.HasType( PokemonTypes.GetValueFrom( mv.Type ) ) ).ToList();
 
 				ushort PickRandomMove()

@@ -31,7 +31,7 @@ namespace PokeRandomizer.Gen6
 				var name           = pokeNames[ speciesInfo.GetSpeciesForEntry( i ) ];
 				var species        = speciesInfo[ i ];
 				var eggMoves       = eggMovesList[ i ];
-				var chooseFrom     = moves.ToList();
+				var chooseFrom     = moves.Skip( 1 ).ToList(); // Always skip the first move (it's the Null move and breaks the game)
 				var preferSameType = config.FavorSameType && this.Random.NextDouble() < (double) config.SameTypePercentage;
 
 				if ( eggMoves.Empty || eggMoves.Count == 0 )

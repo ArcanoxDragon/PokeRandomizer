@@ -13,10 +13,13 @@ using System.Windows.Interop;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using PokeRandomizer.Common;
+using PokeRandomizer.Common.Utility;
 using PokeRandomizer.Config;
 using PokeRandomizer.Progress;
+using PokeRandomizer.UI.Controls;
 using PokeRandomizer.UI.Properties;
 using PokeRandomizer.UI.Utility;
+using PokeRandomizer.Utility;
 
 namespace PokeRandomizer.UI.Pages
 {
@@ -27,6 +30,7 @@ namespace PokeRandomizer.UI.Pages
 		private string outputPath;
 		private string defaultHintText;
 		private int    lastTab = -1;
+		private int?   seed;
 
 		public RandomizerPage( IRandomizer randomizer )
 		{
@@ -38,8 +42,8 @@ namespace PokeRandomizer.UI.Pages
 			this.InitializeComponent();
 		}
 
-		public RandomizerConfig Config     => this.Randomizer.Config;
 		public IRandomizer      Randomizer { get; }
+		public RandomizerConfig Config     => this.Randomizer.Config;
 
 		public string OutputPath
 		{
@@ -53,8 +57,20 @@ namespace PokeRandomizer.UI.Pages
 			}
 		}
 
+		public int? Seed
+		{
+			get => this.seed;
+			private set
+			{
+				this.seed = value;
+				this.OnPropertyChanged();
+				this.OnPropertyChanged( nameof(this.SeedDisplay) );
+			}
+		}
+
 		public string OutputPathDisplay => this.OutputPath ?? "None";
 		public bool   CanRandomize      => !string.IsNullOrEmpty( this.OutputPath );
+		public string SeedDisplay       => this.Seed?.ToString() ?? "Automatic";
 
 		private void RefreshHintElements()
 		{
@@ -214,9 +230,49 @@ namespace PokeRandomizer.UI.Pages
 			}
 		}
 
-		private async void Randomize_Click( object sender, RoutedEventArgs e )
+		private void SetSeed_Click( object sender, RoutedEventArgs e )
 		{
-			var progressBar = new TaskDialogProgressBar( 0, 100, 0 );
+			var promptDialog = new PromptDialog {
+				Owner         = this.Parent as Window,
+				Message       = "Enter a custom numeric seed value, or click Cancel to use an automatic seed",
+				ValueRequired = true
+			};
+
+			// Only valid if it's a number
+			promptDialog.Validate += ( o, args ) => args.IsValid = int.TryParse( promptDialog.Text, out _ );
+
+			if ( promptDialog.ShowDialog() == true )
+			{
+				this.Seed = int.Parse( promptDialog.Text );
+			}
+			else
+			{
+				this.Seed = null;
+			}
+		}
+
+		private void Randomize_Click( object sender, RoutedEventArgs e )
+		{
+			if ( this.Dispatcher == null )
+				throw new ApplicationException( "Fatal error" );
+
+			var shouldLogResult = MessageBox.Show( this.Parent as Window,
+												   "Should a randomizer log file be created in the selected output path? " +
+												   "The log file will contain a record of all randomizations performed, " +
+												   "which may provide an unfair advantage to players who are participating " +
+												   "in a random race. The log will also contain the randomizer seed being " +
+												   "used, which will allow the same randomization to be performed at a later " +
+												   "time, provided the same options are used.",
+												   "Create Log File",
+												   MessageBoxButton.YesNoCancel );
+
+			if ( shouldLogResult == MessageBoxResult.Cancel )
+				return;
+
+			var logFilePath   = default( string );
+			var logger        = default( FileLogger );
+			var createLogFile = shouldLogResult == MessageBoxResult.Yes;
+			var progressBar   = new TaskDialogProgressBar( 0, 100, 0 );
 			var dialog = new TaskDialog {
 				Cancelable        = false,
 				Caption           = "Randomizing Game",
@@ -230,26 +286,59 @@ namespace PokeRandomizer.UI.Pages
 			};
 
 			var cancelSource = new CancellationTokenSource();
-			var overallTask = Task.Run( async () => {
+
+			dialog.Closing += ( o, ev ) => {
+				if ( ev.TaskDialogResult == TaskDialogResult.Cancel )
+				{
+					ev.Cancel = true;
+					cancelSource.Cancel();
+					progressBar.State = TaskDialogProgressBarState.Marquee;
+					dialog.Text       = "Cancelling...";
+				}
+			};
+
+			dialog.Opened += ( o, args ) => ThreadPool.QueueUserWorkItem( async _ => {
 				this.Randomizer.Game.OutputPathOverride = this.OutputPath;
 
-				var progress = new ProgressNotifier();
-				var randTask = this.Randomizer.RandomizeAll( progress, cancelSource.Token );
+				if ( this.Seed.HasValue )
+					this.Randomizer.Reseed( this.Seed.Value );
+				else
+					this.Randomizer.Reseed();
 
-				while ( !progress.IsComplete && !progress.IsFailed && !progress.IsCancelled )
+				if ( createLogFile )
 				{
-					var update = await progress.AwaitUpdate();
-
-					if ( update.Type == ProgressUpdate.UpdateType.Status )
-						await this.Dispatcher.InvokeAsync( () => {
-							progressBar.Value = (int) ( progress.Progress * 100.0 );
-							dialog.Text       = update.Status ?? progress.Status;
-						} );
+					logFilePath            = Path.Combine( this.OutputPath, "RandomizerLog.txt" );
+					logger                 = new FileLogger( logFilePath );
+					this.Randomizer.Logger = logger;
 				}
+				else
+				{
+					this.Randomizer.Logger = null;
+				}
+
+				var progress = new ProgressNotifier();
+				var minLines = 0;
+
+				progress.ProgressUpdated += ( notifier, update ) => this.Dispatcher.Invoke( () => {
+					if ( update.Type == ProgressUpdate.UpdateType.Status )
+					{
+						var status   = update.Status ?? progress.Status;
+						var numLines = status.Split( '\n' ).Length;
+
+						if ( numLines > minLines )
+							minLines = numLines;
+
+						if ( numLines < minLines )
+							status += "\n".Repeat( minLines - numLines ); // keep the text from shrinking and causing the dialog to spaz
+
+						progressBar.Value = (int) ( progress.Progress * 100.0 );
+						dialog.Text       = status;
+					}
+				} );
 
 				try
 				{
-					await randTask;
+					await this.Randomizer.RandomizeAll( progress, cancelSource.Token );
 				}
 				catch ( Exception ex )
 				{
@@ -263,18 +352,25 @@ namespace PokeRandomizer.UI.Pages
 					dialog.Close( TaskDialogResult.Ok );
 					return;
 				}
+				finally
+				{
+					logger?.Dispose();
+				}
 
 				dialog.Close( TaskDialogResult.Ok );
 
 				if ( progress.IsComplete )
+				{
 					await this.Dispatcher.InvokeAsync(
 						() => MessageBox.Show( this.Parent as Window,
-											   $"Game patch files were successfully saved to:\n\n" +
-											   $"{this.OutputPath}",
+											   $"Game patch files were successfully saved to:\n\n{this.OutputPath}." +
+											   ( createLogFile ? $"\n\nLog file was saved to:\n\n{logFilePath}." : string.Empty ),
 											   "Randomization Complete",
 											   MessageBoxButton.OK,
 											   MessageBoxImage.Information ) );
+				}
 				else if ( progress.IsFailed )
+				{
 					await this.Dispatcher.InvokeAsync(
 						() => MessageBox.Show( this.Parent as Window,
 											   $"An error occurred while randomizing the game:\n\n" +
@@ -282,27 +378,19 @@ namespace PokeRandomizer.UI.Pages
 											   "Randomization Failed",
 											   MessageBoxButton.OK,
 											   MessageBoxImage.Error ) );
+				}
 				else if ( progress.IsCancelled )
+				{
 					await this.Dispatcher.InvokeAsync(
 						() => MessageBox.Show( this.Parent as Window,
 											   "Randomization was cancelled. There may still be partial game patch files in the output directory.",
 											   "Randomization Cancelled",
 											   MessageBoxButton.OK,
 											   MessageBoxImage.Warning ) );
+				}
 			} );
 
-			dialog.Closing += ( o, ev ) => {
-				if ( ev.TaskDialogResult == TaskDialogResult.Cancel )
-				{
-					ev.Cancel = true;
-					cancelSource.Cancel();
-					progressBar.State = TaskDialogProgressBarState.Marquee;
-					dialog.Text       = "Cancelling...";
-				}
-			};
 			dialog.Show();
-
-			await overallTask;
 		}
 
 		#region INotifyPropertyChanged

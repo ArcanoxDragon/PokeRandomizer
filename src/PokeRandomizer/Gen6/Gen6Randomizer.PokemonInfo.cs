@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PokeRandomizer.Common.Data;
@@ -17,12 +19,14 @@ namespace PokeRandomizer.Gen6
 			if ( !config.RandomizeTypes && !config.RandomizeAbilities )
 				return;
 
+			await this.LogAsync( $"======== Beginning Pokémon Info randomization ========{Environment.NewLine}" );
 			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing Pokémon personal information..." ) );
 
 			var pokeInfoTable     = await this.Game.GetPokemonInfo();
 			var avilableAbilities = Abilities.AllAbilities.ToList();
 			var availableTypes    = PokemonTypes.AllPokemonTypes.ToList();
 			var pokeNames         = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
+			var typeNames         = ( await this.Game.GetTextFile( TextNames.Types ) ).Lines;
 
 			if ( !config.AllowWonderGuard )
 				avilableAbilities = avilableAbilities.Where( a => a.Id != Abilities.WonderGuard.Id ).ToList();
@@ -34,6 +38,7 @@ namespace PokeRandomizer.Gen6
 				var thisStatus   = $"Randomizing Pokémon personal information...\n{name}";
 				var thisProgress = i / (double) pokeInfoTable.Table.Length;
 
+				await this.LogAsync( $"{name}: " );
 				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( thisStatus, thisProgress ) );
 
 				var pokeInfo = pokeInfoTable[ i ];
@@ -42,12 +47,19 @@ namespace PokeRandomizer.Gen6
 				{
 					progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"{thisStatus}\nRandomizing abilities...", thisProgress ) );
 
-					var abilities = pokeInfo.Abilities;
+					var abilities    = pokeInfo.Abilities;
+					var abilityNames = new string[ abilities.Length ];
 
 					for ( var a = 0; a < abilities.Length; a++ )
-						abilities[ a ] = (byte) avilableAbilities.GetRandom( this.Random ).Id;
+					{
+						var ability = avilableAbilities.GetRandom( this.Random );
+
+						abilities[ a ]    = (byte) ability.Id;
+						abilityNames[ a ] = ability.Name;
+					}
 
 					pokeInfo.Abilities = abilities;
+					await this.LogAsync( $"  - Available abilities: {string.Join( ", ", abilityNames )}" );
 				}
 
 				if ( config.RandomizeTypes )
@@ -70,15 +82,22 @@ namespace PokeRandomizer.Gen6
 															  .GetRandom( this.Random )
 															  .Id;
 						}
+
+						if ( config.RandomizePrimaryTypes || config.RandomizeSecondaryTypes )
+						{
+							await this.LogAsync( $"  - Types: {string.Join( "/", types.Select( t => typeNames[ t ] ) )}" );
+						}
 					}
 
 					pokeInfo.Types = types;
 				}
 
+				await this.LogAsync();
 				pokeInfoTable[ i ] = pokeInfo;
 			}
 
 			await this.Game.SavePokemonInfo( pokeInfoTable );
+			await this.LogAsync( $"======== Finished Pokémon Info randomization ========{Environment.NewLine}" );
 		}
 	}
 }

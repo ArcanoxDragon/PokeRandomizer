@@ -45,9 +45,12 @@ namespace PokeRandomizer.Tasks
 					break;
 
 				ProgressNotifier subNotifier = new ProgressNotifier();
+
 				subNotifier.ProgressUpdated += ( s, u ) => {
 					if ( u.Progress < 0 )
+					{
 						this.ProgressNotifier.NotifyUpdate( u );
+					}
 					else
 					{
 						double progWithSub = ( thisTask + subNotifier.Progress ) / this.tasks.Count;
@@ -65,7 +68,7 @@ namespace PokeRandomizer.Tasks
 					throw;
 				}
 
-				this.ProgressNotifier.NotifyUpdate( ProgressUpdate.Update( this.ProgressNotifier.Status, ( cur++ ) / (double) this.tasks.Count ) );
+				this.ProgressNotifier.NotifyUpdate( ProgressUpdate.Update( this.ProgressNotifier.Status ?? string.Empty, ++cur / (double) this.tasks.Count ) );
 			}
 		}
 

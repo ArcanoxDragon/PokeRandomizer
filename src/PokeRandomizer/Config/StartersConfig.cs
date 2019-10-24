@@ -7,6 +7,6 @@ namespace PokeRandomizer.Config
 		public bool RandomizeStarters  { get; set; } = true;
 		public bool AllowLegendaries   { get; set; }
 		public bool StartersOnly       { get; set; }
-		public bool OnlyElementalTypes { get; set; }
+		public bool ElementalTypeTriangle { get; set; }
 	}
 }

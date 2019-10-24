@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using PokeRandomizer.Common.Game;
 using PokeRandomizer.Common.Garc;
@@ -12,15 +11,16 @@ namespace GarcExploration
 {
 	class Program
 	{
-		private static readonly string[] GarcsToSkip = new[] {
-			@"a\0\0\8" // Giant 1.1GB GARC
+		private static readonly string[] GarcsToSkip = {
+			@"a\0\0\8", // Giant 1.1GB GARC
+			@"a\0\0\7", // Ton of files; pokemon models
 		};
 
 		private static async Task Main()
 		{
 			string romPath = Path.GetFullPath( Settings.RomPath );
 
-			GameConfig game = new GameConfig( GameVersion.ORAS );
+			GameConfig game = new GameConfig( GameVersion.XY );
 			await game.Initialize( romPath, Language.English );
 
 			if ( Directory.Exists( "Garc" ) )
@@ -68,8 +68,6 @@ namespace GarcExploration
 
 		private static async Task WriteGarc( ReferencedGarc garc, GarcReference gRef )
 		{
-			return;
-
 			if ( GarcsToSkip.Contains( gRef.RomFsPath ) )
 				return;
 

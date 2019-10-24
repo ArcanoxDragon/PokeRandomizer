@@ -5,5 +5,7 @@
 	<vc:GameLanguageValueConverter x:Key="LanguageValueConverter" />
 	<vc:GameVersionValueConverter x:Key="VersionValueConverter" />
 	<vc:BooleanLogicValueConverter x:Key="LogicalAndValueConverter" Operation="And" />
+	<vc:BooleanLogicValueConverter x:Key="LogicalOrValueConverter" Operation="Or" />
 	<vc:PercentageValueConverter x:Key="PercentageValueConverter" />
+	<vc:StringNullOrEmptyValueConverter x:Key="StringNullOrEmptyValueConverter" />
 </ResourceDictionary>

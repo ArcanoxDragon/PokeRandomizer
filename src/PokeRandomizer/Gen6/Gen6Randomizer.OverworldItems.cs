@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CtrDotNet.Utility.Extensions;
 using PokeRandomizer.Common.Data;
+using PokeRandomizer.Common.Reference;
+using PokeRandomizer.Common.Utility;
 using PokeRandomizer.Progress;
 using PokeRandomizer.Utility;
 
@@ -17,10 +20,12 @@ namespace PokeRandomizer.Gen6
 			if ( !config.RandomizeOverworldItems )
 				return;
 
+			await this.LogAsync( $"======== Beginning Overworld Item randomization ========{Environment.NewLine}" );
 			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing overworld items..." ) );
 
 			var availableItemIds = Legality.Items.GetValidOverworldItems( this.Game.Version );
 			var overworldItems   = await this.Game.GetOverworldItems();
+			var itemNames        = ( await this.Game.GetTextFile( TextNames.ItemNames ) ).Lines;
 
 			if ( !config.AllowMasterBalls )
 				availableItemIds = availableItemIds.Except( new[] { (ushort) Items.MasterBall.Id } ).ToArray();
@@ -40,10 +45,20 @@ namespace PokeRandomizer.Gen6
 					continue;
 				}
 
+				var oldItemId = item.ItemId;
+
 				item.ItemId = availableItemIds.GetRandom( this.Random );
+
+				var oldItemName = itemNames[ (int) oldItemId ];
+				var newItemName = itemNames[ (int) item.ItemId ];
+
+				string Article( string noun ) => noun.First().IsVowel() ? "an" : "a";
+
+				await this.LogAsync( $"Changing {Article( oldItemName )} {oldItemName} to {Article( newItemName )} {newItemName}" );
 			}
 
 			await this.Game.SaveOverworldItems( overworldItems );
+			await this.LogAsync( $"{Environment.NewLine}======== Finished Overworld Item randomization ========{Environment.NewLine}" );
 		}
 	}
 }

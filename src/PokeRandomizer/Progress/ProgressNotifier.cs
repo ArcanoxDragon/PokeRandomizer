@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using PokeRandomizer.Utility;
 
@@ -11,19 +10,18 @@ namespace PokeRandomizer.Progress
 
 		public event ProgressUpdatedEvent ProgressUpdated;
 
-		private readonly List<TaskCompletionSource<ProgressUpdate>> awaiting;
+		private readonly object completionSourceLock = new object();
 
-		public ProgressNotifier()
-		{
-			this.awaiting = new List<TaskCompletionSource<ProgressUpdate>>();
-		}
+		private TaskCompletionSource<ProgressUpdate> completionSource;
+
+		public ProgressNotifier() { }
 
 		public Exception FailureException { get; private set; }
-		public bool IsComplete { get; private set; }
-		public bool IsCancelled { get; private set; }
-		public bool IsFailed { get; private set; }
-		public double Progress { get; private set; }
-		public string Status { get; private set; }
+		public bool      IsComplete       { get; private set; }
+		public bool      IsCancelled      { get; private set; }
+		public bool      IsFailed         { get; private set; }
+		public double    Progress         { get; private set; }
+		public string    Status           { get; private set; }
 
 		public Task<ProgressUpdate> AwaitUpdate()
 		{
@@ -36,12 +34,13 @@ namespace PokeRandomizer.Progress
 			if ( this.IsComplete )
 				return Task.FromResult( ProgressUpdate.Cancelled() );
 
-			var source = new TaskCompletionSource<ProgressUpdate>();
+			lock ( this.completionSourceLock )
+			{
+				if ( this.completionSource == null )
+					this.completionSource = new TaskCompletionSource<ProgressUpdate>();
 
-			lock ( this.awaiting )
-				this.awaiting.Add( source );
-
-			return source.Task;
+				return this.completionSource.Task;
+			}
 		}
 
 		public void NotifyUpdate( ProgressUpdate update )
@@ -49,25 +48,19 @@ namespace PokeRandomizer.Progress
 			if ( this.IsComplete || this.IsFailed || this.IsCancelled )
 				return;
 
-			this.IsComplete = update.Type == ProgressUpdate.UpdateType.Completed;
-			this.IsCancelled = update.Type == ProgressUpdate.UpdateType.Cancelled;
-			this.IsFailed = update.Type == ProgressUpdate.UpdateType.Failed;
-			this.Progress = ( update.Progress >= 0 ) ? update.Progress : this.Progress;
-			this.Status = update.Status ?? this.Status;
+			this.IsComplete       = update.Type == ProgressUpdate.UpdateType.Completed;
+			this.IsCancelled      = update.Type == ProgressUpdate.UpdateType.Cancelled;
+			this.IsFailed         = update.Type == ProgressUpdate.UpdateType.Failed;
+			this.Progress         = ( update.Progress >= 0 ) ? update.Progress : this.Progress;
+			this.Status           = update.Status ?? this.Status;
 			this.FailureException = update.FailureCause;
+			this.Progress         = MathUtil.Clamp( this.Progress, 0.0, 1.0 );
 
-			this.Progress = MathUtil.Clamp( this.Progress, 0.0, 1.0 );
-
-			List<TaskCompletionSource<ProgressUpdate>> curAwaiting;
-
-			lock ( this.awaiting )
+			lock ( this.completionSourceLock )
 			{
-				curAwaiting = new List<TaskCompletionSource<ProgressUpdate>>( this.awaiting );
-				this.awaiting.Clear();
+				this.completionSource?.TrySetResult( update );
+				this.completionSource = null;
 			}
-
-			foreach ( var source in curAwaiting )
-				source.SetResult( update );
 
 			this.ProgressUpdated?.Invoke( this, update );
 		}
@@ -77,19 +70,14 @@ namespace PokeRandomizer.Progress
 			if ( this.IsComplete || this.IsFailed || this.IsCancelled )
 				return;
 
-			this.IsFailed = true;
+			this.IsFailed         = true;
 			this.FailureException = e;
 
-			List<TaskCompletionSource<ProgressUpdate>> curAwaiting;
-
-			lock ( this.awaiting )
+			lock ( this.completionSourceLock )
 			{
-				curAwaiting = new List<TaskCompletionSource<ProgressUpdate>>( this.awaiting );
-				this.awaiting.Clear();
+				this.completionSource?.TrySetException( e );
+				this.completionSource = null;
 			}
-
-			foreach ( var source in curAwaiting )
-				source.SetException( e );
 
 			this.ProgressUpdated?.Invoke( this, ProgressUpdate.Failure( e ) );
 		}

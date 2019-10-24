@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using PokeRandomizer.Common.Game;
 using PokeRandomizer.Config;
 using PokeRandomizer.Progress;
+using PokeRandomizer.Utility;
 
 namespace PokeRandomizer.Common
 {
@@ -12,6 +13,10 @@ namespace PokeRandomizer.Common
 		GameConfig       Game   { get; }
 		RandomizerConfig Config { get; set; }
 		Random           Random { get; }
+		ILogger          Logger { get; set; }
+
+		void Reseed( int seed );
+		void Reseed();
 
 		Task RandomizeAll( ProgressNotifier progressNotifier, CancellationToken token );
 

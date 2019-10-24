@@ -19,17 +19,21 @@ namespace PokeRandomizer.Gen6
 			if ( !config.RandomizeLearnsets )
 				return;
 
+			await this.LogAsync( $"======== Beginning Learnset randomization ========{Environment.NewLine}" );
 			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing learnsets..." ) );
 
-			var learnsets   = ( await this.Game.GetLearnsets() ).ToList();
-			var speciesInfo = await this.Game.GetPokemonInfo( edited: true );
-			var moves       = ( await this.Game.GetMoves() ).ToList();
-			var pokeNames   = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
+			var learnsets         = ( await this.Game.GetLearnsets() ).ToList();
+			var speciesInfo       = await this.Game.GetPokemonInfo( edited: true );
+			var moves             = ( await this.Game.GetMoves() ).ToList();
+			var pokeNames         = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
+			var moveNames         = ( await this.Game.GetTextFile( TextNames.MoveNames ) ).Lines;
+			var maxMoveNameLength = moveNames.Max( n => n.Length );
 
 			for ( var i = 0; i < learnsets.Count; i++ )
 			{
 				var name = pokeNames[ speciesInfo.GetSpeciesForEntry( i ) ];
 
+				await this.LogAsync( $"{name}:" );
 				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing learnsets...\n{name}", i / (double) learnsets.Count ) );
 
 				var learnset           = learnsets[ i ];
@@ -94,10 +98,17 @@ namespace PokeRandomizer.Gen6
 					}
 				}
 
+				for ( var m = 0; m < learnset.Moves.Length; m++ )
+				{
+					await this.LogAsync( $"  - {moveNames[ learnset.Moves[ m ] ].PadLeft( maxMoveNameLength )} @ Lv. {learnset.Levels[ m ]}" );
+				}
+
+				await this.LogAsync();
 				learnsets[ i ] = learnset;
 			}
 
 			await this.Game.SaveLearnsets( learnsets );
+			await this.LogAsync( $"======== Finished Learnset randomization ========{Environment.NewLine}" );
 		}
 	}
 }

@@ -60,7 +60,7 @@
 					</dependencyProperties:Properties.HintText>
 				</CheckBox>
 				<CheckBox Margin="16,0,0,0"
-						  IsChecked="{Binding Config.Encounters.TypeThemedAreas}">
+						  IsChecked="{Binding Config.Encounters.TypePerSubArea}">
 					<CheckBox.IsEnabled>
 						<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
 							<Binding Path="Config.Encounters.RandomizeEncounters" />

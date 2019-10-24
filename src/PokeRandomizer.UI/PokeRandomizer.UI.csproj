@@ -92,6 +92,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\PromptDialog.xaml.cs">
+      <DependentUpon>PromptDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\RandomizerActions.xaml.cs">
       <DependentUpon>RandomizerActions.xaml</DependentUpon>
     </Compile>
@@ -117,11 +120,16 @@
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Utility\VisualTreeExtensions.cs" />
-    <Compile Include="ValueConverters\BooleanAndValueConverter.cs" />
+    <Compile Include="ValueConverters\BooleanLogicValueConverter.cs" />
     <Compile Include="ValueConverters\GameVersionValueConverter.cs" />
     <Compile Include="ValueConverters\GameLanguageValueConverter.cs" />
     <Compile Include="ValueConverters\InvertValueConverter.cs" />
     <Compile Include="ValueConverters\PercentageValueConverter.cs" />
+    <Compile Include="ValueConverters\StringNullOrEmptyValueConverter.cs" />
+    <Page Include="Controls\PromptDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\RandomizerActions.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

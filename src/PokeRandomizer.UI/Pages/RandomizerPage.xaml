@@ -36,8 +36,10 @@
 							 ResetConfigClick="ResetConfig_Click"
 							 SetOutputPathClick="SetOutputPath_Click"
 							 RandomizeClick="Randomize_Click"
+							 SetSeedClick="SetSeed_Click"
 							 OutputPath="{Binding ElementName=Page, Path=OutputPathDisplay}"
-							 CanRandomize="{Binding ElementName=Page, Path=CanRandomize}" />
+							 CanRandomize="{Binding ElementName=Page, Path=CanRandomize}"
+							 SeedDisplay="{Binding ElementName=Page, Path=SeedDisplay}"/>
 
 		<!-- Splitter -->
 		<GridSplitter Grid.Column="1"

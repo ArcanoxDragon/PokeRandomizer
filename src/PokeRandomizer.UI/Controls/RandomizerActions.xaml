@@ -66,6 +66,16 @@
 
 		<Separator />
 
+		<Button Margin="4" Height="24" Click="SetSeed_Click">
+			<Label Padding="0">Set custom seed...</Label>
+		</Button>
+		<Label>Current randomizer seed:</Label>
+		<TextBlock TextWrapping="WrapWithOverflow"
+				   Text="{Binding ElementName=Control, Path=SeedDisplay}"
+				   Margin="8,0,8,8" />
+
+		<Separator />
+
 		<Button Margin="4" Height="24"
 				IsEnabled="{Binding ElementName=Control, Path=CanRandomize}"
 				Click="Randomize_Click">

@@ -15,24 +15,19 @@ namespace PokeRandomizer.Common
 {
 	public abstract class BaseRandomizer : IRandomizer
 	{
-		private const int NumSubOperations = 6;
-
-		protected BaseRandomizer()
-		{
-			this.RandomSeed = Environment.TickCount; // Default constructor of Random uses this
-			this.Random     = new Random( this.RandomSeed );
-		}
-
 		protected BaseRandomizer( int seed )
 		{
 			this.RandomSeed = seed;
 			this.Random     = new Random( seed );
 		}
 
+		protected BaseRandomizer() : this( Environment.TickCount ) { }
+
 		public RandomizerConfig Config     { get; set; }
 		public GameConfig       Game       { get; private set; }
-		public int              RandomSeed { get; }
-		public Random           Random     { get; }
+		public int              RandomSeed { get; private set; }
+		public Random           Random     { get; private set; }
+		public ILogger          Logger     { get; set; }
 
 		internal void Initialize( GameConfig game, RandomizerConfig randomizerConfig )
 		{
@@ -40,14 +35,30 @@ namespace PokeRandomizer.Common
 			this.Config = randomizerConfig;
 		}
 
+		public void Reseed( int seed )
+		{
+			this.RandomSeed = seed;
+			this.Random     = new Random( seed );
+		}
+
+		public void Reseed() => this.Reseed( Environment.TickCount );
+
 		protected RandomizerConfig ValidateAndGetConfig()
 		{
 			Validator.ValidateConfig( this.Config );
 			return this.Config;
 		}
 
+		protected async Task LogAsync( string text = "" )
+		{
+			if ( this.Logger != null )
+				await this.Logger.WriteLineAsync( text );
+		}
+
 		public async Task RandomizeAll( ProgressNotifier progress, CancellationToken token )
 		{
+			await this.LogAsync( $"Randomizer started. Using seed: {this.RandomSeed}{Environment.NewLine}" );
+
 			var runner = new TaskRunner( this.GetRandomizationTasks() );
 
 			if ( progress != null )
@@ -56,6 +67,10 @@ namespace PokeRandomizer.Common
 			await runner.Run( token );
 
 			progress?.NotifyUpdate( ProgressUpdate.Completed() );
+			await this.LogAsync( "Randomization has finished." );
+
+			if ( this.Logger != null )
+				await this.Logger.FlushAsync();
 		}
 
 		#region Randomization tasks
@@ -64,8 +79,8 @@ namespace PokeRandomizer.Common
 		{
 			yield return this.RandomizePokemonInfo;
 			yield return this.RandomizeEggMoves;
-			yield return this.RandomizeEncounters;
 			yield return this.RandomizeLearnsets;
+			yield return this.RandomizeEncounters;
 			yield return this.RandomizeStarters;
 			yield return this.RandomizeTrainers;
 		}

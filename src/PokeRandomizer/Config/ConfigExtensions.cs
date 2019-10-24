@@ -44,7 +44,7 @@ namespace PokeRandomizer.Config
 					RandomizeStarters  = config.Starters.RandomizeStarters,
 					AllowLegendaries   = config.Starters.AllowLegendaries,
 					StartersOnly       = config.Starters.StartersOnly,
-					OnlyElementalTypes = config.Starters.OnlyElementalTypes,
+					ElementalTypeTriangle = config.Starters.ElementalTypeTriangle,
 				},
 				Trainers = {
 					RandomizeTrainers  = config.Trainers.RandomizeTrainers,

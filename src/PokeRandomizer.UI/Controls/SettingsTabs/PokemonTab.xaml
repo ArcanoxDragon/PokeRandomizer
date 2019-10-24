@@ -259,24 +259,16 @@
 						</dependencyProperties:Properties.HintText>
 					</CheckBox>
 					<CheckBox
-						IsChecked="{Binding Config.Starters.OnlyElementalTypes}">
-						<CheckBox.IsEnabled>
-							<MultiBinding Converter="{StaticResource LogicalAndValueConverter}">
-								<Binding Path="Config.Starters.RandomizeStarters" />
-								<Binding ElementName="StartersOnlyStarters" Path="IsChecked"
-										 Converter="{StaticResource InvertValueConverter}" />
-							</MultiBinding>
-						</CheckBox.IsEnabled>
-						Only elemental types
+						IsChecked="{Binding Config.Starters.ElementalTypeTriangle}"
+						IsEnabled="{Binding Config.Starters.RandomizeStarters}">
+						Use elemental "Type Triangle"
 						<dependencyProperties:Properties.HintText>
-							Only consider Pokémon which posess the "Fire", "Water", or "Grass"
-							type when randomizing the list of starter Pokémon the player may
-							choose from. This will not ensure that the "type triangle" remains
-							the same, so in some cases, your rival may end up with a type
-							advantage against you, or all the options could be the same elemental
-							type!
+							Keeps the same types as the original starters, ensuring that some form of the
+							"grass/fire/water" type triangle exists between the player and their rival(s).
 							\n\n
-							This setting has no effect when "Only starter Pokémon" is enabled.
+							For example, in X/Y, Chespin will be replaced with any grass-type Pokémon,
+							Fennekin will be replaced with any fire-type Pokémon, and Froakie will be
+							replaced with any water-type Pokémon.
 						</dependencyProperties:Properties.HintText>
 					</CheckBox>
 					<CheckBox

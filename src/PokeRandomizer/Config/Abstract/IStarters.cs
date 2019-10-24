@@ -5,6 +5,6 @@
 		bool RandomizeStarters  { get; }
 		bool AllowLegendaries   { get; }
 		bool StartersOnly       { get; }
-		bool OnlyElementalTypes { get; }
+		bool ElementalTypeTriangle { get; }
 	}
 }

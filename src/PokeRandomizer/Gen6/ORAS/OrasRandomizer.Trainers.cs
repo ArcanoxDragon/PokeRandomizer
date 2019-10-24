@@ -95,7 +95,7 @@ namespace PokeRandomizer.Gen6.ORAS
 			"Liza & Tate" => 6, // Leaders
 
 			// Sootopolis
-			"Marissa"                       => 7, // 1F Pok� Fan
+			"Marissa"                       => 7, // 1F Poké Fan
 			"Crissy"                        => 7, // 1F Lass
 			"Olivia"                        => 7, // BF Beauty
 			"Brianna"                       => 7, // BF Lady

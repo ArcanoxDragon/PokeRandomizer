@@ -67,10 +67,10 @@ namespace PokeRandomizer.Gen6.XY
 			"Korrina" => 2, // Leader
 
 			// Coumarine
-			"Chaise"  => 3, // Pok�mon Ranger
-			"Brooke"  => 3, // Pok�mon Ranger
-			"Maurice" => 3, // Pok�mon Ranger
-			"Twiggy"  => 3, // Pok�mon Ranger
+			"Chaise"  => 3, // Pokémon Ranger
+			"Brooke"  => 3, // Pokémon Ranger
+			"Maurice" => 3, // Pokémon Ranger
+			"Twiggy"  => 3, // Pokémon Ranger
 			"Ramos"   => 3, // Leader
 
 			// Lumiose
@@ -83,9 +83,9 @@ namespace PokeRandomizer.Gen6.XY
 			"Mathis"   => 4, // 4F Ace Trainer
 			"Maxim"    => 4, // 4F Ace Trainer
 			"Rico"     => 4, // 4F Ace Trainer
-			"Abigail"  => 4, // 5F Pok� Fan
-			"Lydie"    => 4, // 5F Pok� Fan
-			"Tara"     => 4, // 5F Pok� Fan
+			"Abigail"  => 4, // 5F Poké Fan
+			"Lydie"    => 4, // 5F Poké Fan
+			"Tara"     => 4, // 5F Poké Fan
 			"Clemont"  => 4, // 6F Leader
 
 			// Laverre

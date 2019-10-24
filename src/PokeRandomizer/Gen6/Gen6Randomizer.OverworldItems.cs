@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CtrDotNet.Utility.Extensions;
 using PokeRandomizer.Common.Data;
+using PokeRandomizer.Common.Game;
 using PokeRandomizer.Common.Reference;
 using PokeRandomizer.Common.Utility;
 using PokeRandomizer.Progress;
@@ -38,8 +39,9 @@ namespace PokeRandomizer.Gen6
 			{
 				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( progressNotifier.Status, i / (double) overworldItems.Items.Count ) );
 
-				if ( Legality.Items.HM_ORAS.Any( id => id == item.ItemId ) ||
-					 Legality.Items.HM_XY.Any( id => id == item.ItemId ) )
+				var hmItems = this.Game.Version.IsXY() ? Legality.Items.HM_XY : Legality.Items.HM_ORAS;
+
+				if ( hmItems.Any( id => id == item.ItemId ) )
 				{
 					// Don't randomize HMs! Might strand the player!
 					continue;

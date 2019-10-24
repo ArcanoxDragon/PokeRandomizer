@@ -41,9 +41,9 @@ namespace PokeRandomizer.Config
 					RandomizeSecondaryTypes = config.PokemonInfo.RandomizeSecondaryTypes,
 				},
 				Starters = {
-					RandomizeStarters  = config.Starters.RandomizeStarters,
-					AllowLegendaries   = config.Starters.AllowLegendaries,
-					StartersOnly       = config.Starters.StartersOnly,
+					RandomizeStarters     = config.Starters.RandomizeStarters,
+					AllowLegendaries      = config.Starters.AllowLegendaries,
+					StartersOnly          = config.Starters.StartersOnly,
 					ElementalTypeTriangle = config.Starters.ElementalTypeTriangle,
 				},
 				Trainers = {

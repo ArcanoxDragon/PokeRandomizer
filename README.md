@@ -34,6 +34,11 @@ This randomizer tries to be very versatile while remaining easy to use. The foll
 
 - Quick Save/Load feature for settings
   - Quickly load your favorite randomization settings from a file, or send your settings to a friend for races/co-ops
+- Optional Log File output
+  - See exactly what the randomizer did, including the random seed it used!
+- Custom random seed
+  - Allows a custom seed to be used so that multiple players can achieve the same results, or so that the results of
+    a past randomization can be reproduced (provided a log file was created)
 - Outputs Luma-compatible Patches!
   - Play the randomized version of your game on any 3DS console capable of running the [Luma3DS](https://github.com/AuroraWright/Luma3DS) custom firmware!
   
@@ -56,7 +61,7 @@ This randomizer tries to be very versatile while remaining easy to use. The foll
 - Randomize Starter Pokémon selection
   - Includes the first starter selection at the beginning of the game, as well as any other situation in the game where the player gets to choose an additional starter (such as in Lumiose City at the Professor's lab).
   - Choose to limit the options to only Pokémon that are starters in at least one game in the series
-  - Choose to limit the options to only Pokémon with Fire/Grass/Water as one of their types (which obeys randomized types if enabled!)
+  - Choose to preserve the Grass/Fire/Water type triangle for starter choices (this obeys randomized types if enabled!)
   - Choose whether or not to allow Legendary Pokémon as starter choices
 - Randomize Trainer parties
   - Choose to have "rival" and any other "friend" trainers keep their starters (which evolve at the proper level along the game)
@@ -69,6 +74,7 @@ This randomizer tries to be very versatile while remaining easy to use. The foll
   - Apply a level boost multiplier to every wild Pokémon to increase the difficulty of the game
 - Randomize Item Pokéballs scattered about the world
   - Any item that can exist in the Items, Medicines, or TMs/HMs case can be found in a Pokéball!
+    (HM items will not be randomized or considered, as this would break the progression of the game)
   - Choose whether or not Master Balls can be found
   - Choose whether or not TMs can be found where they aren't supposed to be
   - Choose whether or not Mega Stones can be found in regular Pokéballs
@@ -80,12 +86,12 @@ Splash Screen:
 
 Pokémon Options:
   
-![Pokémon Options](https://i.imgur.com/ALRr8un.png)
+![Pokémon Options](https://i.imgur.com/MuMQPHu.png)
 
 Trainer Options:
   
-![Trainer Options](https://i.imgur.com/6cm8QLw.png)
+![Trainer Options](https://i.imgur.com/0lQwaQB.png)
 
 Overworld Options:
   
-![Overworld Options](https://i.imgur.com/jPW39Kk.png)
+![Overworld Options](https://i.imgur.com/quUgo0J.png)

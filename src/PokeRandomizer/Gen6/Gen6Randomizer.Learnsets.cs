@@ -38,15 +38,24 @@ namespace PokeRandomizer.Gen6
 
 				var learnset           = learnsets[ i ];
 				var species            = speciesInfo[ i ];
-				var chooseFrom         = moves.Skip( 1 ).ToList(); // Always skip the first move (it's the Null move and breaks the game)
+				var chooseFrom         = moves.ToList(); // Clone list
 				var chooseFromSameType = chooseFrom.Where( mv => species.HasType( PokemonTypes.GetValueFrom( mv.Type ) ) ).ToList();
 
 				ushort PickRandomMove()
 				{
 					var preferSameType = config.FavorSameType && this.Random.NextDouble() < (double) config.SameTypePercentage;
 					var move           = ( preferSameType ? chooseFromSameType : chooseFrom ).GetRandom( this.Random );
+					var moveId         = (ushort) moves.IndexOf( move );
 
-					return (ushort) moves.IndexOf( move );
+					// We have to make sure the "-----" move is not picked because it breaks the game. Ideally
+					// we would just exclude it from the list of considered moves, but to ensure seed-compatiblity
+					// with the previous version of the randomizer, we need to keep the list of moves exactly
+					// the same when we pull a random one. We then replace any "-----" choices with the first real
+					// move.
+					if ( moveId == 0 )
+						moveId++;
+
+					return moveId;
 				}
 
 				for ( var m = 0; m < learnset.Moves.Length; m++ )

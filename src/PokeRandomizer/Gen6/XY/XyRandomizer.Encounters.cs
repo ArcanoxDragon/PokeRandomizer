@@ -16,7 +16,7 @@ namespace PokeRandomizer.Gen6.XY
 {
 	public partial class XyRandomizer
 	{
-		public override async Task RandomizeEncounters( ProgressNotifier progressNotifier, CancellationToken token )
+		public override async Task RandomizeEncounters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			var config = this.ValidateAndGetConfig().Encounters;
 
@@ -53,7 +53,7 @@ namespace PokeRandomizer.Gen6.XY
 
 				if ( config.TypeThemedAreas )
 				{
-					areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.Random );
+					areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( taskRandom );
 
 					speciesChoose = species.Where( s => speciesInfo[ s.Id ].HasType( areaType ) ).ToList();
 				}
@@ -81,7 +81,7 @@ namespace PokeRandomizer.Gen6.XY
 
 					foreach ( var entry in entryArray.Where( entry => entry.Species != Common.Data.Species.Egg.Id ) )
 					{
-						entry.Species = (ushort) this.GetRandomSpecies( speciesChoose ).Id;
+						entry.Species = (ushort) this.GetRandomSpecies( taskRandom, speciesChoose ).Id;
 
 						if ( config.LevelMultiplier != 1.0m )
 						{
@@ -94,7 +94,7 @@ namespace PokeRandomizer.Gen6.XY
 
 					if ( config.TypeThemedAreas && config.TypePerSubArea ) // Re-generate type for the new sub-area
 					{
-						areaType      = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.Random );
+						areaType      = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( taskRandom );
 						speciesChoose = species.Where( s => speciesInfo[ s.Id ].HasType( areaType ) ).ToList();
 					}
 

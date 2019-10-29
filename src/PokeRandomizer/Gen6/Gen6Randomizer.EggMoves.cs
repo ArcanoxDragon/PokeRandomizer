@@ -11,7 +11,7 @@ namespace PokeRandomizer.Gen6
 {
 	public partial class Gen6Randomizer
 	{
-		public override async Task RandomizeEggMoves( ProgressNotifier progressNotifier, CancellationToken token )
+		public override async Task RandomizeEggMoves( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			var config = this.ValidateAndGetConfig().EggMoves;
 
@@ -34,11 +34,11 @@ namespace PokeRandomizer.Gen6
 				var eggMoves           = eggMovesList[ i ];
 				var chooseFrom         = moves.ToList(); // Clone list
 				var chooseFromSameType = chooseFrom.Where( mv => species.HasType( PokemonTypes.GetValueFrom( mv.Type ) ) ).ToList();
-				var preferSameType     = config.FavorSameType && this.Random.NextDouble() < (double) config.SameTypePercentage;
+				var preferSameType     = config.FavorSameType && taskRandom.NextDouble() < (double) config.SameTypePercentage;
 
 				ushort PickRandomMove()
 				{
-					var move   = ( preferSameType ? chooseFromSameType : chooseFrom ).GetRandom( this.Random );
+					var move   = ( preferSameType ? chooseFromSameType : chooseFrom ).GetRandom( taskRandom );
 					var moveId = (ushort) moves.IndexOf( move );
 
 					// We have to make sure the "-----" move is not picked because it breaks the game. Ideally

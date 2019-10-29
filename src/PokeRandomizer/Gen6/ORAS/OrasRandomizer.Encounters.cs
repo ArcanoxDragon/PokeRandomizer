@@ -16,7 +16,7 @@ namespace PokeRandomizer.Gen6.ORAS
 {
 	public partial class OrasRandomizer
 	{
-		public override async Task RandomizeEncounters( ProgressNotifier progressNotifier, CancellationToken token )
+		public override async Task RandomizeEncounters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			const int MaxUniqueSpecies = 18;
 
@@ -61,14 +61,14 @@ namespace PokeRandomizer.Gen6.ORAS
 					// so we pick 18 random and unique species from our current choice list
 					while ( uniqueList.Count < MaxUniqueSpecies )
 						// Find a new unique species from our current determined list of choices
-						uniqueList.Add( this.GetRandomSpecies( choices.Except( uniqueList ) ) );
+						uniqueList.Add( this.GetRandomSpecies( taskRandom, choices.Except( uniqueList ) ) );
 
 					speciesChoose = uniqueList.ToList();
 				}
 
 				if ( config.TypeThemedAreas )
 				{
-					areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.Random );
+					areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( taskRandom );
 
 					UpdateChoiceList( species.Where( s => speciesInfo[ s.Id ].HasType( areaType ) ).ToList() );
 				}
@@ -99,7 +99,7 @@ namespace PokeRandomizer.Gen6.ORAS
 
 					foreach ( var entry in entryArray.Where( entry => entry.Species != Common.Data.Species.Egg.Id ) )
 					{
-						entry.Species = (ushort) this.GetRandomSpecies( speciesChoose ).Id;
+						entry.Species = (ushort) this.GetRandomSpecies( taskRandom, speciesChoose ).Id;
 
 						if ( config.LevelMultiplier != 1.0m )
 						{
@@ -112,7 +112,7 @@ namespace PokeRandomizer.Gen6.ORAS
 
 					if ( config.TypeThemedAreas && config.TypePerSubArea ) // Re-generate type for the new sub-area
 					{
-						areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( this.Random );
+						areaType = PokemonTypes.AllPokemonTypes.ToArray().GetRandom( taskRandom );
 
 						UpdateChoiceList( species.Where( s => speciesInfo[ s.Id ].HasType( areaType ) ).ToList() );
 					}
@@ -142,7 +142,7 @@ namespace PokeRandomizer.Gen6.ORAS
 						// Pick a random slot to overwrite
 						int randomTo = -1;
 						while ( randomTo < 0 || entryArray[ randomTo ].Species == 0 )
-							randomTo = this.Random.Next( entryArray.Length );
+							randomTo = taskRandom.Next( entryArray.Length );
 
 						// Get a species that's different than the slot we're overwriting so we make a duplicate
 						var donorEntry = entryArray.First( e => e.Species > 0 && e.Species != entryArray[ randomTo ].Species );

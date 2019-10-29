@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ namespace PokeRandomizer.Gen6
 {
 	public partial class Gen6Randomizer
 	{
-		public override async Task RandomizePokemonInfo( ProgressNotifier progressNotifier, CancellationToken token )
+		public override async Task RandomizePokemonInfo( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			var config = this.ValidateAndGetConfig().PokemonInfo;
 
@@ -52,7 +51,7 @@ namespace PokeRandomizer.Gen6
 
 					for ( var a = 0; a < abilities.Length; a++ )
 					{
-						var ability = avilableAbilities.GetRandom( this.Random );
+						var ability = avilableAbilities.GetRandom( taskRandom );
 
 						abilities[ a ]    = (byte) ability.Id;
 						abilityNames[ a ] = ability.Name;
@@ -72,14 +71,14 @@ namespace PokeRandomizer.Gen6
 					{
 						if ( config.RandomizePrimaryTypes )
 						{
-							types[ 0 ] = (byte) availableTypes.GetRandom( this.Random ).Id;
+							types[ 0 ] = (byte) availableTypes.GetRandom( taskRandom ).Id;
 						}
 
 						if ( config.RandomizeSecondaryTypes && types.Length > 1 )
 						{
 							types[ 1 ] = (byte) availableTypes.Where( type => type.Id != types[ 0 ] )
 															  .ToList()
-															  .GetRandom( this.Random )
+															  .GetRandom( taskRandom )
 															  .Id;
 						}
 

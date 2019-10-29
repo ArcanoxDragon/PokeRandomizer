@@ -14,7 +14,7 @@ namespace PokeRandomizer.Gen6
 {
 	public partial class Gen6Randomizer
 	{
-		public virtual async Task RandomizeOverworldItems( ProgressNotifier progressNotifier, CancellationToken cancellationToken )
+		public virtual async Task RandomizeOverworldItems( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken cancellationToken )
 		{
 			var config = this.ValidateAndGetConfig().OverworldItems;
 
@@ -49,7 +49,7 @@ namespace PokeRandomizer.Gen6
 
 				var oldItemId = item.ItemId;
 
-				item.ItemId = availableItemIds.GetRandom( this.Random );
+				item.ItemId = availableItemIds.GetRandom( taskRandom );
 
 				var oldItemName = itemNames[ (int) oldItemId ];
 				var newItemName = itemNames[ (int) item.ItemId ];

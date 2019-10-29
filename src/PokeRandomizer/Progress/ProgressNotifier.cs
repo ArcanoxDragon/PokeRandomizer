@@ -14,8 +14,6 @@ namespace PokeRandomizer.Progress
 
 		private TaskCompletionSource<ProgressUpdate> completionSource;
 
-		public ProgressNotifier() { }
-
 		public Exception FailureException { get; private set; }
 		public bool      IsComplete       { get; private set; }
 		public bool      IsCancelled      { get; private set; }

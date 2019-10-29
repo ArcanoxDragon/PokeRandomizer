@@ -113,7 +113,7 @@ namespace PokeRandomizer.Gen6.XY
 			_ => -1
 		};
 
-		public override async Task<bool> HandleTrainerSpecificLogicAsync( string trainerName, TrainerData trainer )
+		public override async Task<bool> HandleTrainerSpecificLogicAsync( Random taskRandom, string trainerName, TrainerData trainer )
 		{
 			var config = this.ValidateAndGetConfig().Trainers;
 
@@ -137,12 +137,12 @@ namespace PokeRandomizer.Gen6.XY
 
 						var (starterSlot, starterEvo) = this.GetStarterIndexAndEvolution( pokemon.Species );
 						var newStarterBaseSpecies = starters.StarterSpecies[ 0 /* First Gen */ ][ starterSlot ];
-						var newStarter            = await this.GetEvolutionOfAsync( newStarterBaseSpecies, starterEvo );
+						var newStarter            = await this.GetEvolutionOfAsync( taskRandom, newStarterBaseSpecies, starterEvo );
 						var info                  = pokeInfo[ newStarter ];
 
 						pokemon.Species = newStarter;
 						pokemon.Gender  = info.GetRandomGender();
-						pokemon.Ability = info.Abilities.GetRandom( this.Random );
+						pokemon.Ability = info.Abilities.GetRandom( taskRandom );
 						pokemon.Level   = (ushort) MathUtil.Clamp( (int) ( pokemon.Level * config.LevelMultiplier ), 2, 100 );
 
 						// Fill the Pokemon's available moves with random choices from its learnset (up to its current level)
@@ -155,7 +155,7 @@ namespace PokeRandomizer.Gen6.XY
 							pokemon.Moves    = new ushort[] { 0, 0, 0, 0 };
 
 							for ( var m = 0; m < Math.Min( moveset.Count, 4 ); m++ )
-								pokemon.Moves[ m ] = moveset.Except( pokemon.Moves ).ToList().GetRandom( this.Random );
+								pokemon.Moves[ m ] = moveset.Except( pokemon.Moves ).ToList().GetRandom( taskRandom );
 						}
 					}
 

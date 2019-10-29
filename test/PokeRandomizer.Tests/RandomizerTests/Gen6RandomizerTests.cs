@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -11,10 +12,11 @@ namespace PokeRandomizer.Tests.RandomizerTests
 	[ TestFixture ]
 	public class Gen6RandomizerTests
 	{
-		private string romOutputDir;
-
 		public static Gen6Randomizer Randomizer { get; set; }
 		public static GameConfig     Game       { get; set; }
+
+		private string romOutputDir;
+		private Random masterRandom;
 
 		public void SetUpOutputDirectory()
 		{
@@ -35,7 +37,7 @@ namespace PokeRandomizer.Tests.RandomizerTests
 			string romFsPath = Path.Combine( romPath, "RomFS" );
 			string exeFsPath = Path.Combine( romPath, "ExeFS" );
 
-			Assert.True( Directory.Exists( romPath ),   "ROM path does not exist" );
+			Assert.True( Directory.Exists( romPath ), "ROM path does not exist" );
 			Assert.True( Directory.Exists( romFsPath ), "ROM path does not contain a RomFS folder" );
 			Assert.True( Directory.Exists( exeFsPath ), "ROM path does not contain an ExeFS folder" );
 
@@ -88,48 +90,52 @@ namespace PokeRandomizer.Tests.RandomizerTests
 			Game.OutputPathOverride = this.romOutputDir;
 
 			Assert.NotNull( Randomizer );
+
+			this.masterRandom = new Random( Randomizer.RandomSeed );
 		}
+
+		private Random GetNewTaskRandom() => new Random( this.masterRandom.Next() );
 
 		[ Test, Order( 1 ) ]
 		public async Task RandomizePokemonInfo()
 		{
-			await Randomizer.RandomizePokemonInfo( null, CancellationToken.None );
+			await Randomizer.RandomizePokemonInfo( this.GetNewTaskRandom(), null, CancellationToken.None );
 		}
 
 		[ Test, Order( 2 ) ]
 		public async Task RandomizeEggMoves()
 		{
-			await Randomizer.RandomizeEggMoves( null, CancellationToken.None );
+			await Randomizer.RandomizeEggMoves( this.GetNewTaskRandom(), null, CancellationToken.None );
 		}
 
 		[ Test, Order( 3 ) ]
 		public async Task RandomizeEncounters()
 		{
-			await Randomizer.RandomizeEncounters( null, CancellationToken.None );
+			await Randomizer.RandomizeEncounters( this.GetNewTaskRandom(), null, CancellationToken.None );
 		}
 
 		[ Test, Order( 4 ) ]
 		public async Task RandomizeLearnsets()
 		{
-			await Randomizer.RandomizeLearnsets( null, CancellationToken.None );
+			await Randomizer.RandomizeLearnsets( this.GetNewTaskRandom(), null, CancellationToken.None );
 		}
 
 		[ Test, Order( 5 ) ]
 		public async Task RandomizeOverworldItems()
 		{
-			await Randomizer.RandomizeOverworldItems( null, CancellationToken.None );
+			await Randomizer.RandomizeOverworldItems( this.GetNewTaskRandom(), null, CancellationToken.None );
 		}
 
 		[ Test, Order( 6 ) ]
 		public async Task RandomizeStarters()
 		{
-			await Randomizer.RandomizeStarters( null, CancellationToken.None );
+			await Randomizer.RandomizeStarters( this.GetNewTaskRandom(), null, CancellationToken.None );
 		}
 
 		[ Test, Order( 7 ) ]
 		public async Task RandomizeTrainers()
 		{
-			await Randomizer.RandomizeTrainers( null, CancellationToken.None );
+			await Randomizer.RandomizeTrainers( this.GetNewTaskRandom(), null, CancellationToken.None );
 		}
 	}
 }

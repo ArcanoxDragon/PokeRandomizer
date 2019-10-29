@@ -9,7 +9,7 @@ namespace PokeRandomizer.Tasks
 {
 	public class TaskRunner : IEnumerable<TaskRunner.TaskFunction>
 	{
-		public delegate Task TaskFunction( ProgressNotifier notifier, CancellationToken token );
+		public delegate Task TaskFunction( Random taskRandom, ProgressNotifier notifier, CancellationToken token );
 
 		private readonly List<TaskFunction> tasks;
 
@@ -30,7 +30,7 @@ namespace PokeRandomizer.Tasks
 		public void Clear() => this.tasks.Clear();
 		public void Add( TaskFunction task ) => this.tasks.Add( task );
 
-		public async Task Run( CancellationToken token )
+		public async Task Run( Random masterRandom, CancellationToken token )
 		{
 			int cur = 0;
 
@@ -60,7 +60,9 @@ namespace PokeRandomizer.Tasks
 
 				try
 				{
-					await task( subNotifier, token );
+					var taskRandom = new Random( masterRandom.Next() );
+
+					await task( taskRandom, subNotifier, token );
 				}
 				catch ( Exception e )
 				{

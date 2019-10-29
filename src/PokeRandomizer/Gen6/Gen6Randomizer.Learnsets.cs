@@ -12,7 +12,7 @@ namespace PokeRandomizer.Gen6
 {
 	public partial class Gen6Randomizer
 	{
-		public override async Task RandomizeLearnsets( ProgressNotifier progressNotifier, CancellationToken token )
+		public override async Task RandomizeLearnsets( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			var config = this.ValidateAndGetConfig().Learnsets;
 
@@ -43,8 +43,8 @@ namespace PokeRandomizer.Gen6
 
 				ushort PickRandomMove()
 				{
-					var preferSameType = config.FavorSameType && this.Random.NextDouble() < (double) config.SameTypePercentage;
-					var move           = ( preferSameType ? chooseFromSameType : chooseFrom ).GetRandom( this.Random );
+					var preferSameType = config.FavorSameType && taskRandom.NextDouble() < (double) config.SameTypePercentage;
+					var move           = ( preferSameType ? chooseFromSameType : chooseFrom ).GetRandom( taskRandom );
 					var moveId         = (ushort) moves.IndexOf( move );
 
 					// We have to make sure the "-----" move is not picked because it breaks the game. Ideally
@@ -65,7 +65,7 @@ namespace PokeRandomizer.Gen6
 
 				if ( config.RandomizeLevels )
 					learnset.Levels = learnset.Levels
-											  .Select( _ => (ushort) this.Random.Next( 1, MathUtil.Clamp( config.LearnAllMovesBy, 10, 100 ) ) )
+											  .Select( _ => (ushort) taskRandom.Next( 1, MathUtil.Clamp( config.LearnAllMovesBy, 10, 100 ) ) )
 											  .OrderBy( l => l )
 											  .ToArray();
 
@@ -78,7 +78,7 @@ namespace PokeRandomizer.Gen6
 					var firstMoveChoose = moves.Where( m => m.Type == PokemonTypes.Normal.Id || species.HasType( PokemonTypes.GetValueFrom( m.Type ) ) )
 											   .Where( m => m.Category == Move.CategoryPhysical || m.Category == Move.CategorySpecial )
 											   .ToList();
-					var move = firstMoveChoose.GetRandom( this.Random );
+					var move = firstMoveChoose.GetRandom( taskRandom );
 
 					learnset.Moves[ 0 ] = (ushort) moves.IndexOf( move );
 

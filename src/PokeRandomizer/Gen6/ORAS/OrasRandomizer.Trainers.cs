@@ -108,7 +108,7 @@ namespace PokeRandomizer.Gen6.ORAS
 			_ => -1
 		};
 
-		public override Task<bool> HandleTrainerSpecificLogicAsync( string trainerName, TrainerData trainer ) => Task.FromResult( false );
+		public override Task<bool> HandleTrainerSpecificLogicAsync( Random taskRandom, string trainerName, TrainerData trainer ) => Task.FromResult( false );
 
 		#endregion
 	}

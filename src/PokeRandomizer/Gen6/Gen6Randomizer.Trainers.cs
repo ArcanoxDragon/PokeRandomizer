@@ -19,7 +19,7 @@ namespace PokeRandomizer.Gen6
 	{
 		private List<EvolutionSet> evolutionData;
 
-		protected async Task<ushort> GetEvolutionOfAsync( ushort speciesId, int evoIndex )
+		protected async Task<ushort> GetEvolutionOfAsync( Random taskRandom, ushort speciesId, int evoIndex )
 		{
 			if ( this.evolutionData == null )
 				this.evolutionData = ( await this.Game.GetEvolutions() ).ToList();
@@ -33,12 +33,12 @@ namespace PokeRandomizer.Gen6
 			if ( possible.Length == 0 )
 				return speciesId;
 
-			var evo = possible.GetRandom( this.Random );
+			var evo = possible.GetRandom( taskRandom );
 
-			return await this.GetEvolutionOfAsync( (ushort) evo.Species, evoIndex - 1 );
+			return await this.GetEvolutionOfAsync( taskRandom, (ushort) evo.Species, evoIndex - 1 );
 		}
 
-		public override async Task RandomizeTrainers( ProgressNotifier progressNotifier, CancellationToken token )
+		public override async Task RandomizeTrainers( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			var config = this.ValidateAndGetConfig().Trainers;
 
@@ -52,7 +52,6 @@ namespace PokeRandomizer.Gen6
 			var trainerNames          = await this.Game.GetTextFile( TextNames.TrainerNames, languageOverride: Language.English );
 			var localizedTrainerNames = await this.Game.GetTextFile( TextNames.TrainerNames );
 			var speciesNames          = await this.Game.GetTextFile( TextNames.SpeciesNames );
-			var abilityNames          = await this.Game.GetTextFile( TextNames.AbilityNames );
 			var itemNames             = await this.Game.GetTextFile( TextNames.ItemNames );
 			var moveNames             = await this.Game.GetTextFile( TextNames.MoveNames );
 			var availableSpecies      = Species.ValidSpecies.ToList();
@@ -64,7 +63,7 @@ namespace PokeRandomizer.Gen6
 			var learnsets = ( await this.Game.GetLearnsets( edited: true ) ).ToList();
 
 			// Decide a type for each gym for use later on if the user has chosen to type-theme entire gyms
-			var gymTypes             = Enumerable.Range( 0, 8 ).Select( gymId => availableTypes.GetRandom( this.Random ) ).ToArray();
+			var gymTypes             = Enumerable.Range( 0, 8 ).Select( gymId => availableTypes.GetRandom( taskRandom ) ).ToArray();
 			var friendStarterGender  = new[] { -1, -1, -1 };
 			var friendStarterAbility = new[] { -1, -1, -1 };
 
@@ -97,12 +96,12 @@ namespace PokeRandomizer.Gen6
 					if ( config.TypeThemedGyms && gymId >= 0 )
 						type = gymTypes[ gymId ];
 					else
-						type = availableTypes.GetRandom( this.Random );
+						type = availableTypes.GetRandom( taskRandom );
 
 					chooseFrom = chooseFrom.Where( s => pokeInfo[ s.Id ].HasType( type ) ).ToList();
 				}
 
-				if ( !await this.HandleTrainerSpecificLogicAsync( name, trainer ) )
+				if ( !await this.HandleTrainerSpecificLogicAsync( taskRandom, name, trainer ) )
 				{
 					// If there's no item specified for the trainer, randomize the move list instead for more variety
 					// Otherwise, the game will pick moves at random
@@ -118,7 +117,7 @@ namespace PokeRandomizer.Gen6
 							// if it needs to be evolved at all
 							var (starterSlot, starterEvo) = this.GetStarterIndexAndEvolution( pokemon.Species );
 							var newStarterBaseSpecies = starters.StarterSpecies[ this.MainStarterGen - 1 ][ starterSlot ];
-							var newStarter            = await this.GetEvolutionOfAsync( newStarterBaseSpecies, starterEvo );
+							var newStarter            = await this.GetEvolutionOfAsync( taskRandom, newStarterBaseSpecies, starterEvo );
 							var info                  = pokeInfo[ newStarter ];
 
 							pokemon.Species = newStarter;
@@ -127,7 +126,7 @@ namespace PokeRandomizer.Gen6
 								friendStarterGender[ starterSlot ] = info.GetRandomGender();
 
 							if ( friendStarterAbility[ starterSlot ] < 0 )
-								friendStarterAbility[ starterSlot ] = info.Abilities.GetRandom( this.Random );
+								friendStarterAbility[ starterSlot ] = info.Abilities.GetRandom( taskRandom );
 
 							pokemon.Gender  = friendStarterGender[ starterSlot ];
 							pokemon.Ability = friendStarterAbility[ starterSlot ];
@@ -135,12 +134,12 @@ namespace PokeRandomizer.Gen6
 						else
 						{
 							// Just pick a random species, making sure it conforms to any specified criteria
-							pokemon.Species = (ushort) this.GetRandomSpecies( chooseFrom ).Id;
+							pokemon.Species = (ushort) this.GetRandomSpecies( taskRandom, chooseFrom ).Id;
 
 							var info = pokeInfo[ pokemon.Species ];
 
 							pokemon.Gender  = info.GetRandomGender();
-							pokemon.Ability = info.Abilities.GetRandom( this.Random );
+							pokemon.Ability = info.Abilities.GetRandom( taskRandom );
 						}
 
 						pokemon.Level = (ushort) MathUtil.Clamp( (int) ( pokemon.Level * config.LevelMultiplier ), 2, 100 );
@@ -155,7 +154,7 @@ namespace PokeRandomizer.Gen6
 							pokemon.Moves    = new ushort[] { 0, 0, 0, 0 };
 
 							for ( var m = 0; m < Math.Min( moveset.Count, 4 ); m++ )
-								pokemon.Moves[ m ] = moveset.Except( pokemon.Moves ).ToList().GetRandom( this.Random );
+								pokemon.Moves[ m ] = moveset.Except( pokemon.Moves ).ToList().GetRandom( taskRandom );
 						}
 					}
 				}
@@ -210,7 +209,7 @@ namespace PokeRandomizer.Gen6
 
 		public abstract bool IsTrainerFriend( string trainerName );
 		public abstract int GetGymId( string trainerName, int trainerId );
-		public abstract Task<bool> HandleTrainerSpecificLogicAsync( string trainerName, TrainerData trainer );
+		public abstract Task<bool> HandleTrainerSpecificLogicAsync( Random taskRandom, string trainerName, TrainerData trainer );
 
 		#endregion
 	}

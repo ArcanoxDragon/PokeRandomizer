@@ -10,21 +10,21 @@ namespace PokeRandomizer.Common
 {
 	public interface IRandomizer
 	{
-		GameConfig       Game   { get; }
-		RandomizerConfig Config { get; set; }
-		Random           Random { get; }
-		ILogger          Logger { get; set; }
+		RandomizerConfig Config     { get; set; }
+		GameConfig       Game       { get; }
+		int              RandomSeed { get; }
+		ILogger          Logger     { get; set; }
 
 		void Reseed( int seed );
 		void Reseed();
 
 		Task RandomizeAll( ProgressNotifier progressNotifier, CancellationToken token );
 
-		Task RandomizePokemonInfo( ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeEggMoves( ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeEncounters( ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeLearnsets( ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeStarters( ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeTrainers( ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizePokemonInfo( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeEggMoves( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeEncounters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeLearnsets( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeStarters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeTrainers( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
 	}
 }

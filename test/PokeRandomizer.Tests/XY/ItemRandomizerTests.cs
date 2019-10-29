@@ -16,10 +16,11 @@ namespace PokeRandomizer.Tests.XY
 	[ TestFixture ]
 	public class ItemRandomizerTests
 	{
-		private string romOutputDir;
-
 		public static IRandomizer Randomizer { get; set; }
 		public static GameConfig  Game       { get; set; }
+
+		private string romOutputDir;
+		private Random masterRandom;
 
 		public void SetUpOutputDirectory()
 		{
@@ -40,7 +41,7 @@ namespace PokeRandomizer.Tests.XY
 			string romFsPath = Path.Combine( romPath, "RomFS" );
 			string exeFsPath = Path.Combine( romPath, "ExeFS" );
 
-			Assert.True( Directory.Exists( romPath ),   "ROM path does not exist" );
+			Assert.True( Directory.Exists( romPath ), "ROM path does not exist" );
 			Assert.True( Directory.Exists( romFsPath ), "ROM path does not contain a RomFS folder" );
 			Assert.True( Directory.Exists( exeFsPath ), "ROM path does not contain an ExeFS folder" );
 
@@ -70,11 +71,18 @@ namespace PokeRandomizer.Tests.XY
 
 			Randomizer              = PokeRandomizer.Common.Randomizer.GetRandomizer( Game, randConfig );
 			Game.OutputPathOverride = this.romOutputDir;
+
+			Assert.NotNull( Randomizer );
+
+			this.masterRandom = new Random( Randomizer.RandomSeed );
 		}
+
+		private Random GetNewTaskRandom() => new Random( this.masterRandom.Next() );
 
 		[ Test ]
 		public async Task TestItemRandomizer()
 		{
+			var random          = this.GetNewTaskRandom();
 			var itemNames       = await Game.GetTextFile( TextNames.ItemNames );
 			var amxGarc         = await Game.GetGarc( GarcNames.AmxFiles, true );
 			var fldItemFile     = await amxGarc.GetFile( (int) AmxNames.FldItem );
@@ -95,7 +103,7 @@ namespace PokeRandomizer.Tests.XY
 				var quantity    = itemDataPayload[ i * 3 + 1 ];
 				var scriptId    = itemDataPayload[ i * 3 + 2 ];
 				var itemName    = itemNames.Lines[ (int) itemId ];
-				var newItemId   = legalItems.GetRandom( Randomizer.Random );
+				var newItemId   = legalItems.GetRandom( random );
 				var newItemName = itemNames.Lines[ newItemId ];
 
 				TestContext.Progress.WriteLine( $"Script {scriptId:X4} has item {itemName} x{quantity}, changing to {newItemName}" );

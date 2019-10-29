@@ -14,7 +14,7 @@ namespace PokeRandomizer.Gen6
 {
 	public abstract partial class Gen6Randomizer
 	{
-		public override async Task RandomizeStarters( ProgressNotifier progressNotifier, CancellationToken token )
+		public override async Task RandomizeStarters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			var config = this.ValidateAndGetConfig().Starters;
 
@@ -59,7 +59,7 @@ namespace PokeRandomizer.Gen6
 						thisSpecies = species.Where( s => speciesInfo[ s ].HasType( requiredType ) ).ToList();
 					}
 
-					var ret = this.GetRandomSpecies( thisSpecies.Except( chosen ) );
+					var ret = this.GetRandomSpecies( taskRandom, thisSpecies.Except( chosen ) );
 
 					chosen.Add( ret );
 					starters[ gen ][ i ] = (ushort) ret;

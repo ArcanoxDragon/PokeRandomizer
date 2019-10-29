@@ -654,6 +654,9 @@ namespace PokeRandomizer.Common.Game
 			var filename = Directory.GetFiles( path, "*code.bin" ).FirstOrDefault();
 
 			if ( filename == null )
+				filename = Directory.GetFiles( path, ".code" ).FirstOrDefault();
+
+			if ( filename == null )
 				throw new FileNotFoundException( "Could not find code binary file" );
 
 			var codeBin = new CodeBin( filename );

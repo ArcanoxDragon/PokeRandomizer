@@ -30,7 +30,7 @@ namespace PokeRandomizer.Config
 				OverworldItems = {
 					RandomizeOverworldItems = config.OverworldItems.RandomizeOverworldItems,
 					AllowMasterBalls        = config.OverworldItems.AllowMasterBalls,
-					AllowTMs                = config.OverworldItems.AllowTMs,
+					RandomizeTMs            = config.OverworldItems.RandomizeTMs,
 					AllowMegaStones         = config.OverworldItems.AllowMegaStones,
 				},
 				PokemonInfo = {

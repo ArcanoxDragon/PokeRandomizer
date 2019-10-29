@@ -120,18 +120,18 @@
 						a Master Ball are very low.
 					</dependencyProperties:Properties.HintText>
 				</CheckBox>
-				<CheckBox IsChecked="{Binding Config.OverworldItems.AllowTMs}"
-						  IsEnabled="{Binding Config.OverworldItems.RandomizeOverworldItems}">
-					Allow TMs
-					<dependencyProperties:Properties.HintText>
-						Allow randomized item Pokéballs to potentially contain TM moves.
-					</dependencyProperties:Properties.HintText>
-				</CheckBox>
 				<CheckBox IsChecked="{Binding Config.OverworldItems.AllowMegaStones}"
 						  IsEnabled="{Binding Config.OverworldItems.RandomizeOverworldItems}">
 					Allow Mega Stones
 					<dependencyProperties:Properties.HintText>
 						Allow randomized item Pokéballs to potentially contain mega stones.
+					</dependencyProperties:Properties.HintText>
+				</CheckBox>
+				<CheckBox IsChecked="{Binding Config.OverworldItems.RandomizeTMs}"
+						  IsEnabled="{Binding Config.OverworldItems.RandomizeOverworldItems}">
+					Randomize TMs
+					<dependencyProperties:Properties.HintText>
+						Randomize the yellow TM item balls as well as the normal red ones.
 					</dependencyProperties:Properties.HintText>
 				</CheckBox>
 			</StackPanel>

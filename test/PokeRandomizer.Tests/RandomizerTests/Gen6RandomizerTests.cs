@@ -63,7 +63,7 @@ namespace PokeRandomizer.Tests.RandomizerTests
 				OverworldItems = {
 					RandomizeOverworldItems = true,
 					AllowMegaStones         = true,
-					AllowTMs                = true,
+					RandomizeTMs            = true,
 					AllowMasterBalls        = true,
 				},
 				PokemonInfo = {

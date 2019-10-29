@@ -4,7 +4,7 @@
 	{
 		bool RandomizeOverworldItems { get; }
 		bool AllowMasterBalls        { get; }
-		bool AllowTMs                { get; }
+		bool RandomizeTMs            { get; }
 		bool AllowMegaStones         { get; }
 	}
 }

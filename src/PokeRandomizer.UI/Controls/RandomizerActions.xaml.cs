@@ -1,9 +1,8 @@
-﻿using System.ComponentModel;
-using System.Windows;
+﻿using System.Windows;
 
 namespace PokeRandomizer.UI.Controls
 {
-	public partial class RandomizerActions : INotifyPropertyChanged
+	public partial class RandomizerActions
 	{
 		public static DependencyProperty OutputPathProperty = DependencyProperty.Register(
 			nameof(OutputPath),
@@ -22,8 +21,6 @@ namespace PokeRandomizer.UI.Controls
 			typeof( string ),
 			typeof( RandomizerActions )
 		);
-
-		public event PropertyChangedEventHandler PropertyChanged;
 
 		public event RoutedEventHandler LoadConfigFileClick;
 		public event RoutedEventHandler SaveConfigFileClick;

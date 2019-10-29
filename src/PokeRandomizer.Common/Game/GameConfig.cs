@@ -12,7 +12,6 @@ using PokeRandomizer.Common.Garc;
 using PokeRandomizer.Common.Reference;
 using PokeRandomizer.Common.Structures.CRO.Gen6.Starters;
 using PokeRandomizer.Common.Structures.ExeFS.Common;
-using PokeRandomizer.Common.Structures.RomFS.Common;
 using PokeRandomizer.Common.Structures.RomFS.Gen6;
 using PokeRandomizer.Common.Structures.RomFS.PokemonInfo;
 using Assertions = PokeRandomizer.Common.Utility.Assertions;

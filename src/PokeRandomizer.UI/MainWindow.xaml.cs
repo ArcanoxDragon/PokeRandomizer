@@ -49,13 +49,13 @@ namespace PokeRandomizer.UI
 								 MessageBoxButton.OK,
 								 MessageBoxImage.Error );
 				this.Close();
-				Application.Current.MainWindow.Show();
+				Application.Current.MainWindow?.Show();
 			}
 		}
 
 		private void Window_Closed( object sender, EventArgs e )
 		{
-			Application.Current.MainWindow.Show();
+			Application.Current.MainWindow?.Show();
 		}
 	}
 }

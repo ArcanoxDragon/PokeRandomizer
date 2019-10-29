@@ -15,14 +15,11 @@ namespace PokeRandomizer.UI.Utility
 			{
 				var child = VisualTreeHelper.GetChild( obj, i );
 
-				if ( child != null )
-				{
-					if ( child is T )
-						yield return (T) child;
+				if ( child is T typedChild )
+					yield return typedChild;
 
-					foreach ( var subChild in child.GetVisualChildren<T>() )
-						yield return subChild;
-				}
+				foreach ( var subChild in child.GetVisualChildren<T>() )
+					yield return subChild;
 			}
 		}
 	}

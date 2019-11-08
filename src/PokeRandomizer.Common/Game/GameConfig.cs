@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using CtrDotNet.CTR;
 using CtrDotNet.CTR.Cro;
@@ -80,11 +81,24 @@ namespace PokeRandomizer.Common.Game
 		public TextVariableCode[] Variables           { get; private set; }
 		public TextReference[]    TextFiles           { get; private set; }
 		public string             RomPath             { get; private set; }
-		public string             RomFS               => Path.Combine( this.RomPath, "RomFS" );
-		public string             ExeFS               => Path.Combine( this.RomPath, "ExeFS" );
 		public Language           Language            { get; set; }
 		public string             OutputPathOverride  { get; set; }
+		public string             RomFS               => Path.Combine( this.RomPath, "RomFS" );
+		public string             ExeFS               => Path.Combine( this.RomPath, "ExeFS" );
 		public bool               IsOverridingOutPath => !string.IsNullOrEmpty( this.OutputPathOverride );
+
+		public string VersionString
+		{
+			get
+			{
+				var versionString = this.GetDisplayName();
+
+				if ( !string.IsNullOrEmpty( versionString ) )
+					return versionString;
+
+				return this.Version.GetDisplayName();
+			}
+		}
 
 		#endregion
 
@@ -510,7 +524,7 @@ namespace PokeRandomizer.Common.Game
 
 		public async Task<Starters> GetStarters( bool edited = false )
 		{
-			var dllField      = await this.GetCroFile( CroNames.Field,       edited );
+			var dllField      = await this.GetCroFile( CroNames.Field, edited );
 			var dllPokeSelect = await this.GetCroFile( CroNames.Poke3Select, edited );
 			var starters      = new Starters( this.Version );
 
@@ -565,7 +579,7 @@ namespace PokeRandomizer.Common.Game
 
 		public async Task<IEnumerable<TrainerData>> GetTrainerData( bool edited = false )
 		{
-			var garcTrainerData = await this.GetGarc( GarcNames.TrainerData,    edited: edited );
+			var garcTrainerData = await this.GetGarc( GarcNames.TrainerData, edited: edited );
 			var garcTrainerPoke = await this.GetGarc( GarcNames.TrainerPokemon, edited: edited );
 
 			if ( garcTrainerData.Garc.FileCount != garcTrainerPoke.Garc.FileCount )
@@ -778,6 +792,40 @@ namespace PokeRandomizer.Common.Game
 
 			return false;
 		}
+
+		private string GetBannerBinHash()
+		{
+			var bannerBin = Directory.GetFiles( this.ExeFS, "banner*" ).FirstOrDefault();
+
+			if ( bannerBin == null )
+				bannerBin = Directory.GetFiles( this.ExeFS, ".banner*" ).FirstOrDefault();
+
+			if ( bannerBin == null )
+				return null;
+
+			// Calculate MD5
+			using var md5        = MD5.Create();
+			using var fileStream = File.Open( bannerBin, FileMode.Open, FileAccess.Read );
+			var       md5Bytes   = md5.ComputeHash( fileStream );
+
+			return string.Join( "", md5Bytes.Select( b => $"{b:X2}" ) ).ToUpper();
+		}
+
+		public string GetTitleId() => this.GetBannerBinHash() switch {
+			FileHashes.PokemonXBannerBin      => TitleIds.PokemonX,
+			FileHashes.PokemonYBannerBin      => TitleIds.PokemonY,
+			FileHashes.OmegaRubyBannerBin     => TitleIds.OmegaRuby,
+			FileHashes.AlphaSapphireBannerBin => TitleIds.AlphaSapphire,
+			_                                 => null,
+		};
+
+		public string GetDisplayName() => this.GetBannerBinHash() switch {
+			FileHashes.PokemonXBannerBin      => GameNames.PokemonX,
+			FileHashes.PokemonYBannerBin      => GameNames.PokemonY,
+			FileHashes.OmegaRubyBannerBin     => GameNames.OmegaRuby,
+			FileHashes.AlphaSapphireBannerBin => GameNames.AlphaSapphire,
+			_                                 => null,
+		};
 
 		#endregion
 	}

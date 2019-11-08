@@ -4,49 +4,32 @@
 	{
 		Invalid = -2,
 
-		XY = 106,
+		XY       = 106,
 		ORASDemo = 107,
-		ORAS = 108,
-		SunMoon = 109,
+		ORAS     = 108,
+		SunMoon  = 109,
 		SunMoonDemo
 	}
 
 	public static class GameVersionExtensions
 	{
-		public static string GetDisplayName( this GameVersion game )
-		{
-			switch ( game )
-			{
-				case GameVersion.XY:
-					return "X/Y";
-				case GameVersion.ORAS:
-					return "OmegaRuby/AlphaSapphire";
-				case GameVersion.ORASDemo:
-					return "OmegaRuby/AlphaSapphire (Demo)";
-				case GameVersion.SunMoon:
-					return "Sun/Moon";
-				case GameVersion.SunMoonDemo:
-					return "Sun/Moon (Demo)";
-				default:
-					return "Unknown";
-			}
-		}
+		public static string GetDisplayName( this GameVersion game ) => game switch {
+			GameVersion.XY          => "X/Y",
+			GameVersion.ORAS        => "Omega Ruby/Alpha Sapphire",
+			GameVersion.ORASDemo    => "Omega Ruby/Alpha Sapphire (Demo)",
+			GameVersion.SunMoon     => "Sun/Moon",
+			GameVersion.SunMoonDemo => "Sun/Moon (Demo)",
+			_                       => "Unknown"
+		};
 
-		public static GameGeneration GetGeneration( this GameVersion game )
-		{
-			switch ( game )
-			{
-				case GameVersion.XY:
-				case GameVersion.ORAS:
-				case GameVersion.ORASDemo:
-					return GameGeneration.Generation6;
-				case GameVersion.SunMoon:
-				case GameVersion.SunMoonDemo:
-					return GameGeneration.Generation7;
-				default:
-					return GameGeneration.Unknown;
-			}
-		}
+		public static GameGeneration GetGeneration( this GameVersion game ) => game switch {
+			GameVersion.XY          => GameGeneration.Generation6,
+			GameVersion.ORAS        => GameGeneration.Generation6,
+			GameVersion.ORASDemo    => GameGeneration.Generation6,
+			GameVersion.SunMoon     => GameGeneration.Generation7,
+			GameVersion.SunMoonDemo => GameGeneration.Generation7,
+			_                       => GameGeneration.Unknown
+		};
 
 		public static GenerationInfo GetInfo( this GameVersion game ) => game.GetGeneration().GetInfo();
 

@@ -39,7 +39,9 @@
 							 SetSeedClick="SetSeed_Click"
 							 OutputPath="{Binding ElementName=Page, Path=OutputPathDisplay}"
 							 CanRandomize="{Binding ElementName=Page, Path=CanRandomize}"
-							 SeedDisplay="{Binding ElementName=Page, Path=SeedDisplay}"/>
+							 SeedDisplay="{Binding ElementName=Page, Path=SeedDisplay}"
+							 CanCreatePatchFolder="{Binding ElementName=Page, Path=CanCreatePatchFolder}"
+							 CreatePatchFolder="{Binding ElementName=Page, Path=CreatePatchFolder, Mode=TwoWay}" />
 
 		<!-- Splitter -->
 		<GridSplitter Grid.Column="1"

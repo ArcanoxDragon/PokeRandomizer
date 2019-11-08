@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -31,13 +30,16 @@ namespace PokeRandomizer.UI.Pages
 		private string defaultHintText;
 		private int    lastTab = -1;
 		private int?   seed;
+		private bool   canCreatePatchFolder;
+		private bool   createPatchFolder;
 
 		public RandomizerPage( IRandomizer randomizer )
 		{
 			this.hintElements = new List<UIElement>();
 
-			this.Randomizer  = randomizer;
-			this.DataContext = this.Randomizer;
+			this.Randomizer           = randomizer;
+			this.DataContext          = this.Randomizer;
+			this.CanCreatePatchFolder = !string.IsNullOrEmpty( this.Randomizer.Game.GetTitleId() );
 
 			this.InitializeComponent();
 		}
@@ -65,6 +67,26 @@ namespace PokeRandomizer.UI.Pages
 				this.seed = value;
 				this.OnPropertyChanged();
 				this.OnPropertyChanged( nameof(this.SeedDisplay) );
+			}
+		}
+
+		public bool CanCreatePatchFolder
+		{
+			get => this.canCreatePatchFolder;
+			set
+			{
+				this.canCreatePatchFolder = value;
+				this.OnPropertyChanged();
+			}
+		}
+
+		public bool CreatePatchFolder
+		{
+			get => this.createPatchFolder;
+			set
+			{
+				this.createPatchFolder = value;
+				this.OnPropertyChanged();
 			}
 		}
 
@@ -119,7 +141,7 @@ namespace PokeRandomizer.UI.Pages
 			this.HintBox.Text = this.defaultHintText;
 		}
 
-		private void Tabs_LayoutUpdated( object sender, System.EventArgs e )
+		private void Tabs_LayoutUpdated( object sender, EventArgs e )
 		{
 			if ( this.Tabs.SelectedIndex != this.lastTab )
 			{
@@ -298,7 +320,19 @@ namespace PokeRandomizer.UI.Pages
 			};
 
 			dialog.Opened += ( o, args ) => ThreadPool.QueueUserWorkItem( async _ => {
-				this.Randomizer.Game.OutputPathOverride = this.OutputPath;
+				var outputPath = this.OutputPath;
+
+				if ( this.CreatePatchFolder )
+				{
+					var titleId = this.Randomizer.Game.GetTitleId();
+
+					if ( !string.IsNullOrEmpty( titleId ) )
+					{
+						outputPath = Path.Combine( outputPath, titleId );
+					}
+				}
+
+				this.Randomizer.Game.OutputPathOverride = outputPath;
 
 				if ( this.Seed.HasValue )
 					this.Randomizer.Reseed( this.Seed.Value );
@@ -396,7 +430,6 @@ namespace PokeRandomizer.UI.Pages
 		#region INotifyPropertyChanged
 
 		public event PropertyChangedEventHandler PropertyChanged;
-
 
 		[ NotifyPropertyChangedInvocator ]
 		protected virtual void OnPropertyChanged( [ CallerMemberName ] string propertyName = null )

@@ -4,6 +4,7 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:common="clr-namespace:PokeRandomizer.Common;assembly=PokeRandomizer"
+			 xmlns:p="clr-namespace:PokeRandomizer.UI.DependencyProperties"
 			 mc:Ignorable="d"
 			 d:DesignWidth="200"
 			 d:DesignHeight="400"
@@ -23,7 +24,7 @@
 	<StackPanel>
 		<WrapPanel>
 			<Label FontWeight="Bold">Game Version:</Label>
-			<Label Content="{Binding Game.Version, Converter={StaticResource VersionValueConverter}}" />
+			<Label Content="{Binding Game.VersionString}" />
 		</WrapPanel>
 		<WrapPanel>
 			<Label FontWeight="Bold">Game Language:</Label>
@@ -63,6 +64,17 @@
 		<TextBlock TextWrapping="WrapWithOverflow"
 				   Text="{Binding ElementName=Control, Path=OutputPath}"
 				   Margin="8,0,8,8" />
+		<CheckBox IsEnabled="{Binding ElementName=Control, Path=CanCreatePatchFolder}"
+				  IsChecked="{Binding ElementName=Control, Path=CreatePatchFolder, Mode=TwoWay}"
+				  Margin="4,0,4,8">
+			<p:Properties.HintText>
+				Enable this option to create a folder named with this game's Title ID inside
+				the output directory, and place the output patch files in that. This makes it
+				easier to copy the patch files to an SD card for use on a 3DS device runing
+				Luma3DS.
+			</p:Properties.HintText>
+			Create Luma3DS patch folder
+		</CheckBox>
 
 		<Separator />
 

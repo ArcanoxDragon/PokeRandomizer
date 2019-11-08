@@ -22,6 +22,18 @@ namespace PokeRandomizer.UI.Controls
 			typeof( RandomizerActions )
 		);
 
+		public static DependencyProperty CanCreatePatchFolderProperty = DependencyProperty.Register(
+			nameof(CanCreatePatchFolder),
+			typeof( string ),
+			typeof( RandomizerActions )
+		);
+
+		public static DependencyProperty CreatePatchFolderProperty = DependencyProperty.Register(
+			nameof(CreatePatchFolder),
+			typeof( string ),
+			typeof( RandomizerActions )
+		);
+
 		public event RoutedEventHandler LoadConfigFileClick;
 		public event RoutedEventHandler SaveConfigFileClick;
 		public event RoutedEventHandler ResetConfigClick;
@@ -50,6 +62,18 @@ namespace PokeRandomizer.UI.Controls
 		{
 			get => (string) this.GetValue( SeedDisplayProperty );
 			set => this.SetValue( SeedDisplayProperty, value );
+		}
+
+		public bool CanCreatePatchFolder
+		{
+			get => (bool) this.GetValue( CanCreatePatchFolderProperty );
+			set => this.SetValue( CanCreatePatchFolderProperty, value );
+		}
+
+		public bool CreatePatchFolder
+		{
+			get => (bool) this.GetValue( CreatePatchFolderProperty );
+			set => this.SetValue( CreatePatchFolderProperty, value );
 		}
 
 		private void LoadConfigFile_Click( object sender, RoutedEventArgs e ) => this.LoadConfigFileClick?.Invoke( this, e );

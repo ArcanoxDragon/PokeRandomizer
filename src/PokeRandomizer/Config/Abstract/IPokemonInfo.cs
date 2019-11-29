@@ -7,5 +7,6 @@
 		bool RandomizeTypes          { get; }
 		bool RandomizePrimaryTypes   { get; }
 		bool RandomizeSecondaryTypes { get; }
+		bool EnsureMinimumCatchRate  { get; }
 	}
 }

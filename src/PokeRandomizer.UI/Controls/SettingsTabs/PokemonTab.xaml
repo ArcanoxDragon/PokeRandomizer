@@ -174,6 +174,19 @@
 							This setting has no effect if "Favor same-type" is not enabled.
 						</dependencyProperties:Properties.HintText>
 					</WrapPanel>
+					<CheckBox IsChecked="{Binding Config.Learnsets.NoOneHitMoves}"
+							  IsEnabled="{Binding Config.Learnsets.RandomizeLearnsets}">
+						No One-Hit KO moves
+						<dependencyProperties:Properties.HintText>
+							When this checkbox is enabled, no Pokémon will be able to learn
+							a One-Hit KO move (Fissure, Guillotine, Horn Drill, or Sheer Cold)
+							by leveling up.
+							\n\n
+							This can prevent frustrating scenarios, such as if a Pokémon
+							learns a OHKO move at a very low level and lots of trainers have
+							this Pokémon.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
 					<CheckBox IsChecked="{Binding Config.Learnsets.AtLeast4Moves}"
 							  IsEnabled="{Binding Config.Learnsets.RandomizeLearnsets}">
 						At least 4 moves
@@ -286,6 +299,23 @@
 							starter Pokémon the player may choose from.
 							\n\n
 							This setting has no effect when "Only starter Pokémon" is enabled.
+						</dependencyProperties:Properties.HintText>
+					</CheckBox>
+				</StackPanel>
+			</GroupBox>
+			<GroupBox Margin="4" Padding="8">
+				<GroupBox.Header>Miscellaneous</GroupBox.Header>
+				<StackPanel>
+					<CheckBox IsChecked="{Binding Config.PokemonInfo.EnsureMinimumCatchRate}">
+						Ensure minimum catch rate
+						<dependencyProperties:Properties.HintText>
+							When this option is enabled, Pokémon with a very low catch rate
+							(legendaries) will have their catch rate boosted to that of rare
+							non-legendary Pokémon (e.g. Snorlax).
+							\n\n
+							This can make it easier to build a team early-game if the early
+							routes have an abundance of legendary Pokémon, and also simply
+							helps conserve Pokéballs when trying to complete the Pokédex.
 						</dependencyProperties:Properties.HintText>
 					</CheckBox>
 				</StackPanel>

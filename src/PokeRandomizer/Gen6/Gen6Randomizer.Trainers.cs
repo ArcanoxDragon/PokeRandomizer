@@ -11,7 +11,6 @@ using PokeRandomizer.Common.Structures.RomFS.Gen6;
 using PokeRandomizer.Progress;
 using PokeRandomizer.Utility;
 using EvolutionSet = PokeRandomizer.Common.Structures.RomFS.Common.EvolutionSet;
-using Species = PokeRandomizer.Common.Data.Partial.Species;
 
 namespace PokeRandomizer.Gen6
 {

@@ -2,7 +2,7 @@
 using System.Linq;
 
 // ReSharper disable once CheckNamespace
-namespace PokeRandomizer.Common.Data.Partial
+namespace PokeRandomizer.Common.Data
 {
 	public static partial class Species
 	{

@@ -55,6 +55,10 @@ namespace PokeRandomizer.Gen6
 					if ( moveId == 0 )
 						moveId++;
 
+					// Same logic as above but for One-Hit KO moves
+					if ( config.NoOneHitMoves && Legality.Moves.OneHitMoves.Contains( moveId ) )
+						moveId++;
+
 					return moveId;
 				}
 

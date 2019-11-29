@@ -10,12 +10,15 @@ using PokeRandomizer.Common.Structures.RomFS.Gen6.XY;
 using PokeRandomizer.Legality;
 using PokeRandomizer.Progress;
 using PokeRandomizer.Utility;
-using Species = PokeRandomizer.Common.Data.Partial.Species;
 
 namespace PokeRandomizer.Gen6.XY
 {
 	public partial class XyRandomizer
 	{
+		private static readonly int[] HordeSubZones = { 10, 11, 12 };
+		private const           int   GrassSubZone  = 0;
+		private const           int   GrassEntries  = 12;
+
 		public override async Task RandomizeEncounters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			var config = this.ValidateAndGetConfig().Encounters;
@@ -26,27 +29,54 @@ namespace PokeRandomizer.Gen6.XY
 			await this.LogAsync( $"======== Beginning Encounter randomization ========{Environment.NewLine}" );
 			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing wild Pokémon encounters..." ) );
 
-			var species       = Species.ValidSpecies.ToList();
-			var speciesInfo   = await this.Game.GetPokemonInfo( edited: true );
-			var encounterData = await this.Game.GetEncounterData();
-			var encounters    = encounterData.Cast<XyEncounterWild>().ToList();
-			var zoneNames     = ( await this.Game.GetTextFile( TextNames.EncounterZoneNames ) ).Lines;
-			var speciesNames  = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
+			var species        = Species.ValidSpecies.ToList();
+			var speciesInfo    = await this.Game.GetPokemonInfo( edited: true );
+			var encounterData  = await this.Game.GetEncounterData();
+			var encounterZones = encounterData.Cast<XyEncounterWild>().ToList();
+			var zoneNames      = ( await this.Game.GetTextFile( TextNames.EncounterZoneNames ) ).Lines;
+			var speciesNames   = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
+
+			(int zone, int subZone) dittoSpot = ( -1, -1 );
+
+			// If "Ensure Dittos in Grass" is enabled, we need to make sure dittos appear in grass *somewhere* in the game.
+			// Pick a random valid encounter zone/slot in which to place Ditto
+			if ( config.EnsureDittosInGrass )
+			{
+				var foundPlaceForDitto = false;
+
+				while ( !foundPlaceForDitto )
+				{
+					var dittoZone = encounterZones.GetRandom( taskRandom );
+
+					if ( dittoZone.GetAllEntries().Any( e => e != null ) )
+					{
+						var entryArrays  = dittoZone.EntryArrays;
+						var dittoSubZone = entryArrays.FirstOrDefault(); // Grass is always first sub-zone
+
+						if ( dittoSubZone != null && !dittoSubZone.All( e => e.Species == Species.Egg.Id ) )
+						{
+							var dittoEntry = taskRandom.Next( Math.Min( dittoSubZone.Length, GrassEntries ) );
+
+							// Store zone and entry index for later
+							dittoSpot          = ( encounterZones.IndexOf( dittoZone ), dittoEntry );
+							foundPlaceForDitto = true;
+						}
+					}
+				}
+			}
 
 			if ( !config.AllowLegendaries )
 				species = species.Except( Legendaries.AllLegendaries )
 								 .ToList();
 
-			var cur = -1;
-			foreach ( var encounter in encounters )
+			foreach ( var (iEncounter, encounterZone) in encounterZones.Pairs() )
 			{
-				var name    = zoneNames[ encounter.ZoneId ];
-				var entries = encounter.GetAllEntries().Where( e => e != null ).ToList();
+				var name = zoneNames[ encounterZone.ZoneId ];
 
-				if ( entries.Count == 0 )
+				if ( !encounterZone.GetAllEntries().Any( e => e != null ) )
 					continue;
 
-				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing encounters...\n{name}", ++cur / (double) encounters.Count ) );
+				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing encounters...\n{name}", iEncounter / (double) encounterZones.Count ) );
 
 				PokemonType       areaType = default;
 				List<SpeciesType> speciesChoose;
@@ -67,21 +97,54 @@ namespace PokeRandomizer.Gen6.XY
 				else
 					await this.LogAsync( $"Randomizing zone: {name} ({areaType.Name}-type)" );
 
-				var entryArrays = encounter.EntryArrays;
+				var subZoneArrays = encounterZone.EntryArrays;
 
-				foreach ( var (i, entryArray) in entryArrays.Pairs() )
+				foreach ( var (iSubZone, subZoneArray) in subZoneArrays.Pairs() )
 				{
-					if ( entryArray.All( e => e.Species == Common.Data.Species.Egg.Id ) )
+					if ( subZoneArray.All( e => e.Species == Species.Egg.Id ) )
 						continue;
 
 					if ( areaType != default && config.TypePerSubArea )
-						await this.LogAsync( $"  Sub-zone {i + 1} ({areaType.Name}-type):" );
+						await this.LogAsync( $"  Sub-zone {iSubZone + 1} ({areaType.Name}-type):" );
 					else
-						await this.LogAsync( $"  Sub-zone {i + 1}:" );
+						await this.LogAsync( $"  Sub-zone {iSubZone + 1}:" );
 
-					foreach ( var entry in entryArray.Where( entry => entry.Species != Common.Data.Species.Egg.Id ) )
+					// In horde battles, one of the slots could be a different species, and we treat the value "5" as "all the same"
+					var isHordeEncounter = HordeSubZones.Contains( iSubZone );
+					var hordeSlot        = isHordeEncounter ? taskRandom.Next( 0, 6 ) : -1;
+					var hordeSpecies     = -1;
+
+					foreach ( var (iEntry, entry) in subZoneArray.Where( entry => entry.Species != Species.Egg.Id ).Pairs() )
 					{
-						entry.Species = (ushort) this.GetRandomSpecies( taskRandom, speciesChoose ).Id;
+						var (dittoEncounter, dittoEntry) = dittoSpot;
+
+						if ( config.EnsureDittosInGrass && iEncounter == dittoEncounter && iSubZone == GrassSubZone && iEntry == dittoEntry )
+						{
+							entry.Species = (ushort) Species.Ditto.Id;
+						}
+						else
+						{
+							if ( config.ProperHordes && isHordeEncounter )
+							{
+								// For horde battles, every slot has the same species, except for optionally a random slot which can be unique
+
+								if ( iEntry == hordeSlot )
+								{
+									entry.Species = (ushort) this.GetRandomSpecies( taskRandom, speciesChoose ).Id;
+								}
+								else
+								{
+									if ( hordeSpecies < 0 )
+										hordeSpecies = this.GetRandomSpecies( taskRandom, speciesChoose ).Id;
+
+									entry.Species = (ushort) hordeSpecies;
+								}
+							}
+							else
+							{
+								entry.Species = (ushort) this.GetRandomSpecies( taskRandom, speciesChoose ).Id;
+							}
+						}
 
 						if ( config.LevelMultiplier != 1.0m )
 						{
@@ -98,18 +161,18 @@ namespace PokeRandomizer.Gen6.XY
 						speciesChoose = species.Where( s => speciesInfo[ s.Id ].HasType( areaType ) ).ToList();
 					}
 
-					if ( i != entryArrays.Length - 1 )
+					if ( iSubZone != subZoneArrays.Length - 1 )
 						await this.LogAsync();
 				}
 
 				await this.LogAsync();
-				encounter.EntryArrays = entryArrays;
+				encounterZone.EntryArrays = subZoneArrays;
 			}
 
 			await this.LogAsync();
-			progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"Randomizing encounters...\nCompressing encounter data...this may take a while", 1.0 ) );
+			progressNotifier?.NotifyUpdate( ProgressUpdate.Update( "Randomizing encounters...\nCompressing encounter data...this may take a while", 1.0 ) );
 
-			await this.Game.SaveEncounterData( encounters );
+			await this.Game.SaveEncounterData( encounterZones );
 			await this.LogAsync( $"======== Finished Encounter randomization ========{Environment.NewLine}" );
 		}
 	}

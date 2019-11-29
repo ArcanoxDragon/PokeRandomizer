@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CtrDotNet.Utility.Extensions;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using PokeRandomizer.Common;
+using PokeRandomizer.Common.Data;
 using PokeRandomizer.Common.Game;
+using PokeRandomizer.Common.Reference;
 using PokeRandomizer.Config;
 using PokeRandomizer.Progress;
 
@@ -15,15 +19,15 @@ namespace PokeRandomizer.Tests.RandomizerTests
 	[ TestFixture ]
 	public class TempTests
 	{
-		private const string GameDirectory   = @"D:\Users\Arcanox\Documents\3DS\Pokemon X\Unpacked\Vanilla";
-		private const string OutputDirectory = @"D:\Users\Arcanox\Documents\3DS\Pokemon X\Luma Patches\TestAll";
+		private const string GameDirectory   = @"D:\Users\Arcanox\Documents\ROMs\3DS\OmegaRuby\Unpacked\Vanilla";
+		private const string OutputDirectory = @"D:\Users\Arcanox\Documents\ROMs\3DS\OmegaRuby\Luma Patches\TestAll";
 
 		protected async Task<(GameConfig, RandomizerConfig)> GetGameAndConfigAsync()
 		{
 			if ( !Directory.Exists( OutputDirectory ) )
 				Directory.CreateDirectory( OutputDirectory );
 
-			var configJson = File.ReadAllText( @"D:\Users\Arcanox\Documents\3DS\Pokemon X\Random Preferred.json" );
+			var configJson = File.ReadAllText( @"D:\Users\Arcanox\Documents\ROMs\3DS\OmegaRuby\Random Preferred.json" );
 			Assert.That( configJson, Is.Not.Null.And.Not.Empty );
 
 			var config = JsonConvert.DeserializeObject<RandomizerConfig>( configJson );
@@ -69,8 +73,8 @@ namespace PokeRandomizer.Tests.RandomizerTests
 		[ Test ]
 		public async Task TestEditedEncounters()
 		{
-			var (game, _/*config*/) = await this.GetGameAndConfigAsync();
-			var whitelist  = await this.GetOriginalNullEncounters();
+			var (game, _ /*config*/) = await this.GetGameAndConfigAsync();
+			var whitelist = await this.GetOriginalNullEncounters();
 			//var randomizer = Randomizer.GetRandomizer( game, config, 407643609 );
 			//var progress = new ProgressNotifier();
 
@@ -82,7 +86,7 @@ namespace PokeRandomizer.Tests.RandomizerTests
 			foreach ( var (iEnc, encounter) in encounters.Pairs() )
 			{
 				//var name = zoneNames[ encounter.ZoneId ];
-				
+
 				foreach ( var (iEnt, entry) in encounter.GetAllEntries().Pairs() )
 				{
 					var key = $"{iEnc}:{iEnt}";
@@ -90,9 +94,37 @@ namespace PokeRandomizer.Tests.RandomizerTests
 					if ( whitelist.Contains( key ) )
 						continue;
 
-					Assert.That( entry,         Is.Not.Null, $"Encounter entry {key} was null" );
+					Assert.That( entry, Is.Not.Null, $"Encounter entry {key} was null" );
 					Assert.That( entry.Species, Is.Not.Zero, $"Encounter entry {key} had a species of \"0\"" );
 				}
+			}
+		}
+
+		[ Test ]
+		public async Task DumpCatchRates()
+		{
+			const string path = "C:\\Temp\\catchrates.csv";
+			var (game, _) = await this.GetGameAndConfigAsync();
+			var pokeInfoTable = await game.GetPokemonInfo();
+			var pokeNames     = await game.GetTextFile( TextNames.SpeciesNames );
+
+			if ( File.Exists( path ) )
+				File.Delete( path );
+
+			File.AppendAllText( path, "NationalDexId,Name,CatchRateDec,CatchRateHex" );
+			File.AppendAllText( path, Environment.NewLine );
+
+			foreach ( var (iPokeInfo, pokeInfo) in pokeInfoTable.Pairs() )
+			{
+				var natDex = pokeInfoTable.GetSpeciesForEntry( iPokeInfo );
+
+				if ( natDex == 0 || natDex > Species.AllSpecies.Max( s => s.Id ) )
+					continue;
+
+				var name = pokeNames[ natDex ];
+
+				File.AppendAllText( path, $"{natDex:000},{name},{pokeInfo.CatchRate:000},0x{pokeInfo.CatchRate:X2}" );
+				File.AppendAllText( path, Environment.NewLine );
 			}
 		}
 	}

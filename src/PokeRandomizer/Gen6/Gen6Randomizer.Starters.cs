@@ -7,7 +7,6 @@ using PokeRandomizer.Common.Data;
 using PokeRandomizer.Common.Reference;
 using PokeRandomizer.Legality;
 using PokeRandomizer.Progress;
-using Species = PokeRandomizer.Common.Data.Partial.Species;
 using Starters = PokeRandomizer.Legality.Starters;
 
 namespace PokeRandomizer.Gen6

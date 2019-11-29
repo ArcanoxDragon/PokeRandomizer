@@ -80,6 +80,29 @@
 						This option has no effect if "Type-themed areas" is not enabled.
 					</dependencyProperties:Properties.HintText>
 				</CheckBox>
+				<CheckBox IsChecked="{Binding Config.Encounters.ProperHordes}"
+						  IsEnabled="{Binding Config.Encounters.RandomizeEncounters}">
+					Proper hordes
+					<dependencyProperties:Properties.HintText>
+						When this option is enabled, all Pokémon in horde encounters
+						will be the same species, with a small chance for one of the
+						five Pokémon to be a different species.
+						\n\n
+						When this option is disabled, each Pokémon in a horde encounter
+						will be completely random (but of the same type, if "Type-themed
+						areas" is enabled).
+					</dependencyProperties:Properties.HintText>
+				</CheckBox>
+				<CheckBox IsChecked="{Binding Config.Encounters.EnsureDittosInGrass}"
+						  IsEnabled="{Binding Config.Encounters.RandomizeEncounters}">
+					Ensure Dittos can be found in grass
+					<dependencyProperties:Properties.HintText>
+						When this option is enabled, Dittos will be sure to appear
+						in at least one grass zone in the game. This will guarantee
+						that PokéRadar chaining can be used to get high-IV Dittos 
+						for breeding.
+					</dependencyProperties:Properties.HintText>
+				</CheckBox>
 				<WrapPanel Margin="0,8,0,0">
 					<Label Content="Level multiplier" />
 					<xctk:DecimalUpDown Minimum="0.5"

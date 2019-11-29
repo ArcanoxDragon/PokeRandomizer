@@ -11,6 +11,8 @@ namespace PokeRandomizer.Gen6
 {
 	public partial class Gen6Randomizer
 	{
+		private const int MinCatchRate = 0x19; // That of rare Pokémon such as Snorlax
+
 		public override async Task RandomizePokemonInfo( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
 		{
 			var config = this.ValidateAndGetConfig().PokemonInfo;
@@ -89,6 +91,12 @@ namespace PokeRandomizer.Gen6
 					}
 
 					pokeInfo.Types = types;
+				}
+
+				if ( config.EnsureMinimumCatchRate && i > 0 && pokeInfo.CatchRate < MinCatchRate )
+				{
+					await this.LogAsync( $"  - Increased catch rate from {pokeInfo.CatchRate:000} to {MinCatchRate:000}" );
+					pokeInfo.CatchRate = MinCatchRate;
 				}
 
 				await this.LogAsync();

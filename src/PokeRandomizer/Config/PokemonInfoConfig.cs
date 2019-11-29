@@ -9,5 +9,6 @@ namespace PokeRandomizer.Config
 		public bool RandomizeTypes          { get; set; }
 		public bool RandomizePrimaryTypes   { get; set; }
 		public bool RandomizeSecondaryTypes { get; set; }
+		public bool EnsureMinimumCatchRate  { get; set; }
 	}
 }

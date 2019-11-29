@@ -8,7 +8,9 @@
 		[ MinValue( 0.5 ) ]
 		decimal LevelMultiplier { get; }
 
-		bool TypePerSubArea  { get; }
-		bool TypeThemedAreas { get; }
+		bool TypePerSubArea      { get; }
+		bool TypeThemedAreas     { get; }
+		bool ProperHordes        { get; }
+		bool EnsureDittosInGrass { get; }
 	}
 }

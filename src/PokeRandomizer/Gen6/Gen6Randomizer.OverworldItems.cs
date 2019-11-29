@@ -62,7 +62,10 @@ namespace PokeRandomizer.Gen6
 				}
 				else
 				{
-					item.ItemId = availableItemIds.GetRandom( taskRandom );
+					var newItemId = availableItemIds.GetRandom( taskRandom );
+
+					if ( item.ItemId != Items.MasterBall.Id ) // OR/AS only: Don't get rid of possibly the only Master Ball in the game!
+						item.ItemId = newItemId;
 				}
 
 				if ( item.ItemId != oldItemId )
@@ -70,9 +73,7 @@ namespace PokeRandomizer.Gen6
 					var oldItemName = itemNames[ (int) oldItemId ];
 					var newItemName = itemNames[ (int) item.ItemId ];
 
-					string Article( string noun ) => noun.First().IsVowel() ? "an" : "a";
-
-					await this.LogAsync( $"Changing {Article( oldItemName )} {oldItemName} to {Article( newItemName )} {newItemName}" );
+					await this.LogAsync( $"Changing {oldItemName.Article()} {oldItemName} to {newItemName.Article()} {newItemName}" );
 				}
 			}
 

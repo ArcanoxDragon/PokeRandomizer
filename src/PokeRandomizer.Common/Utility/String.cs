@@ -14,5 +14,7 @@ namespace PokeRandomizer.Common.Utility
 			1 => s,
 			_ => s + s.Repeat( count - 1 ),
 		};
+
+		public static string Article( this string noun ) => noun.First().IsVowel() ? "an" : "a";
 	}
 }

@@ -8,31 +8,31 @@ namespace PokeRandomizer.Common.Garc
 {
 	public class ReferencedGarc : IGarcFile
 	{
-		public ReferencedGarc( GarcFile garc, GarcReference reference )
+		public ReferencedGarc(GarcFile garc, GarcReference reference)
 		{
-			this.Garc = garc;
-			this.Reference = reference;
+			Garc = garc;
+			Reference = reference;
 		}
 
-		public GarcFile Garc { get; }
+		public GarcFile      Garc      { get; }
 		public GarcReference Reference { get; }
 
-		public Task<byte[][]> GetFiles() => this.Garc.GetFiles();
-		public Task<byte[]> GetFile( int file ) => this.Garc.GetFile( file );
-		public Task SetFiles( byte[][] files ) => this.Garc.SetFiles( files );
-		public Task SetFile( int file, byte[] data ) => this.Garc.SetFile( file, data );
-		public Task<byte[]> Write() => this.Garc.Write();
-		public Task SaveFile() => this.SaveFileTo( PathUtil.GetPathBase( this.Garc.Path, this.Reference.RomFsPath ) );
+		public Task<byte[][]> GetFiles() => Garc.GetFiles();
+		public Task<byte[]> GetFile(int file) => Garc.GetFile(file);
+		public Task SetFiles(byte[][] files) => Garc.SetFiles(files);
+		public Task SetFile(int file, byte[] data) => Garc.SetFile(file, data);
+		public Task<byte[]> Write() => Garc.Write();
+		public Task SaveFile() => SaveFileTo(PathUtil.GetPathBase(Garc.Path, Reference.RomFsPath));
 
-		public Task SaveFileTo( string path )
+		public Task SaveFileTo(string path)
 		{
-			string dirName = Path.GetDirectoryName( this.Reference.RomFsPath );
-			string outPath = Path.Combine( path, "RomFS", dirName );
+			string dirName = Path.GetDirectoryName(Reference.RomFsPath);
+			string outPath = Path.Combine(path, "RomFS", dirName);
 
-			if ( !Directory.Exists( outPath ) )
-				Directory.CreateDirectory( outPath );
+			if (!Directory.Exists(outPath))
+				Directory.CreateDirectory(outPath);
 
-			return this.Garc.SaveFileTo( outPath );
+			return Garc.SaveFileTo(outPath);
 		}
 	}
 }

@@ -11,81 +11,81 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen7
 
 		#endregion
 
-		public EncounterTrade( GameVersion gameVersion ) : base( gameVersion ) { }
+		public EncounterTrade(GameVersion gameVersion) : base(gameVersion) { }
 
-		protected override void ReadData( BinaryReader br )
+		protected override void ReadData(BinaryReader br)
 		{
-			this.Species = br.ReadUInt16();
-			this.Unused0 = br.ReadInt16();
-			this.Form = br.ReadByte();
-			this.Level = br.ReadByte();
+			Species = br.ReadUInt16();
+			Unused0 = br.ReadInt16();
+			Form = br.ReadByte();
+			Level = br.ReadByte();
 
-			this.IVs = new sbyte[ 6 ];
-			for ( int i = 0; i < this.IVs.Length; i++ )
-				this.IVs[ i ] = br.ReadSByte();
+			IVs = new sbyte[6];
+			for (int i = 0; i < IVs.Length; i++)
+				IVs[i] = br.ReadSByte();
 
-			this.Ability = br.ReadByte();
-			this.Nature = br.ReadByte();
-			this.Gender = br.ReadByte();
-			this.TID = br.ReadUInt16();
-			this.SID = br.ReadUInt16();
+			Ability = br.ReadByte();
+			Nature = br.ReadByte();
+			Gender = br.ReadByte();
+			TID = br.ReadUInt16();
+			SID = br.ReadUInt16();
 
 			short heldItem = br.ReadInt16();
-			if ( heldItem <= 0 )
+			if (heldItem <= 0)
 				heldItem = 0;
-			this.HeldItem = heldItem;
+			HeldItem = heldItem;
 
-			this.Unused1 = br.ReadInt32();
-			this.TrainerGender = br.ReadByte();
+			Unused1 = br.ReadInt32();
+			TrainerGender = br.ReadByte();
 
-			this.Unused2 = new byte[ 18 ];
-			br.Read( this.Unused2, 0, this.Unused2.Length );
+			Unused2 = new byte[18];
+			br.Read(Unused2, 0, Unused2.Length);
 
-			this.TradeRequestSpecies = br.ReadUInt16();
+			TradeRequestSpecies = br.ReadUInt16();
 		}
 
-		protected override void WriteData( BinaryWriter bw )
+		protected override void WriteData(BinaryWriter bw)
 		{
-			bw.Write( this.Unused0 );
-			bw.Write( this.Form );
-			bw.Write( this.Level );
+			bw.Write(Unused0);
+			bw.Write(Form);
+			bw.Write(Level);
 
-			foreach ( sbyte iv in this.IVs )
-				bw.Write( iv );
+			foreach (sbyte iv in IVs)
+				bw.Write(iv);
 
-			bw.Write( this.Ability );
-			bw.Write( this.Nature );
-			bw.Write( this.Gender );
-			bw.Write( this.TID );
-			bw.Write( this.SID );
+			bw.Write(Ability);
+			bw.Write(Nature);
+			bw.Write(Gender);
+			bw.Write(TID);
+			bw.Write(SID);
 
-			bw.Write( this.HeldItem == 0 ? -1 : this.HeldItem );
+			bw.Write(HeldItem == 0 ? -1 : HeldItem);
 
-			bw.Write( this.Unused1 );
-			bw.Write( this.TrainerGender );
+			bw.Write(Unused1);
+			bw.Write(TrainerGender);
 
-			bw.Write( this.Unused2, 0, this.Unused2.Length );
+			bw.Write(Unused2, 0, Unused2.Length);
 
-			bw.Write( this.TradeRequestSpecies );
+			bw.Write(TradeRequestSpecies);
 		}
 
 		public override ushort Species { get; set; }
-		public short Unused0 { get; set; }
-		public byte Form { get; set; }
-		public byte Level { get; set; }
+		public          short  Unused0 { get; set; }
+		public          byte   Form    { get; set; }
+		public          byte   Level   { get; set; }
 
 		// ReSharper disable once InconsistentNaming
 		public sbyte[] IVs { get; set; }
 
-		public byte Ability { get; set; }
-		public byte Nature { get; set; }
-		public byte Gender { get; set; }
-		public ushort TID { get; set; }
-		public ushort SID { get; set; }
-		public override short HeldItem { get; set; }
-		public int Unused1 { get; set; }
-		public byte TrainerGender { get; set; }
-		public byte[] Unused2 { get; set; }
-		public ushort TradeRequestSpecies { get; set; }
+		public          byte   Ability             { get; set; }
+		public          byte   Nature              { get; set; }
+		public          byte   Gender              { get; set; }
+		public          ushort TID                 { get; set; }
+		public          ushort SID                 { get; set; }
+		public override short  HeldItem            { get; set; }
+		public          int    Unused1             { get; set; }
+		public          byte   TrainerGender       { get; set; }
+		public          byte[] Unused2             { get; set; }
+		public          ushort TradeRequestSpecies { get; set; }
 	}
 }

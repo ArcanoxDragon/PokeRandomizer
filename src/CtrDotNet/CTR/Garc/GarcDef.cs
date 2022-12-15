@@ -7,7 +7,7 @@ namespace CtrDotNet.CTR.Garc
 		public struct FatoDef
 		{
 			public char[] Magic;
-			public int HeaderSize;
+			public int    HeaderSize;
 			public ushort EntryCount;
 			public ushort Padding;
 
@@ -22,25 +22,25 @@ namespace CtrDotNet.CTR.Garc
 		public struct FatbDef
 		{
 			public char[] Magic;
-			public int HeaderSize;
-			public int FileCount;
+			public int    HeaderSize;
+			public int    FileCount;
 
 			public FatbEntry[] Entries;
 		}
 
 		public struct FatbEntry
 		{
-			public uint Vector;
-			public bool IsFolder;
+			public uint           Vector;
+			public bool           IsFolder;
 			public FatbSubEntry[] SubEntries;
 		}
 
 		public struct FatbSubEntry
 		{
 			public bool Exists;
-			public int Start;
-			public int End;
-			public int Length;
+			public int  Start;
+			public int  End;
+			public int  Length;
 
 			// Unsaved Properties
 			public int Padding { get; set; }
@@ -49,17 +49,17 @@ namespace CtrDotNet.CTR.Garc
 		public struct FimgDef
 		{
 			public char[] Magic;
-			public int HeaderSize;
-			public int DataSize;
+			public int    HeaderSize;
+			public int    DataSize;
 		}
 
 		#endregion
 
 		public char[] Magic;
-		public uint HeaderSize;
+		public uint   HeaderSize;
 		public ushort Endianess;
 		public ushort Version;
-		public uint ChunkCount;
+		public uint   ChunkCount;
 
 		public uint DataOffset;
 		public uint FileSize;

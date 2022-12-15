@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using PokeRandomizer.Common.Data;
@@ -13,9 +14,9 @@ namespace PokeRandomizer.Common.Structures.RomFS.PokemonInfo
 	{
 		private readonly int entrySize;
 
-		public PokemonInfoTable( GameVersion gameVersion ) : base( gameVersion )
+		public PokemonInfoTable(GameVersion gameVersion) : base(gameVersion)
 		{
-			switch ( gameVersion )
+			switch (gameVersion)
 			{
 				case GameVersion.XY:
 					this.entrySize = PokemonInfoXY.Size;
@@ -33,47 +34,49 @@ namespace PokeRandomizer.Common.Structures.RomFS.PokemonInfo
 
 		#region BaseDataStructure implementation
 
-		protected override void ReadData( BinaryReader br )
+		protected override void ReadData(BinaryReader br)
 		{
-			if ( br.BaseStream.Length == 0 )
+			if (br.BaseStream.Length == 0)
 			{
-				this.Table = new PokemonInfo[ 0 ];
+				Table = Array.Empty<PokemonInfo>();
 				return;
 			}
 
-			this.Table = new PokemonInfo[ br.BaseStream.Length / this.entrySize ];
+			Table = new PokemonInfo[br.BaseStream.Length / this.entrySize];
 
-			switch ( this.GameVersion )
+			switch (GameVersion)
 			{
 				case GameVersion.XY:
-					this.Table.Fill( () => new PokemonInfoXY() );
+					Table.Fill(() => new PokemonInfoXY());
 					break;
 				case GameVersion.ORASDemo:
 				case GameVersion.ORAS:
-					this.Table.Fill( () => new PokemonInfoORAS() );
+					Table.Fill(() => new PokemonInfoORAS());
 					break;
 				case GameVersion.SunMoonDemo:
 				case GameVersion.SunMoon:
-					this.Table.Fill( () => new PokemonInfoSM() );
+					Table.Fill(() => new PokemonInfoSM());
 					break;
 			}
 
-			foreach ( PokemonInfo info in this.Table )
+			foreach (PokemonInfo info in Table)
 			{
-				byte[] subData = new byte[ this.entrySize ];
-				br.Read( subData, 0, this.entrySize );
-				info.Read( subData );
+				byte[] subData = new byte[this.entrySize];
+				int bytesRead = br.Read(subData, 0, this.entrySize);
+
+				Debug.Assert(bytesRead == this.entrySize);
+				info.Read(subData);
 			}
 		}
 
-		protected override void WriteData( BinaryWriter bw )
+		protected override void WriteData(BinaryWriter bw)
 		{
-			if ( this.Table == null )
+			if (Table == null)
 				return;
 
-			foreach ( byte[] data in this.Table.Select( info => info.Write() ) )
+			foreach (byte[] data in Table.Select(info => info.Write()))
 			{
-				bw.Write( data, 0, data.Length );
+				bw.Write(data, 0, data.Length);
 			}
 		}
 
@@ -81,9 +84,9 @@ namespace PokeRandomizer.Common.Structures.RomFS.PokemonInfo
 
 		#region IEnumerable implementation
 
-		public IEnumerator<PokemonInfo> GetEnumerator() => this.Table.AsEnumerable().GetEnumerator();
+		public IEnumerator<PokemonInfo> GetEnumerator() => Table.AsEnumerable().GetEnumerator();
 
-		IEnumerator IEnumerable.GetEnumerator() => this.Table.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => Table.GetEnumerator();
 
 		#endregion
 
@@ -91,70 +94,70 @@ namespace PokeRandomizer.Common.Structures.RomFS.PokemonInfo
 
 		public PokemonInfo[] Table { get; private set; }
 
-		public PokemonInfo this[ int index ]
+		public PokemonInfo this[int index]
 		{
-			get => index >= 0 && index < this.Table.Length
-					   ? this.Table[ index ]
-					   : this.Table[ 0 ];
+			get => index >= 0 && index < Table.Length
+					   ? Table[index]
+					   : Table[0];
 			set
 			{
-				if ( index < this.Table.Length )
+				if (index < Table.Length)
 					return;
-				this.Table[ index ] = value;
+				Table[index] = value;
 			}
 		}
 
-		public PokemonInfo this[ BaseSpeciesType species ] => this[ species.Id ];
+		public PokemonInfo this[BaseSpeciesType species] => this[species.Id];
 
 		#endregion
 
 		#region Ability helpers
 
-		public byte[] GetAbilities( BaseSpeciesType species, int forme )
-			=> this[ this.GetFormIndex( species, forme ) ].Abilities;
+		public byte[] GetAbilities(BaseSpeciesType species, int forme)
+			=> this[GetFormIndex(species, forme)].Abilities;
 
 		#endregion
 
 		#region Form helpers
 
-		public ushort GetSpeciesForEntry( int entryId )
+		public ushort GetSpeciesForEntry(int entryId)
 		{
-			if ( entryId <= this.GameVersion.GetInfo().SpeciesCount )
+			if (entryId <= GameVersion.GetInfo().SpeciesCount)
 				return (ushort) entryId;
 
-			var entry = this.Table.FirstOrDefault( e => e.FormeCount > 1 &&
-														entryId >= e.FormStatsIndex &&
-														entryId < e.FormStatsIndex + e.FormeCount - 1 );
+			var entry = Table.FirstOrDefault(e => e.FormeCount > 1 &&
+													   entryId >= e.FormStatsIndex &&
+													   entryId < e.FormStatsIndex + e.FormeCount - 1);
 
-			if ( entry == null )
+			if (entry == null)
 				return 0;
 
-			return (ushort) Array.IndexOf( this.Table, entry );
+			return (ushort) Array.IndexOf(Table, entry);
 		}
 
-		public int GetFormIndex( BaseSpeciesType species, int form )
+		public int GetFormIndex(BaseSpeciesType species, int form)
 		{
-			return this[ species ].FormIndex( form );
+			return this[species].FormIndex(form);
 		}
 
-		public PokemonInfo GetFormEntry( BaseSpeciesType species, int form )
+		public PokemonInfo GetFormEntry(BaseSpeciesType species, int form)
 		{
-			return this[ this.GetFormIndex( species, form ) ];
+			return this[GetFormIndex(species, form)];
 		}
 
-		public IEnumerable<int> GetAllFormIndices( BaseSpeciesType species )
+		public IEnumerable<int> GetAllFormIndices(BaseSpeciesType species)
 		{
-			var info = this[ species ];
+			var info = this[species];
 
-			if ( info.FormeCount <= 1 )
-				return new int[ 0 ];
+			if (info.FormeCount <= 1)
+				return Array.Empty<int>();
 
-			return Enumerable.Range( 0, info.FormeCount - 1 )
-							 .Select( i => this.GetFormIndex( species, i ) );
+			return Enumerable.Range(0, info.FormeCount - 1)
+							 .Select(i => GetFormIndex(species, i));
 		}
 
-		public IEnumerable<PokemonInfo> GetAllForms( BaseSpeciesType species )
-			=> this.GetAllFormIndices( species ).Select( index => this[ index ] );
+		public IEnumerable<PokemonInfo> GetAllForms(BaseSpeciesType species)
+			=> GetAllFormIndices(species).Select(index => this[index]);
 
 		#endregion
 	}

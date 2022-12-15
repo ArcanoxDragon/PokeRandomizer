@@ -18,45 +18,45 @@ namespace GarcExploration
 
 		private static async Task Main()
 		{
-			string romPath = Path.GetFullPath( Settings.RomPath );
+			string romPath = Path.GetFullPath(Settings.RomPath);
 
-			GameConfig game = new GameConfig( GameVersion.XY );
-			await game.Initialize( romPath, Language.English );
+			GameConfig game = new GameConfig(GameVersion.XY);
+			await game.Initialize(romPath, Language.English);
 
-			if ( Directory.Exists( "Garc" ) )
-				Directory.Delete( "Garc", true );
+			if (Directory.Exists("Garc"))
+				Directory.Delete("Garc", true);
 
-			await Task.Delay( 2000 );
+			await Task.Delay(2000);
 
-			Directory.CreateDirectory( "Garc" );
+			Directory.CreateDirectory("Garc");
 
-			await Task.Delay( 2000 );
+			await Task.Delay(2000);
 
-			for ( int gIndex = 0; gIndex <= 999; gIndex++ )
+			for (int gIndex = 0; gIndex <= 999; gIndex++)
 			{
-				var            gRef = new GarcReference( gIndex, GarcNames.Unknown );
+				var gRef = new GarcReference(gIndex, GarcNames.Unknown);
 				ReferencedGarc garc;
 
 				try
 				{
-					garc = await game.GetGarc( gRef );
-					WriteLine( $"Garc file {gRef.RomFsPath} has {garc.Garc.FileCount} files" );
+					garc = await game.GetGarc(gRef);
+					WriteLine($"Garc file {gRef.RomFsPath} has {garc.Garc.FileCount} files");
 
-					await WriteGarc( garc, gRef );
+					await WriteGarc(garc, gRef);
 				}
-				catch ( FileNotFoundException )
+				catch (FileNotFoundException)
 				{
-					WriteLine( $"Max GARC: {gIndex - 1}" );
+					WriteLine($"Max GARC: {gIndex - 1}");
 					break;
 				}
 				catch
 				{
 					try
 					{
-						garc = await game.GetGarc( gRef, useLz: true );
-						WriteLine( $"Garc file {gRef.RomFsPath} has {garc.Garc.FileCount} files and was compressed" );
+						garc = await game.GetGarc(gRef, useLz: true);
+						WriteLine($"Garc file {gRef.RomFsPath} has {garc.Garc.FileCount} files and was compressed");
 
-						await WriteGarc( garc, gRef );
+						await WriteGarc(garc, gRef);
 					}
 					catch
 					{
@@ -66,27 +66,27 @@ namespace GarcExploration
 			}
 		}
 
-		private static async Task WriteGarc( ReferencedGarc garc, GarcReference gRef )
+		private static async Task WriteGarc(ReferencedGarc garc, GarcReference gRef)
 		{
-			if ( GarcsToSkip.Contains( gRef.RomFsPath ) )
+			if (GarcsToSkip.Contains(gRef.RomFsPath))
 				return;
 
 			var garcData = await garc.Garc.Write();
 
-			await File.WriteAllBytesAsync( $"Garc\\{gRef.RomFsPath.Replace( '\\', '_' )}.bin", garcData );
+			await File.WriteAllBytesAsync($"Garc\\{gRef.RomFsPath.Replace('\\', '_')}.bin", garcData);
 
-			for ( var file = 0; file < garc.Garc.FileCount; file++ )
+			for (var file = 0; file < garc.Garc.FileCount; file++)
 			{
-				var fileData = await garc.GetFile( file );
+				var fileData = await garc.GetFile(file);
 
-				await File.WriteAllBytesAsync( $"Garc\\{gRef.RomFsPath.Replace( '\\', '_' )}.{file}.bin", fileData );
+				await File.WriteAllBytesAsync($"Garc\\{gRef.RomFsPath.Replace('\\', '_')}.{file}.bin", fileData);
 			}
 		}
 
-		private static void WriteLine( string line )
+		private static void WriteLine(string line)
 		{
-			Debug.WriteLine( line );
-			Console.WriteLine( line );
+			Debug.WriteLine(line);
+			Console.WriteLine(line);
 		}
 	}
 }

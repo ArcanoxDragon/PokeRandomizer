@@ -6,7 +6,7 @@ using GameVersion = PokeRandomizer.Common.Game.GameVersion;
 
 namespace PokeRandomizer.Tests.SM
 {
-	[ TestFixture ]
+	[TestFixture]
 	public class SunMoonScriptSearchTests : ScriptSearchTestBase
 	{
 		protected override uint[] SearchValues => new uint[] {
@@ -16,35 +16,24 @@ namespace PokeRandomizer.Tests.SM
 			0x0A0AF1EF, // Debug
 		};
 
-		protected override byte[] SearchBytes => new byte[] {
-			0x5A,
-			0x4F,
-			0x04,
-			0x00,
-			0x18,
-			0x00,
-		};
+		protected override byte[] SearchBytes => new byte[] { 0x5A, 0x4F, 0x04, 0x00, 0x18, 0x00, };
 
-		protected override string[] SkipGarcs => new[] {
-			@"a\0\8\3",
-			@"a\0\8\7",
-			@"a\0\9\4",
-		};
+		protected override string[] SkipGarcs => new[] { @"a\0\8\3", @"a\0\8\7", @"a\0\9\4", };
 
 		protected override int MaxGarcIndex => 310;
 
-		[ OneTimeSetUp ]
+		[OneTimeSetUp]
 		public async Task SetUpGame()
 		{
-			this.Game = new GameConfig( GameVersion.SunMoon );
+			Game = new GameConfig(GameVersion.SunMoon);
 
-			await this.Game.Initialize( Settings.RomPathSm, Language.English );
+			await Game.Initialize(Settings.RomPathSm, Language.English);
 		}
 
-		[ Test ]
+		[Test]
 		public async Task FindGarcScripts()
 		{
-			await this.DoFindGarcScripts();
+			await DoFindGarcScripts();
 		}
 	}
 }

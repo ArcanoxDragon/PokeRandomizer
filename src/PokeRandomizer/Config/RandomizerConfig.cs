@@ -12,24 +12,24 @@ namespace PokeRandomizer.Config
 
 		public RandomizerConfig()
 		{
-			this.EggMoves       = new EggMovesConfig();
-			this.Encounters     = new EncountersConfig();
-			this.Learnsets      = new LearnsetsConfig();
-			this.OverworldItems = new OverworldItemsConfig();
-			this.PokemonInfo    = new PokemonInfoConfig();
-			this.Starters       = new StartersConfig();
-			this.Trainers       = new TrainersConfig();
+			EggMoves = new EggMovesConfig();
+			Encounters = new EncountersConfig();
+			Learnsets = new LearnsetsConfig();
+			OverworldItems = new OverworldItemsConfig();
+			PokemonInfo = new PokemonInfoConfig();
+			Starters = new StartersConfig();
+			Trainers = new TrainersConfig();
 		}
 
 		#region Read-only contract implementation
 
-		IEggMoves IConfig.      EggMoves       => this.EggMoves;
-		IEncounters IConfig.    Encounters     => this.Encounters;
-		ILearnsets IConfig.     Learnsets      => this.Learnsets;
-		IOverworldItems IConfig.OverworldItems => this.OverworldItems;
-		IPokemonInfo IConfig.   PokemonInfo    => this.PokemonInfo;
-		IStarters IConfig.      Starters       => this.Starters;
-		ITrainers IConfig.      Trainers       => this.Trainers;
+		IEggMoves IConfig.      EggMoves       => EggMoves;
+		IEncounters IConfig.    Encounters     => Encounters;
+		ILearnsets IConfig.     Learnsets      => Learnsets;
+		IOverworldItems IConfig.OverworldItems => OverworldItems;
+		IPokemonInfo IConfig.   PokemonInfo    => PokemonInfo;
+		IStarters IConfig.      Starters       => Starters;
+		ITrainers IConfig.      Trainers       => Trainers;
 
 		#endregion
 

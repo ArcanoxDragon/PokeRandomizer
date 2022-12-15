@@ -9,40 +9,40 @@ namespace PokeRandomizer.Common
 {
 	public static class Randomizer
 	{
-		public static IRandomizer GetRandomizer( GameConfig game, RandomizerConfig config, int? seed = null )
+		public static IRandomizer GetRandomizer(GameConfig game, RandomizerConfig config, int? seed = null)
 		{
 			var randomizers = from asm in AppDomain.CurrentDomain.GetAssemblies()
 							  from type in asm.GetTypes()
-							  where typeof( BaseRandomizer ).IsAssignableFrom( type )
+							  where typeof(BaseRandomizer).IsAssignableFrom(type)
 							  let attrs = type.GetCustomAttributes<HandlesGameAttribute>()
 							  where attrs.Any()
 							  select ( type, attrs );
 
-			foreach ( var (type, attrs) in randomizers )
+			foreach (var (type, attrs) in randomizers)
 			{
-				if ( attrs.Any( attr => attr.GameVersion == game.Version ) )
+				if (attrs.Any(attr => attr.GameVersion == game.Version))
 				{
 					object objInstance;
 
-					if ( seed == null )
+					if (seed == null)
 					{
-						objInstance = Activator.CreateInstance( type );
+						objInstance = Activator.CreateInstance(type);
 					}
 					else
 					{
-						objInstance = Activator.CreateInstance( type, seed );
+						objInstance = Activator.CreateInstance(type, seed);
 					}
 
-					if ( !( objInstance is BaseRandomizer instance ) )
-						throw new ApplicationException( $"Could not create instance of {type.Name} as a BaseRandomizer" );
+					if (objInstance is not BaseRandomizer instance)
+						throw new ApplicationException($"Could not create instance of {type.Name} as a BaseRandomizer");
 
-					instance.Initialize( game, config );
+					instance.Initialize(game, config);
 
 					return instance;
 				}
 			}
 
-			throw new NotSupportedException( $"There is no loaded randomizer which supports the game version {game.Version}" );
+			throw new NotSupportedException($"There is no loaded randomizer which supports the game version {game.Version}");
 		}
 	}
 }

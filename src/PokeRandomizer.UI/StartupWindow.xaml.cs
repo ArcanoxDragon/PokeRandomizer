@@ -13,60 +13,55 @@ namespace PokeRandomizer.UI
 	{
 		public StartupWindow()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 		}
 
-		private void BrowseButton_Click( object sender, RoutedEventArgs e )
+		private void BrowseButton_Click(object sender, RoutedEventArgs e)
 		{
 			var selLanguage = this.ListLanguage.SelectedItem as ComboBoxItem;
 
-			if ( selLanguage == null )
+			if (selLanguage == null)
 			{
-				MessageBox.Show( this,
-								 "The language selected is not valid",
-								 "Invalid Language",
-								 MessageBoxButton.OK,
-								 MessageBoxImage.Error );
+				MessageBox.Show(this,
+								"The language selected is not valid",
+								"Invalid Language",
+								MessageBoxButton.OK,
+								MessageBoxImage.Error);
 				return;
 			}
 
 			var language = (Language) selLanguage.Tag;
-			var dialog = new CommonOpenFileDialog {
-				IsFolderPicker   = true,
-				EnsurePathExists = true,
-				Title            = "Pick game folder",
-				CookieIdentifier = App.FileDialogCookieRomPath
-			};
+			var dialog = new CommonOpenFileDialog { IsFolderPicker = true, EnsurePathExists = true, Title = "Pick game folder", CookieIdentifier = App.FileDialogCookieRomPath };
 
-			var result = dialog.ShowDialog( this );
+			var result = dialog.ShowDialog(this);
 
-			if ( result == CommonFileDialogResult.Ok )
+			if (result == CommonFileDialogResult.Ok)
 			{
-				var fullPath = Path.GetFullPath( dialog.FileName );
-				var romFS    = Path.Combine( fullPath, "RomFS" );
-				var exeFS    = Path.Combine( fullPath, "ExeFS" );
+				var fullPath = Path.GetFullPath(dialog.FileName);
+				var romFS = Path.Combine(fullPath, "RomFS");
+				var exeFS = Path.Combine(fullPath, "ExeFS");
 
-				if ( !Directory.Exists( romFS ) || !Directory.Exists( exeFS ) )
+				if (!Directory.Exists(romFS) || !Directory.Exists(exeFS))
 				{
-					MessageBox.Show( this,
-									 "Game directory must contain both an ExeFS and a RomFS folder",
-									 "Invalid Game Folder",
-									 MessageBoxButton.OK,
-									 MessageBoxImage.Error );
+					MessageBox.Show(this,
+									"Game directory must contain both an ExeFS and a RomFS folder",
+									"Invalid Game Folder",
+									MessageBoxButton.OK,
+									MessageBoxImage.Error);
 					return;
 				}
 
-				var window = new MainWindow( language, fullPath );
-				this.Hide();
+				var window = new MainWindow(language, fullPath);
+				Hide();
 				window.Show();
 			}
 		}
 
-		private void Hyperlink_OnRequestNavigate( object sender, RequestNavigateEventArgs e )
+		private void Hyperlink_OnRequestNavigate(object sender, RequestNavigateEventArgs e)
 		{
-			var startInfo = new ProcessStartInfo( e.Uri.AbsoluteUri );
+			var startInfo = new ProcessStartInfo(e.Uri.AbsoluteUri);
 
-			Process.Start( startInfo );
+			Process.Start(startInfo);
 			e.Handled = true;
 		}
 	}

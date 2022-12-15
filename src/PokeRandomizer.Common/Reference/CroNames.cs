@@ -2,7 +2,7 @@
 
 namespace PokeRandomizer.Common.Reference
 {
-	[ SuppressMessage( "ReSharper", "InconsistentNaming" ) ]
+	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	public enum CroNames
 	{
 		BackGround,

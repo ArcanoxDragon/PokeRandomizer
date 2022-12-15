@@ -18,161 +18,161 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen6
 		{
 			public const int Size = 0x4;
 
-			public Entry( GameVersion gameVersion ) : base( gameVersion ) { }
+			public Entry(GameVersion gameVersion) : base(gameVersion) { }
 
-			public ushort Species { get; set; }
-			public ushort Form { get; set; }
-			public byte MinLevel { get; set; }
-			public byte MaxLevel { get; set; }
+			public ushort Species  { get; set; }
+			public ushort Form     { get; set; }
+			public byte   MinLevel { get; set; }
+			public byte   MaxLevel { get; set; }
 
-			protected override void ReadData( BinaryReader br )
+			protected override void ReadData(BinaryReader br)
 			{
 				ushort flag0 = br.ReadUInt16();
-				this.Species = (ushort) ( flag0 & 0x7FF );
-				this.Form = (ushort) ( flag0 >> 11 );
+				Species = (ushort) ( flag0 & 0x7FF );
+				Form = (ushort) ( flag0 >> 11 );
 
-				this.MinLevel = br.ReadByte();
-				this.MaxLevel = br.ReadByte();
+				MinLevel = br.ReadByte();
+				MaxLevel = br.ReadByte();
 			}
 
-			protected override void WriteData( BinaryWriter bw )
+			protected override void WriteData(BinaryWriter bw)
 			{
 				ushort flag0 = 0;
-				flag0 |= (ushort) ( this.Species & 0x7FF );
-				flag0 |= (ushort) ( this.Form << 11 );
-				bw.Write( flag0 );
+				flag0 |= (ushort) ( Species & 0x7FF );
+				flag0 |= (ushort) ( Form << 11 );
+				bw.Write(flag0);
 
-				bw.Write( this.MinLevel );
-				bw.Write( this.MaxLevel );
+				bw.Write(MinLevel);
+				bw.Write(MaxLevel);
 			}
 
 			#region Equality
 
-			protected bool Equals( Entry other )
+			protected bool Equals(Entry other)
 			{
-				return this.Species == other.Species && this.Form == other.Form;
+				return Species == other.Species && Form == other.Form;
 			}
 
-			public override bool Equals( object obj )
+			public override bool Equals(object obj)
 			{
-				if ( object.ReferenceEquals( null, obj ) )
+				if (ReferenceEquals(null, obj))
 					return false;
-				if ( object.ReferenceEquals( this, obj ) )
+				if (ReferenceEquals(this, obj))
 					return true;
-				return obj.GetType() == this.GetType() && this.Equals( (Entry) obj );
+				return obj.GetType() == GetType() && Equals((Entry) obj);
 			}
 
 			public override int GetHashCode()
 			{
 				unchecked
 				{
-					return ( this.Species.GetHashCode() * 397 ) ^ this.Form.GetHashCode();
+					return ( Species.GetHashCode() * 397 ) ^ Form.GetHashCode();
 				}
 			}
 
-			public static bool operator ==( Entry left, Entry right )
+			public static bool operator ==(Entry left, Entry right)
 			{
-				return object.Equals( left, right );
+				return Equals(left, right);
 			}
 
-			public static bool operator !=( Entry left, Entry right )
+			public static bool operator !=(Entry left, Entry right)
 			{
-				return !object.Equals( left, right );
+				return !Equals(left, right);
 			}
 
 			#endregion
 		}
 
-		public static EncounterWild New( GameVersion version, int zoneId )
+		public static EncounterWild New(GameVersion version, int zoneId)
 		{
-			switch ( version )
+			switch (version)
 			{
 				case GameVersion.ORAS:
 				case GameVersion.ORASDemo:
-					return new OrasEncounterWild( version, zoneId );
+					return new OrasEncounterWild(version, zoneId);
 				case GameVersion.XY:
-					return new XyEncounterWild( version, zoneId );
+					return new XyEncounterWild(version, zoneId);
 				default:
-					throw new NotSupportedException( $"Version not supported: {version}" );
+					throw new NotSupportedException($"Version not supported: {version}");
 			}
 		}
 
 		#endregion
 
 		private byte[] buffer;
-		private int actualDataStart;
+		private int    actualDataStart;
 
-		protected EncounterWild( GameVersion gameVersion, int zoneId ) : base( gameVersion )
+		protected EncounterWild(GameVersion gameVersion, int zoneId) : base(gameVersion)
 		{
-			this.ZoneId = zoneId;
+			ZoneId = zoneId;
 		}
 
-		public int ZoneId { get; }
+		public int  ZoneId     { get; }
 		public bool HasEntries { get; private set; }
 
-		public abstract int DataStart { get; }
-		public abstract int DataLength { get; }
-		public abstract int NumEntries { get; }
+		public abstract int       DataStart   { get; }
+		public abstract int       DataLength  { get; }
+		public abstract int       NumEntries  { get; }
 		public abstract Entry[][] EntryArrays { get; set; }
 
-		public IEnumerable<Entry> GetAllEntries() => this.AssembleEntries();
+		public IEnumerable<Entry> GetAllEntries() => AssembleEntries();
 
-		public void SetAllEntries( Entry[] entries )
+		public void SetAllEntries(Entry[] entries)
 		{
-			Assertions.AssertLength( (uint) this.NumEntries, entries, exact: true );
+			Assertions.AssertLength((uint) NumEntries, entries, exact: true);
 
-			this.ProcessEntries( entries );
+			ProcessEntries(entries);
 		}
 
-		protected override void ReadData( BinaryReader br )
+		protected override void ReadData(BinaryReader br)
 		{
-			this.buffer = new byte[ br.BaseStream.Length ];
-			br.Read( this.buffer, 0, this.buffer.Length );
+			this.buffer = new byte[br.BaseStream.Length];
+			br.Read(this.buffer, 0, this.buffer.Length);
 
-			br.BaseStream.Seek( DataOffset, SeekOrigin.Begin );
+			br.BaseStream.Seek(DataOffset, SeekOrigin.Begin);
 
-			this.actualDataStart = br.ReadInt32() + this.DataStart;
+			this.actualDataStart = br.ReadInt32() + DataStart;
 			int dataEnd = br.ReadInt32();
 			int totalLength = dataEnd - this.actualDataStart;
-			br.BaseStream.Seek( this.actualDataStart, SeekOrigin.Begin );
+			br.BaseStream.Seek(this.actualDataStart, SeekOrigin.Begin);
 
-			if ( totalLength < this.DataLength )
+			if (totalLength < DataLength)
 				return; // No encounter data
 
-			Entry[] entries = new Entry[ this.NumEntries ];
-			this.HasEntries = true;
+			Entry[] entries = new Entry[NumEntries];
+			HasEntries = true;
 
-			entries.Fill( () => new Entry( this.GameVersion ) );
+			entries.Fill(() => new Entry(GameVersion));
 
-			for ( int i = 0; i < this.NumEntries; i++ )
+			for (int i = 0; i < NumEntries; i++)
 			{
-				byte[] entryData = new byte[ Entry.Size ];
-				br.Read( entryData, 0, Entry.Size );
+				byte[] entryData = new byte[Entry.Size];
+				br.Read(entryData, 0, Entry.Size);
 
-				entries[ i ].Read( entryData );
+				entries[i].Read(entryData);
 			}
 
-			this.ProcessEntries( entries );
+			ProcessEntries(entries);
 		}
 
-		protected override void WriteData( BinaryWriter bw )
+		protected override void WriteData(BinaryWriter bw)
 		{
-			bw.Write( this.buffer, 0, this.buffer.Length );
-			bw.BaseStream.Seek( DataOffset, SeekOrigin.Begin );
+			bw.Write(this.buffer, 0, this.buffer.Length);
+			bw.BaseStream.Seek(DataOffset, SeekOrigin.Begin);
 
-			bw.Write( this.actualDataStart - this.DataStart );
-			bw.BaseStream.Seek( this.actualDataStart, SeekOrigin.Begin );
+			bw.Write(this.actualDataStart - DataStart);
+			bw.BaseStream.Seek(this.actualDataStart, SeekOrigin.Begin);
 
-			if ( this.HasEntries )
+			if (HasEntries)
 			{
-				this.AssembleEntries().ForEach( entry => {
+				AssembleEntries().ForEach(entry => {
 					byte[] entryData = entry.Write();
-					bw.Write( entryData, 0, entryData.Length );
-				} );
+					bw.Write(entryData, 0, entryData.Length);
+				});
 			}
 		}
 
-		protected abstract void ProcessEntries( Entry[] entries );
+		protected abstract void ProcessEntries(Entry[] entries);
 		protected abstract IEnumerable<Entry> AssembleEntries();
 	}
 }

@@ -4,8 +4,8 @@
 	{
 		bool FavorSameType { get; }
 
-		[ MinValue( 0.01 ) ]
-		[ MaxValue( 1.0 ) ]
+		[MinValue(0.01)]
+		[MaxValue(1.0)]
 		decimal SameTypePercentage { get; }
 	}
 }

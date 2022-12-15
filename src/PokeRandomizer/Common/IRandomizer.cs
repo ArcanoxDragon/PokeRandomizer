@@ -15,16 +15,16 @@ namespace PokeRandomizer.Common
 		int              RandomSeed { get; }
 		ILogger          Logger     { get; set; }
 
-		void Reseed( int seed );
+		void Reseed(int seed);
 		void Reseed();
 
-		Task RandomizeAll( ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizeAll(ProgressNotifier progressNotifier, CancellationToken token);
 
-		Task RandomizePokemonInfo( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeEggMoves( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeEncounters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeLearnsets( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeStarters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		Task RandomizeTrainers( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
+		Task RandomizePokemonInfo(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		Task RandomizeEggMoves(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		Task RandomizeEncounters(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		Task RandomizeLearnsets(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		Task RandomizeStarters(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		Task RandomizeTrainers(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
 	}
 }

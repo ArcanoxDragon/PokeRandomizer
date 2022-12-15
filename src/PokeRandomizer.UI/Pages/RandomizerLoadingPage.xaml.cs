@@ -4,7 +4,7 @@
 	{
 		public RandomizerLoadingPage()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 		}
 	}
 }

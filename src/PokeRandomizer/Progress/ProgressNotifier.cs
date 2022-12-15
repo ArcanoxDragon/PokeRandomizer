@@ -6,11 +6,11 @@ namespace PokeRandomizer.Progress
 {
 	public class ProgressNotifier
 	{
-		public delegate void ProgressUpdatedEvent( ProgressNotifier sender, ProgressUpdate update );
+		public delegate void ProgressUpdatedEvent(ProgressNotifier sender, ProgressUpdate update);
 
 		public event ProgressUpdatedEvent ProgressUpdated;
 
-		private readonly object completionSourceLock = new object();
+		private readonly object completionSourceLock = new();
 
 		private TaskCompletionSource<ProgressUpdate> completionSource;
 
@@ -23,61 +23,60 @@ namespace PokeRandomizer.Progress
 
 		public Task<ProgressUpdate> AwaitUpdate()
 		{
-			if ( this.IsFailed )
-				return Task.FromException<ProgressUpdate>( this.FailureException );
+			if (IsFailed)
+				return Task.FromException<ProgressUpdate>(FailureException);
 
-			if ( this.IsComplete )
-				return Task.FromResult( ProgressUpdate.Completed() );
+			if (IsComplete)
+				return Task.FromResult(ProgressUpdate.Completed());
 
-			if ( this.IsComplete )
-				return Task.FromResult( ProgressUpdate.Cancelled() );
+			if (IsComplete)
+				return Task.FromResult(ProgressUpdate.Cancelled());
 
-			lock ( this.completionSourceLock )
+			lock (this.completionSourceLock)
 			{
-				if ( this.completionSource == null )
-					this.completionSource = new TaskCompletionSource<ProgressUpdate>();
+				this.completionSource ??= new TaskCompletionSource<ProgressUpdate>();
 
 				return this.completionSource.Task;
 			}
 		}
 
-		public void NotifyUpdate( ProgressUpdate update )
+		public void NotifyUpdate(ProgressUpdate update)
 		{
-			if ( this.IsComplete || this.IsFailed || this.IsCancelled )
+			if (IsComplete || IsFailed || IsCancelled)
 				return;
 
-			this.IsComplete       = update.Type == ProgressUpdate.UpdateType.Completed;
-			this.IsCancelled      = update.Type == ProgressUpdate.UpdateType.Cancelled;
-			this.IsFailed         = update.Type == ProgressUpdate.UpdateType.Failed;
-			this.Progress         = ( update.Progress >= 0 ) ? update.Progress : this.Progress;
-			this.Status           = update.Status ?? this.Status;
-			this.FailureException = update.FailureCause;
-			this.Progress         = MathUtil.Clamp( this.Progress, 0.0, 1.0 );
+			IsComplete = update.Type == ProgressUpdate.UpdateType.Completed;
+			IsCancelled = update.Type == ProgressUpdate.UpdateType.Cancelled;
+			IsFailed = update.Type == ProgressUpdate.UpdateType.Failed;
+			Progress = ( update.Progress >= 0 ) ? update.Progress : Progress;
+			Status = update.Status ?? Status;
+			FailureException = update.FailureCause;
+			Progress = MathUtil.Clamp(Progress, 0.0, 1.0);
 
-			lock ( this.completionSourceLock )
+			lock (this.completionSourceLock)
 			{
-				this.completionSource?.TrySetResult( update );
+				this.completionSource?.TrySetResult(update);
 				this.completionSource = null;
 			}
 
-			this.ProgressUpdated?.Invoke( this, update );
+			ProgressUpdated?.Invoke(this, update);
 		}
 
-		public void NotifyFailure( Exception e )
+		public void NotifyFailure(Exception e)
 		{
-			if ( this.IsComplete || this.IsFailed || this.IsCancelled )
+			if (IsComplete || IsFailed || IsCancelled)
 				return;
 
-			this.IsFailed         = true;
-			this.FailureException = e;
+			IsFailed = true;
+			FailureException = e;
 
-			lock ( this.completionSourceLock )
+			lock (this.completionSourceLock)
 			{
-				this.completionSource?.TrySetException( e );
+				this.completionSource?.TrySetException(e);
 				this.completionSource = null;
 			}
 
-			this.ProgressUpdated?.Invoke( this, ProgressUpdate.Failure( e ) );
+			ProgressUpdated?.Invoke(this, ProgressUpdate.Failure(e));
 		}
 	}
 }

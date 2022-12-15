@@ -8,17 +8,17 @@ namespace CtrDotNet.CTR
 	// LZSS (de)compression, heavily taken from dsdecmp
 	public static class Lzss
 	{
-		public static async Task<long> Decompress( string infile, string outfile )
+		public static async Task<long> Decompress(string infile, string outfile)
 		{
 			// make sure the output directory exists
-			string outDirectory = Path.GetDirectoryName( outfile );
-			if ( !Directory.Exists( outDirectory ) )
-				Directory.CreateDirectory( outDirectory );
+			string outDirectory = Path.GetDirectoryName(outfile);
+			if (!Directory.Exists(outDirectory))
+				Directory.CreateDirectory(outDirectory);
 			// open the two given files, and delegate to the format-specific code.
-			using ( FileStream inStream = new FileStream( infile, FileMode.Open ),
-							   outStream = new FileStream( outfile, FileMode.Create ) )
+			using (FileStream inStream = new FileStream(infile, FileMode.Open),
+						      outStream = new FileStream(outfile, FileMode.Create))
 			{
-				return await Lzss.Decompress( inStream, inStream.Length, outStream );
+				return await Decompress(inStream, inStream.Length, outStream);
 			}
 		}
 
@@ -37,7 +37,7 @@ namespace CtrDotNet.CTR
 		/// <returns>The length of the output data.</returns>
 		/// <exception cref="NotEnoughDataException">When the given length of the input data
 		/// is not enough to properly decompress the input.</exception>
-		public static async Task<long> Decompress( Stream instream, long inLength, Stream outstream )
+		public static async Task<long> Decompress(Stream instream, long inLength, Stream outstream)
 		{
 			#region Format definition in NDSTEK style
 
@@ -81,29 +81,29 @@ namespace CtrDotNet.CTR
 			long readBytes = 0;
 
 			byte type = await instream.ReadByteAsync();
-			if ( type != 0x11 )
-				throw new InvalidDataException( "The provided stream is not a valid LZ-0x11 "
-												+ "compressed stream (invalid type 0x" + type.ToString( "X" ) + ")" );
-			byte[] sizeBytes = new byte[ 3 ];
-			await instream.ReadAsync( sizeBytes, 0, 3 );
-			int decompressedSize = IOUtils.ToNDSu24( sizeBytes, 0 );
+			if (type != 0x11)
+				throw new InvalidDataException("The provided stream is not a valid LZ-0x11 "
+											   + "compressed stream (invalid type 0x" + type.ToString("X") + ")");
+			byte[] sizeBytes = new byte[3];
+			await instream.ReadAsync(sizeBytes, 0, 3);
+			int decompressedSize = IOUtils.ToNDSu24(sizeBytes, 0);
 			readBytes += 4;
-			if ( decompressedSize == 0 )
+			if (decompressedSize == 0)
 			{
-				sizeBytes = new byte[ 4 ];
-				await instream.ReadAsync( sizeBytes, 0, 4 );
-				decompressedSize = IOUtils.ToNDSs32( sizeBytes, 0 );
+				sizeBytes = new byte[4];
+				await instream.ReadAsync(sizeBytes, 0, 4);
+				decompressedSize = IOUtils.ToNDSs32(sizeBytes, 0);
 				readBytes += 4;
 			}
 
 			// the maximum 'DISP-1' is still 0xFFF.
 			const int BufferLength = 0x1000;
-			byte[] buffer = new byte[ BufferLength ];
+			byte[] buffer = new byte[BufferLength];
 			int bufferOffset = 0;
 
 			int currentOutSize = 0;
 			int flags = 0, mask = 1;
-			while ( currentOutSize < decompressedSize )
+			while (currentOutSize < decompressedSize)
 			{
 				// (throws when requested new flags byte is not available)
 
@@ -111,13 +111,13 @@ namespace CtrDotNet.CTR
 
 				// the current mask is the mask used in the previous run. So if it masks the
 				// last flag bit, get a new flags byte.
-				if ( mask == 1 )
+				if (mask == 1)
 				{
-					if ( readBytes >= inLength )
-						throw new NotEnoughDataException( currentOutSize, decompressedSize );
+					if (readBytes >= inLength)
+						throw new NotEnoughDataException(currentOutSize, decompressedSize);
 					flags = await instream.ReadByteAsync();
 					readBytes++;
-					if ( flags < 0 )
+					if (flags < 0)
 						throw new StreamTooShortException();
 					mask = 0x80;
 				}
@@ -129,23 +129,23 @@ namespace CtrDotNet.CTR
 				#endregion
 
 				// bit = 1 <=> compressed.
-				if ( ( flags & mask ) > 0 )
+				if (( flags & mask ) > 0)
 				{
 					// (throws when not enough bytes are available)
 
 					#region Get length and displacement('disp') values from next 2, 3 or 4 bytes
 
 					// read the first byte first, which also signals the size of the compressed block
-					if ( readBytes >= inLength )
-						throw new NotEnoughDataException( currentOutSize, decompressedSize );
+					if (readBytes >= inLength)
+						throw new NotEnoughDataException(currentOutSize, decompressedSize);
 					int byte1 = await instream.ReadByteAsync();
 					readBytes++;
-					if ( byte1 < 0 )
+					if (byte1 < 0)
 						throw new StreamTooShortException();
 
 					int length = byte1 >> 4;
 					int disp;
-					if ( length == 0 )
+					if (length == 0)
 					{
 						#region case 0; 0(B C)(D EF) + (0x11)(0x1) = (LEN)(DISP)
 
@@ -155,13 +155,13 @@ namespace CtrDotNet.CTR
 						// DISP = DEF + 1
 
 						// we need two more bytes available
-						if ( readBytes + 1 >= inLength )
-							throw new NotEnoughDataException( currentOutSize, decompressedSize );
+						if (readBytes + 1 >= inLength)
+							throw new NotEnoughDataException(currentOutSize, decompressedSize);
 						int byte2 = await instream.ReadByteAsync();
 						readBytes++;
 						int byte3 = await instream.ReadByteAsync();
 						readBytes++;
-						if ( byte3 < 0 )
+						if (byte3 < 0)
 							throw new StreamTooShortException();
 
 						length = ( ( ( byte1 & 0x0F ) << 4 ) | ( byte2 >> 4 ) ) + 0x11;
@@ -169,7 +169,7 @@ namespace CtrDotNet.CTR
 
 						#endregion
 					}
-					else if ( length == 1 )
+					else if (length == 1)
 					{
 						#region case 1: 1(B CD E)(F GH) + (0x111)(0x1) = (LEN)(DISP)
 
@@ -179,15 +179,15 @@ namespace CtrDotNet.CTR
 						// DISP = FGH + 1
 
 						// we need three more bytes available
-						if ( readBytes + 2 >= inLength )
-							throw new NotEnoughDataException( currentOutSize, decompressedSize );
+						if (readBytes + 2 >= inLength)
+							throw new NotEnoughDataException(currentOutSize, decompressedSize);
 						int byte2 = await instream.ReadByteAsync();
 						readBytes++;
 						int byte3 = await instream.ReadByteAsync();
 						readBytes++;
 						int byte4 = await instream.ReadByteAsync();
 						readBytes++;
-						if ( byte4 < 0 )
+						if (byte4 < 0)
 							throw new StreamTooShortException();
 
 						length = ( ( ( byte1 & 0x0F ) << 12 ) | ( byte2 << 4 ) | ( byte3 >> 4 ) ) + 0x111;
@@ -205,11 +205,11 @@ namespace CtrDotNet.CTR
 						// DISP = BCD + 1
 
 						// we need only one more byte available
-						if ( readBytes >= inLength )
-							throw new NotEnoughDataException( currentOutSize, decompressedSize );
+						if (readBytes >= inLength)
+							throw new NotEnoughDataException(currentOutSize, decompressedSize);
 						int byte2 = await instream.ReadByteAsync();
 						readBytes++;
-						if ( byte2 < 0 )
+						if (byte2 < 0)
 							throw new StreamTooShortException();
 
 						length = ( ( byte1 & 0xF0 ) >> 4 ) + 0x1;
@@ -218,69 +218,70 @@ namespace CtrDotNet.CTR
 						#endregion
 					}
 
-					if ( disp > currentOutSize )
-						throw new InvalidDataException( "Cannot go back more than already written. "
-														+ "DISP = " + disp + ", #written bytes = 0x" + currentOutSize.ToString( "X" )
-														+ " before 0x" + instream.Position.ToString( "X" ) + " with indicator 0x"
-														+ ( byte1 >> 4 ).ToString( "X" ) );
+					if (disp > currentOutSize)
+						throw new InvalidDataException("Cannot go back more than already written. "
+													   + "DISP = " + disp + ", #written bytes = 0x" + currentOutSize.ToString("X")
+													   + " before 0x" + instream.Position.ToString("X") + " with indicator 0x"
+													   + ( byte1 >> 4 ).ToString("X"));
 
 					#endregion
 
 					int bufIdx = bufferOffset + BufferLength - disp;
-					for ( int i = 0; i < length; i++ )
+					for (int i = 0; i < length; i++)
 					{
-						byte next = buffer[ bufIdx % BufferLength ];
+						byte next = buffer[bufIdx % BufferLength];
 						bufIdx++;
-						await outstream.WriteByteAsync( next );
-						buffer[ bufferOffset ] = next;
+						await outstream.WriteByteAsync(next);
+						buffer[bufferOffset] = next;
 						bufferOffset = ( bufferOffset + 1 ) % BufferLength;
 					}
+
 					currentOutSize += length;
 				}
 				else
 				{
-					if ( readBytes >= inLength )
-						throw new NotEnoughDataException( currentOutSize, decompressedSize );
+					if (readBytes >= inLength)
+						throw new NotEnoughDataException(currentOutSize, decompressedSize);
 					int next = await instream.ReadByteAsync();
 					readBytes++;
-					if ( next < 0 )
+					if (next < 0)
 						throw new StreamTooShortException();
 
-					await outstream.WriteByteAsync( (byte) next );
+					await outstream.WriteByteAsync((byte) next);
 					currentOutSize++;
-					buffer[ bufferOffset ] = (byte) next;
+					buffer[bufferOffset] = (byte) next;
 					bufferOffset = ( bufferOffset + 1 ) % BufferLength;
 				}
 			}
 
-			if ( readBytes < inLength )
+			if (readBytes < inLength)
 			{
 				// the input may be 4-byte aligned.
-				if ( ( readBytes ^ ( readBytes & 3 ) ) + 4 < inLength )
-					throw new TooMuchInputException( readBytes, inLength );
+				if (( readBytes ^ ( readBytes & 3 ) ) + 4 < inLength)
+					throw new TooMuchInputException(readBytes, inLength);
 			}
 
 			return decompressedSize;
 		}
 
-		internal static async Task<int> Compress( string infile, string outfile )
+		internal static async Task<int> Compress(string infile, string outfile)
 		{
 			// make sure the output directory exists
-			string outDirectory = Path.GetDirectoryName( outfile );
-			if ( !Directory.Exists( outDirectory ) )
-				Directory.CreateDirectory( outDirectory );
+			string outDirectory = Path.GetDirectoryName(outfile);
+			if (!Directory.Exists(outDirectory))
+				Directory.CreateDirectory(outDirectory);
 			// open the proper Streams, and delegate to the format-specific code.
-			using ( FileStream inStream = File.Open( infile, FileMode.Open ),
-							   outStream = File.Create( outfile ) )
+			using (FileStream inStream = File.Open(infile, FileMode.Open),
+						      outStream = File.Create(outfile))
 			{
-				if ( inStream.Length == 0 ) // empty file 'compression' to lzss container
+				if (inStream.Length == 0) // empty file 'compression' to lzss container
 				{
 					byte[] blank = { 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-					outStream.Write( blank, 0, blank.Length );
+					outStream.Write(blank, 0, blank.Length);
 					return blank.Length;
 				}
 
-				return await Lzss.Compress( inStream, inStream.Length, outStream, true );
+				return await Compress(inStream, inStream.Length, outStream, true);
 			}
 		}
 
@@ -291,56 +292,51 @@ namespace CtrDotNet.CTR
 		/// This algorithm should yield files that are the same as those found in the games.
 		/// (delegates to the optimized method if LookAhead is set)
 		/// </summary>
-		internal static async Task<int> Compress( Stream instream, long inLength, Stream outstream, bool original )
+		internal static async Task<int> Compress(Stream instream, long inLength, Stream outstream, bool original)
 		{
 			// make sure the decompressed size fits in 3 bytes.
 			// There should be room for four bytes, however I'm not 100% sure if that can be used
 			// in every game, as it may not be a built-in function.
-			if ( inLength > 0xFFFFFF )
+			if (inLength > 0xFFFFFF)
 				throw new InputTooLargeException();
 
 			// use the other method if lookahead is enabled
-			if ( !original )
+			if (!original)
 			{
-				return await Lzss.CompressWithLA( instream, inLength, outstream );
+				return await CompressWithLA(instream, inLength, outstream);
 			}
 
 			// save the input data in an array to prevent having to go back and forth in a file
-			byte[] indata = new byte[ inLength ];
-			int numReadBytes = await instream.ReadAsync( indata, 0, (int) inLength );
-			if ( numReadBytes != inLength )
+			byte[] indata = new byte[inLength];
+			int numReadBytes = await instream.ReadAsync(indata, 0, (int) inLength);
+			if (numReadBytes != inLength)
 				throw new StreamTooShortException();
 
 			// write the compression header first
-			byte[] header = {
-				0x11,
-				(byte) ( inLength & 0xFF ),
-				(byte) ( ( inLength >> 8 ) & 0xFF ),
-				(byte) ( ( inLength >> 16 ) & 0xFF )
-			};
+			byte[] header = { 0x11, (byte) ( inLength & 0xFF ), (byte) ( ( inLength >> 8 ) & 0xFF ), (byte) ( ( inLength >> 16 ) & 0xFF ) };
 
-			await outstream.WriteAsync( header, 0, header.Length );
+			await outstream.WriteAsync(header, 0, header.Length);
 
 			int compressedLength = 4;
-			byte[] outbuffer = new byte[ 8 * 4 + 1 ];
-			outbuffer[ 0 ] = 0;
+			byte[] outbuffer = new byte[8 * 4 + 1];
+			outbuffer[0] = 0;
 			int bufferlength = 1, bufferedBlocks = 0;
 			int readBytes = 0;
 
 			// we do need to buffer the output, as the first byte indicates which blocks are compressed.
 			// this version does not use a look-ahead, so we do not need to buffer more than 8 blocks at a time.
 			// (a block is at most 4 bytes long)
-			while ( readBytes < inLength )
+			while (readBytes < inLength)
 			{
 				#region If 8 blocks are bufferd, write them and reset the buffer
 
 				// we can only buffer 8 blocks at a time.
-				if ( bufferedBlocks == 8 )
+				if (bufferedBlocks == 8)
 				{
-					outstream.Write( outbuffer, 0, bufferlength );
+					await outstream.WriteAsync(outbuffer, 0, bufferlength);
 					compressedLength += bufferlength;
 					// reset the buffer
-					outbuffer[ 0 ] = 0;
+					outbuffer[0] = 0;
 					bufferlength = 1;
 					bufferedBlocks = 0;
 				}
@@ -350,14 +346,14 @@ namespace CtrDotNet.CTR
 				// determine if we're dealing with a compressed or raw block.
 				// it is a compressed block when the next 3 or more bytes can be copied from
 				// somewhere in the set of already compressed bytes.
-				int oldLength = Math.Min( readBytes, 0x1000 );
-				int length = LZUtil.GetOccurrenceLength( ref indata, readBytes, (int) Math.Min( inLength - readBytes, 0x10110 ),
-														 ref indata, readBytes - oldLength, oldLength, out int disp );
+				int oldLength = Math.Min(readBytes, 0x1000);
+				int length = LZUtil.GetOccurrenceLength(ref indata, readBytes, (int) Math.Min(inLength - readBytes, 0x10110),
+														ref indata, readBytes - oldLength, oldLength, out int disp);
 
 				// length not 3 or more? next byte is raw data
-				if ( length < 3 )
+				if (length < 3)
 				{
-					outbuffer[ bufferlength++ ] = indata[ readBytes++ ];
+					outbuffer[bufferlength++] = indata[readBytes++];
 				}
 				else
 				{
@@ -365,44 +361,46 @@ namespace CtrDotNet.CTR
 					readBytes += length;
 
 					// mark the next block as compressed
-					outbuffer[ 0 ] |= (byte) ( 1 << ( 7 - bufferedBlocks ) );
+					outbuffer[0] |= (byte) ( 1 << ( 7 - bufferedBlocks ) );
 
-					if ( length > 0x110 )
+					if (length > 0x110)
 					{
 						// case 1: 1(B CD E)(F GH) + (0x111)(0x1) = (LEN)(DISP)
-						outbuffer[ bufferlength ] = 0x10;
-						outbuffer[ bufferlength ] |= (byte) ( ( ( length - 0x111 ) >> 12 ) & 0x0F );
+						outbuffer[bufferlength] = 0x10;
+						outbuffer[bufferlength] |= (byte) ( ( ( length - 0x111 ) >> 12 ) & 0x0F );
 						bufferlength++;
-						outbuffer[ bufferlength ] = (byte) ( ( ( length - 0x111 ) >> 4 ) & 0xFF );
+						outbuffer[bufferlength] = (byte) ( ( ( length - 0x111 ) >> 4 ) & 0xFF );
 						bufferlength++;
-						outbuffer[ bufferlength ] = (byte) ( ( ( length - 0x111 ) << 4 ) & 0xF0 );
+						outbuffer[bufferlength] = (byte) ( ( ( length - 0x111 ) << 4 ) & 0xF0 );
 					}
-					else if ( length > 0x10 )
+					else if (length > 0x10)
 					{
 						// case 0; 0(B C)(D EF) + (0x11)(0x1) = (LEN)(DISP)
-						outbuffer[ bufferlength ] = 0x00;
-						outbuffer[ bufferlength ] |= (byte) ( ( ( length - 0x111 ) >> 4 ) & 0x0F );
+						outbuffer[bufferlength] = 0x00;
+						outbuffer[bufferlength] |= (byte) ( ( ( length - 0x111 ) >> 4 ) & 0x0F );
 						bufferlength++;
-						outbuffer[ bufferlength ] = (byte) ( ( ( length - 0x111 ) << 4 ) & 0xF0 );
+						outbuffer[bufferlength] = (byte) ( ( ( length - 0x111 ) << 4 ) & 0xF0 );
 					}
 					else
 					{
 						// case > 1: (A)(B CD) + (0x1)(0x1) = (LEN)(DISP)
-						outbuffer[ bufferlength ] = (byte) ( ( ( length - 1 ) << 4 ) & 0xF0 );
+						outbuffer[bufferlength] = (byte) ( ( ( length - 1 ) << 4 ) & 0xF0 );
 					}
+
 					// the last 1.5 bytes are always the disp
-					outbuffer[ bufferlength ] |= (byte) ( ( ( disp - 1 ) >> 8 ) & 0x0F );
+					outbuffer[bufferlength] |= (byte) ( ( ( disp - 1 ) >> 8 ) & 0x0F );
 					bufferlength++;
-					outbuffer[ bufferlength ] = (byte) ( ( disp - 1 ) & 0xFF );
+					outbuffer[bufferlength] = (byte) ( ( disp - 1 ) & 0xFF );
 					bufferlength++;
 				}
+
 				bufferedBlocks++;
 			}
 
 			// copy the remaining blocks to the output
-			if ( bufferedBlocks > 0 )
+			if (bufferedBlocks > 0)
 			{
-				await outstream.WriteAsync( outbuffer, 0, bufferlength );
+				await outstream.WriteAsync(outbuffer, 0, bufferlength);
 				compressedLength += bufferlength;
 				/*/ make the compressed file 4-byte aligned.
 				while ((compressedLength % 4) != 0)
@@ -422,95 +420,91 @@ namespace CtrDotNet.CTR
 		/// and determine the optimal 'length' values for the compressed blocks. Is not 100% optimal,
 		/// as the flag-bytes are not taken into account.
 		/// </summary>
-		internal static async Task<int> CompressWithLA( Stream instream, long inLength, Stream outstream )
+		internal static async Task<int> CompressWithLA(Stream instream, long inLength, Stream outstream)
 		{
 			// save the input data in an array to prevent having to go back and forth in a file
-			byte[] indata = new byte[ inLength ];
-			int numReadBytes = await instream.ReadAsync( indata, 0, (int) inLength );
-			if ( numReadBytes != inLength )
+			byte[] indata = new byte[inLength];
+			int numReadBytes = await instream.ReadAsync(indata, 0, (int) inLength);
+			if (numReadBytes != inLength)
 				throw new StreamTooShortException();
 
 			// write the compression header first
-			byte[] header = {
-				0x11,
-				(byte) ( inLength & 0xFF ),
-				(byte) ( ( inLength >> 8 ) & 0xFF ),
-				(byte) ( ( inLength >> 16 ) & 0xFF )
-			};
+			byte[] header = { 0x11, (byte) ( inLength & 0xFF ), (byte) ( ( inLength >> 8 ) & 0xFF ), (byte) ( ( inLength >> 16 ) & 0xFF ) };
 
-			await outstream.WriteAsync( header, 0, header.Length );
+			await outstream.WriteAsync(header, 0, header.Length);
 
 			int compressedLength = 4;
-			byte[] outbuffer = new byte[ 8 * 4 + 1 ];
-			outbuffer[ 0 ] = 0;
+			byte[] outbuffer = new byte[8 * 4 + 1];
+			outbuffer[0] = 0;
 			int bufferlength = 1, bufferedBlocks = 0;
 			int readBytes = 0;
 
 			// we do need to buffer the output, as the first byte indicates which blocks are compressed.
 			// this version does not use a look-ahead, so we do not need to buffer more than 8 blocks at a time.
 			// blocks are at most 4 bytes long.
-			Lzss.GetOptimalCompressionLengths( indata, indata.Length, out int[] lengths, out int[] disps );
-			while ( readBytes < inLength )
+			GetOptimalCompressionLengths(indata, indata.Length, out int[] lengths, out int[] disps);
+			while (readBytes < inLength)
 			{
 				// we can only buffer 8 blocks at a time.
-				if ( bufferedBlocks == 8 )
+				if (bufferedBlocks == 8)
 				{
-					outstream.Write( outbuffer, 0, bufferlength );
+					await outstream.WriteAsync(outbuffer, 0, bufferlength);
 					compressedLength += bufferlength;
 					// reset the buffer
-					outbuffer[ 0 ] = 0;
+					outbuffer[0] = 0;
 					bufferlength = 1;
 					bufferedBlocks = 0;
 				}
 
-				if ( lengths[ readBytes ] == 1 )
+				if (lengths[readBytes] == 1)
 				{
-					outbuffer[ bufferlength++ ] = indata[ readBytes++ ];
+					outbuffer[bufferlength++] = indata[readBytes++];
 				}
 				else
 				{
 					// mark the next block as compressed
-					outbuffer[ 0 ] |= (byte) ( 1 << ( 7 - bufferedBlocks ) );
+					outbuffer[0] |= (byte) ( 1 << ( 7 - bufferedBlocks ) );
 
-					if ( lengths[ readBytes ] > 0x110 )
+					if (lengths[readBytes] > 0x110)
 					{
 						// case 1: 1(B CD E)(F GH) + (0x111)(0x1) = (LEN)(DISP)
-						outbuffer[ bufferlength ] = 0x10;
-						outbuffer[ bufferlength ] |= (byte) ( ( ( lengths[ readBytes ] - 0x111 ) >> 12 ) & 0x0F );
+						outbuffer[bufferlength] = 0x10;
+						outbuffer[bufferlength] |= (byte) ( ( ( lengths[readBytes] - 0x111 ) >> 12 ) & 0x0F );
 						bufferlength++;
-						outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 0x111 ) >> 4 ) & 0xFF );
+						outbuffer[bufferlength] = (byte) ( ( ( lengths[readBytes] - 0x111 ) >> 4 ) & 0xFF );
 						bufferlength++;
-						outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 0x111 ) << 4 ) & 0xF0 );
+						outbuffer[bufferlength] = (byte) ( ( ( lengths[readBytes] - 0x111 ) << 4 ) & 0xF0 );
 					}
-					else if ( lengths[ readBytes ] > 0x10 )
+					else if (lengths[readBytes] > 0x10)
 					{
 						// case 0; 0(B C)(D EF) + (0x11)(0x1) = (LEN)(DISP)
-						outbuffer[ bufferlength ] = 0x00;
-						outbuffer[ bufferlength ] |= (byte) ( ( ( lengths[ readBytes ] - 0x111 ) >> 4 ) & 0x0F );
+						outbuffer[bufferlength] = 0x00;
+						outbuffer[bufferlength] |= (byte) ( ( ( lengths[readBytes] - 0x111 ) >> 4 ) & 0x0F );
 						bufferlength++;
-						outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 0x111 ) << 4 ) & 0xF0 );
+						outbuffer[bufferlength] = (byte) ( ( ( lengths[readBytes] - 0x111 ) << 4 ) & 0xF0 );
 					}
 					else
 					{
 						// case > 1: (A)(B CD) + (0x1)(0x1) = (LEN)(DISP)
-						outbuffer[ bufferlength ] = (byte) ( ( ( lengths[ readBytes ] - 1 ) << 4 ) & 0xF0 );
+						outbuffer[bufferlength] = (byte) ( ( ( lengths[readBytes] - 1 ) << 4 ) & 0xF0 );
 					}
+
 					// the last 1.5 bytes are always the disp
-					outbuffer[ bufferlength ] |= (byte) ( ( ( disps[ readBytes ] - 1 ) >> 8 ) & 0x0F );
+					outbuffer[bufferlength] |= (byte) ( ( ( disps[readBytes] - 1 ) >> 8 ) & 0x0F );
 					bufferlength++;
-					outbuffer[ bufferlength ] = (byte) ( ( disps[ readBytes ] - 1 ) & 0xFF );
+					outbuffer[bufferlength] = (byte) ( ( disps[readBytes] - 1 ) & 0xFF );
 					bufferlength++;
 
-					readBytes += lengths[ readBytes ];
+					readBytes += lengths[readBytes];
 				}
 
 				bufferedBlocks++;
 			}
 
 			// copy the remaining blocks to the output
-			if ( bufferedBlocks > 0 )
+			if (bufferedBlocks > 0)
 			{
-				await outstream.WriteAsync( outbuffer, 0, bufferlength );
+				await outstream.WriteAsync(outbuffer, 0, bufferlength);
 				compressedLength += bufferlength;
 				/*/ make the compressed file 4-byte aligned.
 				while ((compressedLength % 4) != 0)
@@ -538,48 +532,48 @@ namespace CtrDotNet.CTR
 		/// this value is the optimal 'length' value. If it is 1, the block should not be compressed.</param>
 		/// <param name="disps">The 'disp' values of the compressed blocks. May be 0, in which case the
 		/// corresponding length will never be anything other than 1.</param>
-		internal static void GetOptimalCompressionLengths( byte[] indata, int inLength, out int[] lengths, out int[] disps )
+		internal static void GetOptimalCompressionLengths(byte[] indata, int inLength, out int[] lengths, out int[] disps)
 		{
-			lengths = new int[ inLength ];
-			disps = new int[ inLength ];
-			int[] minLengths = new int[ inLength ];
+			lengths = new int[inLength];
+			disps = new int[inLength];
+			int[] minLengths = new int[inLength];
 
-			for ( int i = inLength - 1; i >= 0; i-- )
+			for (int i = inLength - 1; i >= 0; i--)
 			{
 				// first get the compression length when the next byte is not compressed
-				minLengths[ i ] = int.MaxValue;
-				lengths[ i ] = 1;
-				if ( i + 1 >= inLength )
-					minLengths[ i ] = 1;
+				minLengths[i] = int.MaxValue;
+				lengths[i] = 1;
+				if (i + 1 >= inLength)
+					minLengths[i] = 1;
 				else
-					minLengths[ i ] = 1 + minLengths[ i + 1 ];
+					minLengths[i] = 1 + minLengths[i + 1];
 				// then the optimal compressed length
-				int oldLength = Math.Min( 0x1000, i );
+				int oldLength = Math.Min(0x1000, i);
 				// get the appropriate disp while at it. Takes at most O(n) time if oldLength is considered O(n) and 0x10110 constant.
 				// however since a lot of files will not be larger than 0x10110, this will often take ~O(n^2) time.
 				// be sure to bound the input length with 0x10110, as that's the maximum length for LZ-11 compressed blocks.
-				int maxLen = LZUtil.GetOccurrenceLength( ref indata, i, Math.Min( inLength - i, 0x10110 ),
-														 ref indata, i - oldLength, oldLength, out disps[ i ] );
-				if ( disps[ i ] > i )
-					throw new Exception( "disp is too large" );
-				for ( int j = 3; j <= maxLen; j++ )
+				int maxLen = LZUtil.GetOccurrenceLength(ref indata, i, Math.Min(inLength - i, 0x10110),
+														ref indata, i - oldLength, oldLength, out disps[i]);
+				if (disps[i] > i)
+					throw new Exception("disp is too large");
+				for (int j = 3; j <= maxLen; j++)
 				{
 					int blocklen;
-					if ( j > 0x110 )
+					if (j > 0x110)
 						blocklen = 4;
-					else if ( j > 0x10 )
+					else if (j > 0x10)
 						blocklen = 3;
 					else
 						blocklen = 2;
 					int newCompLen;
-					if ( i + j >= inLength )
+					if (i + j >= inLength)
 						newCompLen = blocklen;
 					else
-						newCompLen = blocklen + minLengths[ i + j ];
-					if ( newCompLen < minLengths[ i ] )
+						newCompLen = blocklen + minLengths[i + j];
+					if (newCompLen < minLengths[i])
 					{
-						lengths[ i ] = j;
-						minLengths[ i ] = newCompLen;
+						lengths[i] = j;
+						minLengths[i] = newCompLen;
 					}
 				}
 			}
@@ -605,8 +599,8 @@ namespace CtrDotNet.CTR
 		/// Creates a new exception that indicates that the input is too big to be compressed.
 		/// </summary>
 		public InputTooLargeException()
-			: base( "The compression ratio is not high enough to fit the input "
-					+ "in a single compressed file." ) { }
+			: base("The compression ratio is not high enough to fit the input "
+				   + "in a single compressed file.") { }
 	}
 
 	/// <summary>
@@ -630,15 +624,15 @@ namespace CtrDotNet.CTR
 		/// </summary>
 		/// <param name="currentOutSize">The actual number of written bytes.</param>
 		/// <param name="totalOutSize">The desired number of written bytes.</param>
-		public NotEnoughDataException( long currentOutSize, long totalOutSize )
-			: base( "Not enough data availble; 0x" + currentOutSize.ToString( "X" )
-					+ " of " + ( totalOutSize < 0
-									 ? "???"
-									 : "0x" + totalOutSize.ToString( "X" ) )
-					+ " bytes written." )
+		public NotEnoughDataException(long currentOutSize, long totalOutSize)
+			: base("Not enough data availble; 0x" + currentOutSize.ToString("X")
+											      + " of " + ( totalOutSize < 0
+														           ? "???"
+														           : "0x" + totalOutSize.ToString("X") )
+											      + " bytes written.")
 		{
-			this.WrittenLength = currentOutSize;
-			this.DesiredLength = totalOutSize;
+			WrittenLength = currentOutSize;
+			DesiredLength = totalOutSize;
 		}
 	}
 
@@ -652,8 +646,8 @@ namespace CtrDotNet.CTR
 		/// Creates a new exception that indicates that the stream was shorter than the given input length.
 		/// </summary>
 		public StreamTooShortException()
-			: base( "The end of the stream was reached "
-					+ "before the given amout of data was read." ) { }
+			: base("The end of the stream was reached "
+				   + "before the given amout of data was read.") { }
 	}
 
 	/// <summary>
@@ -674,11 +668,11 @@ namespace CtrDotNet.CTR
 		/// </summary>
 		/// <param name="readBytes">The number of bytes read by the decompressor.</param>
 		/// <param name="totLength">The indicated length of the input stream.</param>
-		public TooMuchInputException( long readBytes, long totLength )
-			: base( "The input contains more data than necessary. Only used 0x"
-					+ readBytes.ToString( "X" ) + " of 0x" + totLength.ToString( "X" ) + " bytes" )
+		public TooMuchInputException(long readBytes, long totLength)
+			: base("The input contains more data than necessary. Only used 0x"
+				   + readBytes.ToString("X") + " of 0x" + totLength.ToString("X") + " bytes")
 		{
-			this.ReadBytes = readBytes;
+			ReadBytes = readBytes;
 		}
 	}
 
@@ -705,14 +699,14 @@ namespace CtrDotNet.CTR
 		/// <param name="disp">The offset of the start of the longest block to refer to.</param>
 		/// <param name="minDisp">The minimum allowed value for 'disp'.</param>
 		/// <returns>The length of the longest sequence of bytes that can be copied from the already decompressed data.</returns>
-		public static int GetOccurrenceLength( ref byte[] newData, int newOffset, int newLength, ref byte[] oldData, int oldOffset, int oldLength, out int disp, int minDisp = 1 )
+		public static int GetOccurrenceLength(ref byte[] newData, int newOffset, int newLength, ref byte[] oldData, int oldOffset, int oldLength, out int disp, int minDisp = 1)
 		{
 			disp = 0;
-			if ( newLength == 0 )
+			if (newLength == 0)
 				return 0;
 			int maxLength = 0;
 			// try every possible 'disp' value (disp = oldLength - i)
-			for ( int i = 0; i < oldLength - minDisp; i++ )
+			for (int i = 0; i < oldLength - minDisp; i++)
 			{
 				// work from the start of the old data to the end, to mimic the original implementation's behaviour
 				// (and going from start to end or from end to start does not influence the compression ratio anyway)
@@ -720,25 +714,26 @@ namespace CtrDotNet.CTR
 				// determine the length we can copy if we go back (oldLength - i) bytes
 				// always check the next 'newLength' bytes, and not just the available 'old' bytes,
 				// as the copied data can also originate from what we're currently trying to compress.
-				for ( int j = 0; j < newLength; j++ )
+				for (int j = 0; j < newLength; j++)
 				{
 					// stop when the bytes are no longer the same
-					if ( oldData[ i + j + oldOffset ] != newData[ j + newOffset ] )
+					if (oldData[i + j + oldOffset] != newData[j + newOffset])
 						break;
 					currentLength++;
 				}
 
 				// update the optimal value
-				if ( currentLength > maxLength )
+				if (currentLength > maxLength)
 				{
 					maxLength = currentLength;
 					disp = oldLength - i;
 
 					// if we cannot do better anyway, stop trying.
-					if ( maxLength == newLength )
+					if (maxLength == newLength)
 						break;
 				}
 			}
+
 			return maxLength;
 		}
 	}
@@ -754,12 +749,12 @@ namespace CtrDotNet.CTR
 		/// <param name="buffer">The source of the data.</param>
 		/// <param name="offset">The location of the data in the source.</param>
 		/// <returns>The indicated 4 bytes converted to uint</returns>
-		public static uint ToNDSu32( byte[] buffer, int offset )
+		public static uint ToNDSu32(byte[] buffer, int offset)
 		{
-			return (uint) ( buffer[ offset ]
-							| ( buffer[ offset + 1 ] << 8 )
-							| ( buffer[ offset + 2 ] << 16 )
-							| ( buffer[ offset + 3 ] << 24 ) );
+			return (uint) ( buffer[offset]
+						    | ( buffer[offset + 1] << 8 )
+						    | ( buffer[offset + 2] << 16 )
+						    | ( buffer[offset + 3] << 24 ) );
 		}
 
 		/// <summary>
@@ -769,26 +764,21 @@ namespace CtrDotNet.CTR
 		/// <param name="buffer">The source of the data.</param>
 		/// <param name="offset">The location of the data in the source.</param>
 		/// <returns>The indicated 4 bytes converted to int</returns>
-		public static int ToNDSs32( byte[] buffer, int offset )
+		public static int ToNDSs32(byte[] buffer, int offset)
 		{
-			return buffer[ offset ]
-				   | ( buffer[ offset + 1 ] << 8 )
-				   | ( buffer[ offset + 2 ] << 16 )
-				   | ( buffer[ offset + 3 ] << 24 );
+			return buffer[offset]
+				   | ( buffer[offset + 1] << 8 )
+				   | ( buffer[offset + 2] << 16 )
+				   | ( buffer[offset + 3] << 24 );
 		}
 
 		/// <summary>
 		/// Converts a u32 value into a sequence of bytes that would make ToNDSu32 return
 		/// the given input value.
 		/// </summary>
-		public static byte[] FromNDSu32( uint value )
+		public static byte[] FromNDSu32(uint value)
 		{
-			return new[] {
-				(byte) ( value & 0xFF ),
-				(byte) ( ( value >> 8 ) & 0xFF ),
-				(byte) ( ( value >> 16 ) & 0xFF ),
-				(byte) ( ( value >> 24 ) & 0xFF )
-			};
+			return new[] { (byte) ( value & 0xFF ), (byte) ( ( value >> 8 ) & 0xFF ), (byte) ( ( value >> 16 ) & 0xFF ), (byte) ( ( value >> 24 ) & 0xFF ) };
 		}
 
 		/// <summary>
@@ -798,11 +788,11 @@ namespace CtrDotNet.CTR
 		/// <param name="buffer">The source of the data.</param>
 		/// <param name="offset">The location of the data in the source.</param>
 		/// <returns>The indicated 3 bytes converted to an integer.</returns>
-		public static int ToNDSu24( byte[] buffer, int offset )
+		public static int ToNDSu24(byte[] buffer, int offset)
 		{
-			return buffer[ offset ]
-				   | ( buffer[ offset + 1 ] << 8 )
-				   | ( buffer[ offset + 2 ] << 16 );
+			return buffer[offset]
+				   | ( buffer[offset + 1] << 8 )
+				   | ( buffer[offset + 2] << 16 );
 		}
 
 		#endregion

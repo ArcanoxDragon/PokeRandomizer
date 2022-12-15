@@ -9,20 +9,20 @@ namespace PokeRandomizer.Common.Structures.CRO.Gen6.Starters
 		#region Static
 
 		public const int CodeSectionOffsetORAS = 0xF8EEC;
-		public const int CodeSectionOffsetXY = 0xF7EDC;
-		public const int EntrySizeXY = 0x18;
-		public const int EntrySizeORAS = 0x24;
+		public const int CodeSectionOffsetXY   = 0xF7EDC;
+		public const int EntrySizeXY           = 0x18;
+		public const int EntrySizeORAS         = 0x24;
 
 		#endregion
 
-		public StartersField( GameVersion gameVersion ) : base( gameVersion ) { }
+		public StartersField(GameVersion gameVersion) : base(gameVersion) { }
 
-		private int CodeSectionOffset => this.GameVersion.IsORAS() ? CodeSectionOffsetORAS : CodeSectionOffsetXY;
-		private int EntrySize => this.GameVersion.IsORAS() ? EntrySizeORAS : EntrySizeXY;
+		private int CodeSectionOffset => GameVersion.IsORAS() ? CodeSectionOffsetORAS : CodeSectionOffsetXY;
+		private int EntrySize         => GameVersion.IsORAS() ? EntrySizeORAS : EntrySizeXY;
 
-		private int GetOffsetForGen( int gen )
+		private int GetOffsetForGen(int gen)
 		{
-			switch ( gen )
+			switch (gen)
 			{
 				case 1:
 					return 3;
@@ -38,37 +38,37 @@ namespace PokeRandomizer.Common.Structures.CRO.Gen6.Starters
 		}
 
 		/// <param name="br">Reader for the .code section of the DllPoke3Select file</param>
-		public override void ReadData( BinaryReader br )
+		public override void ReadData(BinaryReader br)
 		{
-			this.Generations.ForEach( ( gen, i ) => {
-				int entryGroupOffset = this.GetOffsetForGen( gen );
+			Generations.ForEach((gen, _) => {
+				int entryGroupOffset = GetOffsetForGen(gen);
 
-				for ( int entry = 0; entry < StartersPerGen; entry++ )
+				for (int entry = 0; entry < StartersPerGen; entry++)
 				{
 					int entryOffset = entryGroupOffset + entry;
 
-					br.BaseStream.Seek( this.CodeSectionOffset + ( entryOffset * this.EntrySize ), SeekOrigin.Begin );
+					br.BaseStream.Seek(CodeSectionOffset + ( entryOffset * EntrySize ), SeekOrigin.Begin);
 
-					this.StarterSpecies[ gen - 1 ][ entry ] = br.ReadUInt16();
+					StarterSpecies[gen - 1][entry] = br.ReadUInt16();
 				}
-			} );
+			});
 		}
 
 		/// <param name="bw">Writer for the .code section of the DllPoke3Select file</param>
-		public override void WriteData( BinaryWriter bw )
+		public override void WriteData(BinaryWriter bw)
 		{
-			this.Generations.ForEach( ( gen, i ) => {
-				int entryGroupOffset = this.GetOffsetForGen( gen );
+			Generations.ForEach((gen, _) => {
+				int entryGroupOffset = GetOffsetForGen(gen);
 
-				for ( int entry = 0; entry < StartersPerGen; entry++ )
+				for (int entry = 0; entry < StartersPerGen; entry++)
 				{
 					int entryOffset = entryGroupOffset + entry;
 
-					bw.BaseStream.Seek( this.CodeSectionOffset + ( entryOffset * this.EntrySize ), SeekOrigin.Begin );
+					bw.BaseStream.Seek(CodeSectionOffset + ( entryOffset * EntrySize ), SeekOrigin.Begin);
 
-					bw.Write( this.StarterSpecies[ gen - 1 ][ entry ] );
+					bw.Write(StarterSpecies[gen - 1][entry]);
 				}
-			} );
+			});
 		}
 	}
 };

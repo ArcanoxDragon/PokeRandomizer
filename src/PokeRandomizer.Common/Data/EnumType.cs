@@ -2,10 +2,10 @@
 {
 	public abstract class EnumType
 	{
-		protected EnumType( int id, string name )
+		protected EnumType(int id, string name)
 		{
-			this.Id   = id;
-			this.Name = name;
+			Id = id;
+			Name = name;
 		}
 
 		public int    Id   { get; }
@@ -13,41 +13,41 @@
 
 		#region Equality
 
-		protected bool Equals( EnumType other )
+		protected bool Equals(EnumType other)
 		{
-			return this.Id == other.Id;
+			return Id == other.Id;
 		}
 
-		public override bool Equals( object obj )
+		public override bool Equals(object obj)
 		{
-			if ( object.ReferenceEquals( null, obj ) )
+			if (ReferenceEquals(null, obj))
 				return false;
-			if ( object.ReferenceEquals( this, obj ) )
+			if (ReferenceEquals(this, obj))
 				return true;
 
-			return obj.GetType() == this.GetType() && this.Equals( (EnumType) obj );
+			return obj.GetType() == GetType() && Equals((EnumType) obj);
 		}
 
 		public override int GetHashCode()
 		{
-			return this.Id;
+			return Id;
 		}
 
-		public static bool operator ==( EnumType left, EnumType right )
+		public static bool operator ==(EnumType left, EnumType right)
 		{
-			return object.Equals( left, right );
+			return Equals(left, right);
 		}
 
-		public static bool operator !=( EnumType left, EnumType right )
+		public static bool operator !=(EnumType left, EnumType right)
 		{
-			return !object.Equals( left, right );
+			return !Equals(left, right);
 		}
 
 		#endregion
 
 		#region object overrides
 
-		public override string ToString() => $"{this.Id}:{this.Name}";
+		public override string ToString() => $"{Id}:{Name}";
 
 		#endregion
 	}

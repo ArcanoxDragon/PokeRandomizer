@@ -1,7 +1,7 @@
 ﻿namespace PokeRandomizer.Common.Reference
 {
-    public enum AmxNames
-    {
+	public enum AmxNames
+	{
 		AiCommon,
 		AssistPowerScr,
 		BgAttr,
@@ -71,5 +71,5 @@
 		DebugScr,
 		DebugSuginaka,
 		DebugTerachi,
-    }
+	}
 }

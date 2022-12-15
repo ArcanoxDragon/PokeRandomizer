@@ -10,29 +10,29 @@ namespace PokeRandomizer.Utility
 	{
 		private readonly FileStream fileStream;
 
-		public FileLogger( string fileName, Encoding encoding )
+		public FileLogger(string fileName, Encoding encoding)
 		{
-			this.FileName = fileName;
-			this.Encoding = encoding;
+			FileName = fileName;
+			Encoding = encoding;
 
-			this.fileStream = File.Open( this.FileName, FileMode.Create, FileAccess.Write, FileShare.Read );
+			this.fileStream = File.Open(FileName, FileMode.Create, FileAccess.Write, FileShare.Read);
 		}
 
-		public FileLogger( string fileName ) : this( fileName, Encoding.UTF8 ) { }
+		public FileLogger(string fileName) : this(fileName, Encoding.UTF8) { }
 
 		public string   FileName { get; }
 		public Encoding Encoding { get; }
 
-		public async Task WriteAsync( string text )
+		public async Task WriteAsync(string text)
 		{
-			var bytes = this.Encoding.GetBytes( text );
+			var bytes = Encoding.GetBytes(text);
 
-			await this.fileStream.WriteAsync( bytes, 0, bytes.Length );
+			await this.fileStream.WriteAsync(bytes, 0, bytes.Length);
 		}
 
-		public Task WriteLineAsync( string text = "" ) => this.WriteAsync( $"{text}{Environment.NewLine}" );
+		public Task WriteLineAsync(string text = "") => WriteAsync($"{text}{Environment.NewLine}");
 
-		public Task FlushAsync() => this.fileStream.FlushAsync( CancellationToken.None );
+		public Task FlushAsync() => this.fileStream.FlushAsync(CancellationToken.None);
 
 		public void Dispose()
 		{

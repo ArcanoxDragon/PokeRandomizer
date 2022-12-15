@@ -13,98 +13,98 @@ namespace PokeRandomizer.Gen6
 	{
 		private const int MinCatchRate = 0x19; // That of rare Pokémon such as Snorlax
 
-		public override async Task RandomizePokemonInfo( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
+		public override async Task RandomizePokemonInfo(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token)
 		{
-			var config = this.ValidateAndGetConfig().PokemonInfo;
+			var config = ValidateAndGetConfig().PokemonInfo;
 
-			if ( !config.RandomizeTypes && !config.RandomizeAbilities )
+			if (!config.RandomizeTypes && !config.RandomizeAbilities)
 				return;
 
-			await this.LogAsync( $"======== Beginning Pokémon Info randomization ========{Environment.NewLine}" );
-			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing Pokémon personal information..." ) );
+			await LogAsync($"======== Beginning Pokémon Info randomization ========{Environment.NewLine}");
+			progressNotifier?.NotifyUpdate(ProgressUpdate.StatusOnly("Randomizing Pokémon personal information..."));
 
-			var pokeInfoTable     = await this.Game.GetPokemonInfo();
+			var pokeInfoTable = await Game.GetPokemonInfo();
 			var avilableAbilities = Abilities.AllAbilities.ToList();
-			var availableTypes    = PokemonTypes.AllPokemonTypes.ToList();
-			var pokeNames         = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
-			var typeNames         = ( await this.Game.GetTextFile( TextNames.Types ) ).Lines;
+			var availableTypes = PokemonTypes.AllPokemonTypes.ToList();
+			var pokeNames = ( await Game.GetTextFile(TextNames.SpeciesNames) ).Lines;
+			var typeNames = ( await Game.GetTextFile(TextNames.Types) ).Lines;
 
-			if ( !config.AllowWonderGuard )
-				avilableAbilities = avilableAbilities.Where( a => a.Id != Abilities.WonderGuard.Id ).ToList();
+			if (!config.AllowWonderGuard)
+				avilableAbilities = avilableAbilities.Where(a => a.Id != Abilities.WonderGuard.Id).ToList();
 
 			// Randomize abilities for each entry in the Info table (which includes all forms)
-			for ( var i = 0; i < pokeInfoTable.Table.Length; i++ )
+			for (var i = 0; i < pokeInfoTable.Table.Length; i++)
 			{
-				var name         = pokeNames[ pokeInfoTable.GetSpeciesForEntry( i ) ];
-				var thisStatus   = $"Randomizing Pokémon personal information...\n{name}";
+				var name = pokeNames[pokeInfoTable.GetSpeciesForEntry(i)];
+				var thisStatus = $"Randomizing Pokémon personal information...\n{name}";
 				var thisProgress = i / (double) pokeInfoTable.Table.Length;
 
-				await this.LogAsync( $"{name}: " );
-				progressNotifier?.NotifyUpdate( ProgressUpdate.Update( thisStatus, thisProgress ) );
+				await LogAsync($"{name}: ");
+				progressNotifier?.NotifyUpdate(ProgressUpdate.Update(thisStatus, thisProgress));
 
-				var pokeInfo = pokeInfoTable[ i ];
+				var pokeInfo = pokeInfoTable[i];
 
-				if ( config.RandomizeAbilities )
+				if (config.RandomizeAbilities)
 				{
-					progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"{thisStatus}\nRandomizing abilities...", thisProgress ) );
+					progressNotifier?.NotifyUpdate(ProgressUpdate.Update($"{thisStatus}\nRandomizing abilities...", thisProgress));
 
-					var abilities    = pokeInfo.Abilities;
-					var abilityNames = new string[ abilities.Length ];
+					var abilities = pokeInfo.Abilities;
+					var abilityNames = new string[abilities.Length];
 
-					for ( var a = 0; a < abilities.Length; a++ )
+					for (var a = 0; a < abilities.Length; a++)
 					{
-						var ability = avilableAbilities.GetRandom( taskRandom );
+						var ability = avilableAbilities.GetRandom(taskRandom);
 
-						abilities[ a ]    = (byte) ability.Id;
-						abilityNames[ a ] = ability.Name;
+						abilities[a] = (byte) ability.Id;
+						abilityNames[a] = ability.Name;
 					}
 
 					pokeInfo.Abilities = abilities;
-					await this.LogAsync( $"  - Available abilities: {string.Join( ", ", abilityNames )}" );
+					await LogAsync($"  - Available abilities: {string.Join(", ", abilityNames)}");
 				}
 
-				if ( config.RandomizeTypes )
+				if (config.RandomizeTypes)
 				{
-					progressNotifier?.NotifyUpdate( ProgressUpdate.Update( $"{thisStatus}\nRandomizing types...", thisProgress ) );
+					progressNotifier?.NotifyUpdate(ProgressUpdate.Update($"{thisStatus}\nRandomizing types...", thisProgress));
 
 					var types = pokeInfo.Types;
 
-					if ( types.Length > 0 ) // Just to be safe
+					if (types.Length > 0) // Just to be safe
 					{
-						if ( config.RandomizePrimaryTypes )
+						if (config.RandomizePrimaryTypes)
 						{
-							types[ 0 ] = (byte) availableTypes.GetRandom( taskRandom ).Id;
+							types[0] = (byte) availableTypes.GetRandom(taskRandom).Id;
 						}
 
-						if ( config.RandomizeSecondaryTypes && types.Length > 1 )
+						if (config.RandomizeSecondaryTypes && types.Length > 1)
 						{
-							types[ 1 ] = (byte) availableTypes.Where( type => type.Id != types[ 0 ] )
-															  .ToList()
-															  .GetRandom( taskRandom )
-															  .Id;
+							types[1] = (byte) availableTypes.Where(type => type.Id != types[0])
+															.ToList()
+															.GetRandom(taskRandom)
+															.Id;
 						}
 
-						if ( config.RandomizePrimaryTypes || config.RandomizeSecondaryTypes )
+						if (config.RandomizePrimaryTypes || config.RandomizeSecondaryTypes)
 						{
-							await this.LogAsync( $"  - Types: {string.Join( "/", types.Select( t => typeNames[ t ] ) )}" );
+							await LogAsync($"  - Types: {string.Join("/", types.Select(t => typeNames[t]))}");
 						}
 					}
 
 					pokeInfo.Types = types;
 				}
 
-				if ( config.EnsureMinimumCatchRate && i > 0 && pokeInfo.CatchRate < MinCatchRate )
+				if (config.EnsureMinimumCatchRate && i > 0 && pokeInfo.CatchRate < MinCatchRate)
 				{
-					await this.LogAsync( $"  - Increased catch rate from {pokeInfo.CatchRate:000} to {MinCatchRate:000}" );
+					await LogAsync($"  - Increased catch rate from {pokeInfo.CatchRate:000} to {MinCatchRate:000}");
 					pokeInfo.CatchRate = MinCatchRate;
 				}
 
-				await this.LogAsync();
-				pokeInfoTable[ i ] = pokeInfo;
+				await LogAsync();
+				pokeInfoTable[i] = pokeInfo;
 			}
 
-			await this.Game.SavePokemonInfo( pokeInfoTable );
-			await this.LogAsync( $"======== Finished Pokémon Info randomization ========{Environment.NewLine}" );
+			await Game.SavePokemonInfo(pokeInfoTable);
+			await LogAsync($"======== Finished Pokémon Info randomization ========{Environment.NewLine}");
 		}
 	}
 }

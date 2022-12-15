@@ -2,10 +2,10 @@
 {
 	public class AmxReference
 	{
-		public AmxReference( int fileNumber, AmxNames name )
+		public AmxReference(int fileNumber, AmxNames name)
 		{
-			this.FileNumber = fileNumber;
-			this.Name       = name;
+			FileNumber = fileNumber;
+			Name = name;
 		}
 
 		public int      FileNumber { get; set; }

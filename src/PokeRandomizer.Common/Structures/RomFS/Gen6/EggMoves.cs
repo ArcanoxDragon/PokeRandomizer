@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using PokeRandomizer.Common.Game;
 
@@ -5,34 +6,34 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen6
 {
 	public class EggMoves : Common.EggMoves
 	{
-		public EggMoves( GameVersion gameVersion ) : base( gameVersion ) { }
+		public EggMoves(GameVersion gameVersion) : base(gameVersion) { }
 
-		protected override void ReadData( BinaryReader br )
+		protected override void ReadData(BinaryReader br)
 		{
-			if ( br.BaseStream.Length < 2 )
+			if (br.BaseStream.Length < 2)
 			{
-				this.Empty = true;
-				this.Moves = new ushort[ 0 ];
+				Empty = true;
+				Moves = Array.Empty<ushort>();
 				return;
 			}
 
 			int numMoves = br.ReadUInt16();
-			this.Empty = false;
-			this.Moves = new ushort[ numMoves ];
+			Empty = false;
+			Moves = new ushort[numMoves];
 
-			for ( int i = 0; i < numMoves; i++ )
-				this.Moves[ i ] = br.ReadUInt16();
+			for (int i = 0; i < numMoves; i++)
+				Moves[i] = br.ReadUInt16();
 		}
 
-		protected override void WriteData( BinaryWriter bw )
+		protected override void WriteData(BinaryWriter bw)
 		{
-			if ( this.Empty )
+			if (Empty)
 				return;
 
-			bw.Write( (ushort) this.Count );
+			bw.Write((ushort) Count);
 
-			for ( int i = 0; i < this.Count; i++ )
-				bw.Write( this.Moves[ i ] );
+			for (int i = 0; i < Count; i++)
+				bw.Write(Moves[i]);
 		}
 	}
 }

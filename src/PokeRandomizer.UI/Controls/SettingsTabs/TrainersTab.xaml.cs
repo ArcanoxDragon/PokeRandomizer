@@ -4,7 +4,7 @@
 	{
 		public TrainersTab()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 		}
 	}
 }

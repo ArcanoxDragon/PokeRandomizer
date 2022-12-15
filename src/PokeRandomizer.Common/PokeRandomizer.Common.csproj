@@ -7,17 +7,16 @@
 
 	<ItemGroup>
 		<Compile Remove="node_modules\**" />
+		<Compile Remove="Scripts\**" />
 		<EmbeddedResource Remove="node_modules\**" />
+		<EmbeddedResource Remove="Scripts\**" />
 		<None Remove="node_modules\**" />
+		<None Remove="Scripts\**" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\external\pkNX\pkNX.Structures\pkNX.Structures.csproj" />
 		<ProjectReference Include="..\CtrDotNet\CtrDotNet.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="Scripts\" />
 	</ItemGroup>
 
 </Project>

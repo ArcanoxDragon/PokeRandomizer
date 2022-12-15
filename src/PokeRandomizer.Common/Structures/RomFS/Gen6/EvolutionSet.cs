@@ -7,46 +7,42 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen6
 {
 	public class EvolutionSet : Common.EvolutionSet
 	{
-		public EvolutionSet( GameVersion gameVersion ) : base( gameVersion ) { }
+		public EvolutionSet(GameVersion gameVersion) : base(gameVersion) { }
 
-		protected override int EntrySize => 6;
+		protected override int EntrySize  => 6;
 		protected override int EntryCount => 8;
 
-		public override void Read( byte[] data )
+		public override void Read(byte[] data)
 		{
-			if ( data.Length != this.Size )
-				throw new ArgumentOutOfRangeException( nameof(data), $"Data array length must be {this.Size}, but was {data.Length}" );
+			if (data.Length != Size)
+				throw new ArgumentOutOfRangeException(nameof(data), $"Data array length must be {Size}, but was {data.Length}");
 
-			base.Read( data );
+			base.Read(data);
 		}
 
-		protected override void ReadData( BinaryReader br )
+		protected override void ReadData(BinaryReader br)
 		{
-			this.PossibleEvolutions = new EvolutionMethod[ this.EntryCount ];
-			for ( int i = 0; i < this.PossibleEvolutions.Length; i++ )
-				this.PossibleEvolutions[ i ] = this.ReadMethod( br );
+			PossibleEvolutions = new EvolutionMethod[EntryCount];
+			for (int i = 0; i < PossibleEvolutions.Length; i++)
+				PossibleEvolutions[i] = ReadMethod(br);
 		}
 
-		protected override void WriteData( BinaryWriter bw )
+		protected override void WriteData(BinaryWriter bw)
 		{
-			foreach ( EvolutionMethod evo in this.PossibleEvolutions )
-				this.WriteMethod( evo, bw );
+			foreach (EvolutionMethod evo in PossibleEvolutions)
+				WriteMethod(evo, bw);
 		}
 
-		protected virtual EvolutionMethod ReadMethod( BinaryReader r )
+		protected virtual EvolutionMethod ReadMethod(BinaryReader r)
 		{
-			return new EvolutionMethod {
-				Method = r.ReadUInt16(),
-				Argument = r.ReadUInt16(),
-				Species = r.ReadUInt16()
-			};
+			return new EvolutionMethod { Method = r.ReadUInt16(), Argument = r.ReadUInt16(), Species = r.ReadUInt16() };
 		}
 
-		protected virtual void WriteMethod( EvolutionMethod evo, BinaryWriter w )
+		protected virtual void WriteMethod(EvolutionMethod evo, BinaryWriter w)
 		{
-			w.Write( (ushort) evo.Method );
-			w.Write( (ushort) evo.Argument );
-			w.Write( (ushort) evo.Species );
+			w.Write((ushort) evo.Method);
+			w.Write((ushort) evo.Argument);
+			w.Write((ushort) evo.Species);
 		}
 	}
 }

@@ -11,7 +11,7 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen6
 		public const int BattleTypeSingle = 0;
 		public const int BattleTypeDouble = 1;
 
-		public TrainerData( GameVersion gameVersion ) : base( gameVersion ) { }
+		public TrainerData(GameVersion gameVersion) : base(gameVersion) { }
 
 		public bool      PartialEntry { get; private set; }
 		public int       Format       { get; set; }
@@ -31,113 +31,113 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen6
 		public ushort    Prize        { get; set; }
 		public Pokemon[] Team         { get; set; }
 
-		public void ReadTeam( byte[] trainerPokeData )
+		public void ReadTeam(byte[] trainerPokeData)
 		{
 			// Fetch Team
-			this.Team = new Pokemon[ this.NumPokemon ];
+			Team = new Pokemon[NumPokemon];
 
-			if ( this.NumPokemon == 0 )
+			if (NumPokemon == 0)
 				return;
 
-			byte[][] teamData = trainerPokeData.ToArray().Partition( trainerPokeData.Length / this.NumPokemon );
+			byte[][] teamData = trainerPokeData.ToArray().Partition(trainerPokeData.Length / NumPokemon);
 
-			for ( int i = 0; i < this.NumPokemon; i++ )
+			for (int i = 0; i < NumPokemon; i++)
 			{
-				Pokemon pkm = new Pokemon( this.GameVersion, this.Item, this.Moves );
-				pkm.Read( teamData[ i ] );
-				this.Team[ i ] = pkm;
+				Pokemon pkm = new Pokemon(GameVersion, Item, Moves);
+				pkm.Read(teamData[i]);
+				Team[i] = pkm;
 			}
 		}
 
-		public byte[] WriteTeam() => this.Team.Length == 0
-										 ? new byte[ 6 ]
-										 : this.Team.Aggregate( new byte[ 0 ].AsEnumerable(), ( data, pkm ) => {
-											 pkm.HasItem  = this.Item;
-											 pkm.HasMoves = this.Moves;
-											 return data.Concat( pkm.Write() );
-										 } ).ToArray();
+		public byte[] WriteTeam() => Team.Length == 0
+										 ? new byte[6]
+										 : Team.Aggregate(Array.Empty<byte>().AsEnumerable(), (data, pkm) => {
+											 pkm.HasItem = Item;
+											 pkm.HasMoves = Moves;
+											 return data.Concat(pkm.Write());
+										 }).ToArray();
 
-		protected override void ReadData( BinaryReader br )
+		protected override void ReadData(BinaryReader br)
 		{
-			var oras = this.GameVersion.IsORAS();
+			var oras = GameVersion.IsORAS();
 
-			if ( oras )
-				this.PartialEntry = br.BaseStream.Length < 24;
+			if (oras)
+				PartialEntry = br.BaseStream.Length < 24;
 			else
-				this.PartialEntry = br.BaseStream.Length < 20;
+				PartialEntry = br.BaseStream.Length < 20;
 
-			this.Items = new ushort[ 4 ];
+			Items = new ushort[4];
 
-			if ( oras )
+			if (oras)
 			{
-				this.Format     = br.ReadUInt16();
-				this.Class      = br.ReadUInt16();
-				this.UnusedORAS = br.ReadUInt16();
+				Format = br.ReadUInt16();
+				Class = br.ReadUInt16();
+				UnusedORAS = br.ReadUInt16();
 			}
 			else
 			{
-				this.Format = br.ReadByte();
-				this.Class  = br.ReadByte();
+				Format = br.ReadByte();
+				Class = br.ReadByte();
 			}
 
-			this.Item       = ( ( this.Format >> 1 ) & 1 ) == 1;
-			this.Moves      = ( this.Format & 1 ) == 1;
-			this.BattleType = br.ReadByte();
-			this.NumPokemon = br.ReadByte();
+			Item = ( ( Format >> 1 ) & 1 ) == 1;
+			Moves = ( Format & 1 ) == 1;
+			BattleType = br.ReadByte();
+			NumPokemon = br.ReadByte();
 
-			for ( int i = 0; i < 4; i++ )
-				this.Items[ i ] = br.ReadUInt16();
+			for (int i = 0; i < 4; i++)
+				Items[i] = br.ReadUInt16();
 
-			if ( this.PartialEntry )
+			if (PartialEntry)
 				return;
 
-			this.AI      = br.ReadByte();
-			this.Unused1 = br.ReadByte();
-			this.Unused2 = br.ReadByte();
-			this.Unused3 = br.ReadByte();
-			this.Healer  = br.ReadByte() != 0;
-			this.Money   = br.ReadByte();
-			this.Prize   = br.ReadUInt16();
+			AI = br.ReadByte();
+			Unused1 = br.ReadByte();
+			Unused2 = br.ReadByte();
+			Unused3 = br.ReadByte();
+			Healer = br.ReadByte() != 0;
+			Money = br.ReadByte();
+			Prize = br.ReadUInt16();
 		}
 
-		protected override void WriteData( BinaryWriter bw )
+		protected override void WriteData(BinaryWriter bw)
 		{
-			this.Format = Convert.ToByte( this.Moves ) + ( Convert.ToByte( this.Item ) << 1 );
+			Format = Convert.ToByte(Moves) + ( Convert.ToByte(Item) << 1 );
 
-			if ( this.GameVersion.IsORAS() )
+			if (GameVersion.IsORAS())
 			{
-				bw.Write( (ushort) this.Format );
-				bw.Write( (ushort) this.Class );
-				bw.Write( this.UnusedORAS );
+				bw.Write((ushort) Format);
+				bw.Write((ushort) Class);
+				bw.Write(UnusedORAS);
 			}
 			else
 			{
-				bw.Write( (byte) this.Format );
-				bw.Write( (byte) this.Class );
+				bw.Write((byte) Format);
+				bw.Write((byte) Class);
 			}
 
-			bw.Write( this.BattleType );
-			bw.Write( this.NumPokemon );
-			this.Items.ForEach( bw.Write );
+			bw.Write(BattleType);
+			bw.Write(NumPokemon);
+			Items.ForEach(bw.Write);
 
-			if ( this.PartialEntry )
+			if (PartialEntry)
 				return;
 
-			bw.Write( this.AI );
-			bw.Write( this.Unused1 );
-			bw.Write( this.Unused2 );
-			bw.Write( this.Unused3 );
-			bw.Write( Convert.ToByte( this.Healer ) );
-			bw.Write( this.Money );
-			bw.Write( this.Prize );
+			bw.Write(AI);
+			bw.Write(Unused1);
+			bw.Write(Unused2);
+			bw.Write(Unused3);
+			bw.Write(Convert.ToByte(Healer));
+			bw.Write(Money);
+			bw.Write(Prize);
 		}
 
 		public class Pokemon : BaseDataStructure
 		{
-			public Pokemon( GameVersion gameVersion, bool hasItem, bool hasMoves ) : base( gameVersion )
+			public Pokemon(GameVersion gameVersion, bool hasItem, bool hasMoves) : base(gameVersion)
 			{
-				this.HasItem  = hasItem;
-				this.HasMoves = hasMoves;
+				HasItem = hasItem;
+				HasMoves = hasMoves;
 			}
 
 			public bool HasItem  { get; set; }
@@ -156,46 +156,46 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen6
 			public ushort   Item    { get; set; }
 			public ushort[] Moves   { get; set; }
 
-			protected override void ReadData( BinaryReader br )
+			protected override void ReadData(BinaryReader br)
 			{
-				this.Moves = new ushort[ 4 ];
+				Moves = new ushort[4];
 
-				this.IVs     = br.ReadByte();
-				this.Pid     = br.ReadByte();
-				this.Level   = br.ReadUInt16();
-				this.Species = br.ReadUInt16();
-				this.Form    = br.ReadUInt16();
+				IVs = br.ReadByte();
+				Pid = br.ReadByte();
+				Level = br.ReadUInt16();
+				Species = br.ReadUInt16();
+				Form = br.ReadUInt16();
 
-				this.Ability = this.Pid >> 4;
-				this.Gender  = this.Pid & 3;
-				this.UBit    = ( this.Pid >> 3 ) & 1;
+				Ability = Pid >> 4;
+				Gender = Pid & 3;
+				UBit = ( Pid >> 3 ) & 1;
 
-				if ( this.HasItem )
-					this.Item = br.ReadUInt16();
+				if (HasItem)
+					Item = br.ReadUInt16();
 
-				if ( this.HasMoves )
-					for ( int i = 0; i < 4; i++ )
-						this.Moves[ i ] = br.ReadUInt16();
+				if (HasMoves)
+					for (int i = 0; i < 4; i++)
+						Moves[i] = br.ReadUInt16();
 			}
 
-			protected override void WriteData( BinaryWriter bw )
+			protected override void WriteData(BinaryWriter bw)
 			{
-				this.Pid = (byte) ( ( ( this.Ability & 0b1111 ) << 4 ) |
-									( ( this.UBit & 0b1 ) << 3 ) |
-									( this.Gender & 0b11 ) );
+				Pid = (byte) ( ( ( Ability & 0b1111 ) << 4 ) |
+								    ( ( UBit & 0b1 ) << 3 ) |
+								    ( Gender & 0b11 ) );
 
-				bw.Write( this.IVs );
-				bw.Write( this.Pid );
-				bw.Write( this.Level );
-				bw.Write( this.Species );
-				bw.Write( this.Form );
+				bw.Write(IVs);
+				bw.Write(Pid);
+				bw.Write(Level);
+				bw.Write(Species);
+				bw.Write(Form);
 
-				if ( this.HasItem )
-					bw.Write( this.Item );
+				if (HasItem)
+					bw.Write(Item);
 
-				if ( this.HasMoves )
-					foreach ( ushort move in this.Moves )
-						bw.Write( move );
+				if (HasMoves)
+					foreach (ushort move in Moves)
+						bw.Write(move);
 			}
 		}
 	}

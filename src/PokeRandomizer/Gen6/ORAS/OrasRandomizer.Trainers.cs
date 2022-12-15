@@ -13,13 +13,13 @@ namespace PokeRandomizer.Gen6.ORAS
 
 		public override int MainStarterGen => 3;
 
-		public override (int Slot, int Evolution) GetStarterIndexAndEvolution( int speciesId )
+		public override (int Slot, int Evolution) GetStarterIndexAndEvolution(int speciesId)
 		{
-			if ( speciesId.InRange( Species.Treecko.Id, Species.Sceptile.Id ) )
+			if (speciesId.InRange(Species.Treecko.Id, Species.Sceptile.Id))
 				return ( 0, speciesId - Species.Treecko.Id );
-			if ( speciesId.InRange( Species.Torchic.Id, Species.Blaziken.Id ) )
+			if (speciesId.InRange(Species.Torchic.Id, Species.Blaziken.Id))
 				return ( 1, speciesId - Species.Torchic.Id );
-			if ( speciesId.InRange( Species.Mudkip.Id, Species.Swampert.Id ) )
+			if (speciesId.InRange(Species.Mudkip.Id, Species.Swampert.Id))
 				return ( 2, speciesId - Species.Mudkip.Id );
 
 			return ( -1, -1 );
@@ -29,15 +29,12 @@ namespace PokeRandomizer.Gen6.ORAS
 
 		#region Trainers
 
-		private static readonly string[] FriendNames = {
-			"Brendan",
-			"May"
-		};
+		private static readonly string[] FriendNames = { "Brendan", "May" };
 
-		public override bool IsTrainerFriend( string trainerName )
-			=> FriendNames.Contains( trainerName, StringComparer.OrdinalIgnoreCase );
+		public override bool IsTrainerFriend(string trainerName)
+			=> FriendNames.Contains(trainerName, StringComparer.OrdinalIgnoreCase);
 
-		public override int GetGymId( string trainerName, int trainerId ) => trainerName switch {
+		public override int GetGymId(string trainerName, int trainerId) => trainerName switch {
 			// Rustboro
 			"Josh"    => 0, // Youngster
 			"Tommy"   => 0, // Youngster
@@ -108,7 +105,7 @@ namespace PokeRandomizer.Gen6.ORAS
 			_ => -1
 		};
 
-		public override Task<bool> HandleTrainerSpecificLogicAsync( Random taskRandom, string trainerName, TrainerData trainer ) => Task.FromResult( false );
+		public override Task<bool> HandleTrainerSpecificLogicAsync(Random taskRandom, string trainerName, TrainerData trainer) => Task.FromResult(false);
 
 		#endregion
 	}

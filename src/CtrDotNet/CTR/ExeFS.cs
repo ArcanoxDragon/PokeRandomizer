@@ -6,142 +6,152 @@ using System.Text;
 
 namespace CtrDotNet.CTR
 {
-    public class ExeFS
-    {
-        public byte[] Data;
-        public byte[] SuperBlockHash;
+	public class ExeFS
+	{
+		public byte[] Data;
+		public byte[] SuperBlockHash;
 
-        // Return an object with data stored in a byte array
-        public ExeFS(string exefsPath)
-        {
-            if (Directory.Exists(exefsPath))
-            {
-                var files = new DirectoryInfo(exefsPath).GetFiles().Select(f => f.FullName).ToArray();
-                this.SetData(files);
-            }
-            else
-            {
-                this.Data = File.ReadAllBytes(exefsPath);
-            }
-            this.GetSuperBlockHash();
-        }
+		// Return an object with data stored in a byte array
+		public ExeFS(string exefsPath)
+		{
+			if (Directory.Exists(exefsPath))
+			{
+				var files = new DirectoryInfo(exefsPath).GetFiles().Select(f => f.FullName).ToArray();
+				SetData(files);
+			}
+			else
+			{
+				this.Data = File.ReadAllBytes(exefsPath);
+			}
 
-        public void GetSuperBlockHash()
-        {
-            using (SHA256Managed sha = new SHA256Managed())
-                this.SuperBlockHash = sha.ComputeHash(this.Data, 0, 0x200);
-        }
+			GetSuperBlockHash();
+		}
 
-        // Overall R/W files (wrapped)
-        internal static bool Get(string inFile, string outPath)
-        {
-            try
-            {
-                byte[] data = File.ReadAllBytes(inFile);
-                if (!Directory.Exists(outPath)) Directory.CreateDirectory(outPath);
-                for (int i = 0; i < 10; i++)
-                {
-                    // Get File Name String; if exists we have a file to extract.
-                    string fileName = Encoding.ASCII.GetString(data.Skip(0x10 * i).Take(0x8).ToArray()).TrimEnd((char)0);
-                    if (fileName.Length > 0)
-                        File.WriteAllBytes(
-                            // New File Path
-                            outPath + Path.DirectorySeparatorChar + fileName + ".bin",
-                            // Get New Data from Offset after 0x200 Header.
-                            data.Skip(0x200 + BitConverter.ToInt32(data, 0x8 + 0x10 * i)).Take(BitConverter.ToInt32(data, 0xC + 0x10 * i)).ToArray()
-                            );
-                }
-                return true;
-            }
-            catch { return false; }
-        }
-        internal static bool Set(string[] files, string outFile)
-        {
-            if (files.Length > 10) { Console.WriteLine("Cannot package more than 10 files to exefs."); return false; }
+		public void GetSuperBlockHash()
+		{
+			using (SHA256Managed sha = new SHA256Managed())
+				this.SuperBlockHash = sha.ComputeHash(this.Data, 0, 0x200);
+		}
 
-            try
-            {
-                // Set up the Header
-                byte[] headerData = new byte[0x200];
-                uint offset = 0;
-                SHA256 sha = SHA256.Create();
+		// Overall R/W files (wrapped)
+		internal static bool Get(string inFile, string outPath)
+		{
+			try
+			{
+				byte[] data = File.ReadAllBytes(inFile);
+				if (!Directory.Exists(outPath)) Directory.CreateDirectory(outPath);
+				for (int i = 0; i < 10; i++)
+				{
+					// Get File Name String; if exists we have a file to extract.
+					string fileName = Encoding.ASCII.GetString(data.Skip(0x10 * i).Take(0x8).ToArray()).TrimEnd((char) 0);
+					if (fileName.Length > 0)
+						File.WriteAllBytes(
+							// New File Path
+							outPath + Path.DirectorySeparatorChar + fileName + ".bin",
+							// Get New Data from Offset after 0x200 Header.
+							data.Skip(0x200 + BitConverter.ToInt32(data, 0x8 + 0x10 * i)).Take(BitConverter.ToInt32(data, 0xC + 0x10 * i)).ToArray()
+						);
+				}
 
-                // Get the Header
-                for (int i = 0; i < files.Length; i++)
-                {
-                    // Do the Top (File Info)
-                    string fileName = Path.GetFileNameWithoutExtension(files[i]);
-                    byte[] nameData = Encoding.ASCII.GetBytes(fileName); Array.Resize(ref nameData, 0x8);
-                    Array.Copy(nameData, 0, headerData, i * 0x10, 0x8);
+				return true;
+			}
+			catch { return false; }
+		}
 
-                    FileInfo fi = new FileInfo(files[i]);
-                    uint size = (uint)fi.Length;
-                    Array.Copy(BitConverter.GetBytes(offset), 0, headerData, 0x8 + i * 0x10, 0x4);
-                    Array.Copy(BitConverter.GetBytes(size), 0, headerData, 0xC + i * 0x10, 0x4);
-                    offset += 0x200 - size % 0x200 + size;
+		internal static bool Set(string[] files, string outFile)
+		{
+			if (files.Length > 10)
+			{
+				Console.WriteLine("Cannot package more than 10 files to exefs.");
+				return false;
+			}
 
-                    // Do the Bottom (Hashes)
-                    byte[] hash = sha.ComputeHash(File.ReadAllBytes(files[i]));
-                    Array.Copy(hash, 0, headerData, 0x200 - 0x20 * (i + 1), 0x20);
-                }
+			try
+			{
+				// Set up the Header
+				byte[] headerData = new byte[0x200];
+				uint offset = 0;
+				SHA256 sha = SHA256.Create();
 
-                // Set in the Data
-                using (MemoryStream newFile = new MemoryStream())
-                {
-                    new MemoryStream(headerData).CopyTo(newFile);
-                    foreach (string s in files)
-                    {
-                        using (MemoryStream loadFile = new MemoryStream(File.ReadAllBytes(s)))
-                            loadFile.CopyTo(newFile);
-                        new MemoryStream(new byte[0x200 - newFile.Length % 0x200]).CopyTo(newFile);
-                    }
+				// Get the Header
+				for (int i = 0; i < files.Length; i++)
+				{
+					// Do the Top (File Info)
+					string fileName = Path.GetFileNameWithoutExtension(files[i]);
+					byte[] nameData = Encoding.ASCII.GetBytes(fileName);
+					Array.Resize(ref nameData, 0x8);
+					Array.Copy(nameData, 0, headerData, i * 0x10, 0x8);
 
-                    File.WriteAllBytes(outFile, newFile.ToArray());
-                }
-                return true;
-            }
-            catch { return false; }
-        }
+					FileInfo fi = new FileInfo(files[i]);
+					uint size = (uint) fi.Length;
+					Array.Copy(BitConverter.GetBytes(offset), 0, headerData, 0x8 + i * 0x10, 0x4);
+					Array.Copy(BitConverter.GetBytes(size), 0, headerData, 0xC + i * 0x10, 0x4);
+					offset += 0x200 - size % 0x200 + size;
 
-        public void SetData(string[] files)
-        {
-            // Set up the Header
-            byte[] headerData = new byte[0x200];
-            uint offset = 0;
-            SHA256 sha = SHA256.Create();
+					// Do the Bottom (Hashes)
+					byte[] hash = sha.ComputeHash(File.ReadAllBytes(files[i]));
+					Array.Copy(hash, 0, headerData, 0x200 - 0x20 * ( i + 1 ), 0x20);
+				}
 
-            // Get the Header
-            for (int i = 0; i < files.Length; i++)
-            {
-                // Do the Top (File Info)
-                string fileName = Path.GetFileNameWithoutExtension(files[i]);
-                byte[] nameData = Encoding.ASCII.GetBytes(fileName); Array.Resize(ref nameData, 0x8);
-                Array.Copy(nameData, 0, headerData, i * 0x10, 0x8);
+				// Set in the Data
+				using (MemoryStream newFile = new MemoryStream())
+				{
+					new MemoryStream(headerData).CopyTo(newFile);
+					foreach (string s in files)
+					{
+						using (MemoryStream loadFile = new MemoryStream(File.ReadAllBytes(s)))
+							loadFile.CopyTo(newFile);
+						new MemoryStream(new byte[0x200 - newFile.Length % 0x200]).CopyTo(newFile);
+					}
 
-                FileInfo fi = new FileInfo(files[i]);
-                uint size = (uint)fi.Length;
-                Array.Copy(BitConverter.GetBytes(offset), 0, headerData, 0x8 + i * 0x10, 0x4);
-                Array.Copy(BitConverter.GetBytes(size), 0, headerData, 0xC + i * 0x10, 0x4);
-                offset += 0x200 - size % 0x200 + size;
+					File.WriteAllBytes(outFile, newFile.ToArray());
+				}
 
-                // Do the Bottom (Hashes)
-                byte[] hash = sha.ComputeHash(File.ReadAllBytes(files[i]));
-                Array.Copy(hash, 0, headerData, 0x200 - 0x20 * (i + 1), 0x20);
-            }
+				return true;
+			}
+			catch { return false; }
+		}
 
-            // Set in the Data
-            using (MemoryStream newFile = new MemoryStream())
-            {
-                new MemoryStream(headerData).CopyTo(newFile);
-                foreach (string s in files)
-                {
-                    using (MemoryStream loadFile = new MemoryStream(File.ReadAllBytes(s)))
-                        loadFile.CopyTo(newFile);
-                    new MemoryStream(new byte[0x200 - newFile.Length % 0x200]).CopyTo(newFile);
-                }
+		public void SetData(string[] files)
+		{
+			// Set up the Header
+			byte[] headerData = new byte[0x200];
+			uint offset = 0;
+			SHA256 sha = SHA256.Create();
 
-                this.Data = newFile.ToArray();
-            }
-        }
-    }
+			// Get the Header
+			for (int i = 0; i < files.Length; i++)
+			{
+				// Do the Top (File Info)
+				string fileName = Path.GetFileNameWithoutExtension(files[i]);
+				byte[] nameData = Encoding.ASCII.GetBytes(fileName);
+				Array.Resize(ref nameData, 0x8);
+				Array.Copy(nameData, 0, headerData, i * 0x10, 0x8);
+
+				FileInfo fi = new FileInfo(files[i]);
+				uint size = (uint) fi.Length;
+				Array.Copy(BitConverter.GetBytes(offset), 0, headerData, 0x8 + i * 0x10, 0x4);
+				Array.Copy(BitConverter.GetBytes(size), 0, headerData, 0xC + i * 0x10, 0x4);
+				offset += 0x200 - size % 0x200 + size;
+
+				// Do the Bottom (Hashes)
+				byte[] hash = sha.ComputeHash(File.ReadAllBytes(files[i]));
+				Array.Copy(hash, 0, headerData, 0x200 - 0x20 * ( i + 1 ), 0x20);
+			}
+
+			// Set in the Data
+			using (MemoryStream newFile = new MemoryStream())
+			{
+				new MemoryStream(headerData).CopyTo(newFile);
+				foreach (string s in files)
+				{
+					using (MemoryStream loadFile = new MemoryStream(File.ReadAllBytes(s)))
+						loadFile.CopyTo(newFile);
+					new MemoryStream(new byte[0x200 - newFile.Length % 0x200]).CopyTo(newFile);
+				}
+
+				this.Data = newFile.ToArray();
+			}
+		}
+	}
 }

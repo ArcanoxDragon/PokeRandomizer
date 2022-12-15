@@ -10,39 +10,39 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen6
 
 		public class Entry : BaseDataStructure
 		{
-			public const int Size = 0x38;
+			public const  int Size     = 0x38;
 			private const int IdOffset = 0x1C;
 
-			public Entry( GameVersion gameVersion ) : base( gameVersion ) { }
+			public Entry(GameVersion gameVersion) : base(gameVersion) { }
 
 			public ushort ZoneId { get; set; }
 
-			protected override void ReadData( BinaryReader br )
+			protected override void ReadData(BinaryReader br)
 			{
-				br.BaseStream.Seek( IdOffset, SeekOrigin.Begin );
-				this.ZoneId = (ushort) ( br.ReadUInt16() & 0x1FF );
+				br.BaseStream.Seek(IdOffset, SeekOrigin.Begin);
+				ZoneId = (ushort) ( br.ReadUInt16() & 0x1FF );
 			}
 		}
 
 		#endregion
 
-		public ZoneData( GameVersion gameVersion ) : base( gameVersion ) { }
+		public ZoneData(GameVersion gameVersion) : base(gameVersion) { }
 
 		public Entry[] Entries { get; set; }
 
-		public override byte[] Write() => throw new NotSupportedException( "Writing not supported" );
+		public override byte[] Write() => throw new NotSupportedException("Writing not supported");
 
-		protected override void ReadData( BinaryReader br )
+		protected override void ReadData(BinaryReader br)
 		{
 			int numEntries = (int) ( br.BaseStream.Length / Entry.Size );
-			this.Entries = new Entry[ numEntries ];
+			Entries = new Entry[numEntries];
 
-			for ( int i = 0; i < numEntries; i++ )
+			for (int i = 0; i < numEntries; i++)
 			{
-				byte[] entryBuffer = new byte[ Entry.Size ];
-				br.Read( entryBuffer, 0, entryBuffer.Length );
-				this.Entries[ i ] = new Entry( this.GameVersion );
-				this.Entries[ i ].Read( entryBuffer );
+				byte[] entryBuffer = new byte[Entry.Size];
+				br.Read(entryBuffer, 0, entryBuffer.Length);
+				Entries[i] = new Entry(GameVersion);
+				Entries[i].Read(entryBuffer);
 			}
 		}
 	}

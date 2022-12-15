@@ -2,10 +2,10 @@
 
 namespace CtrDotNet.CTR
 {
-    public interface IWritableFile
-    {
-	    Task<byte[]> Write();
-	    Task SaveFile();
-	    Task SaveFileTo( string path );
-    }
+	public interface IWritableFile
+	{
+		Task<byte[]> Write();
+		Task SaveFile();
+		Task SaveFileTo(string path);
+	}
 }

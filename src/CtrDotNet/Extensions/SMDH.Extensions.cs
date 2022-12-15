@@ -6,12 +6,12 @@ namespace CtrDotNet.Extensions
 {
 	public static class SmdhExtensions
 	{
-		public static bool ChangeIcon( this Icon icon, Bitmap img )
+		public static bool ChangeIcon(this Icon icon, Bitmap img)
 		{
-			if ( img.Width != icon.Size || img.Height != icon.Size )
+			if (img.Width != icon.Size || img.Height != icon.Size)
 				return false;
 
-			icon.Bytes = Bclim.GetPixelData( img, 0x5 );
+			icon.Bytes = Bclim.GetPixelData(img, 0x5);
 			return true;
 		}
 	}

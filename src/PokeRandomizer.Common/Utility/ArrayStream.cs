@@ -8,66 +8,66 @@ namespace PokeRandomizer.Common.Utility
 	{
 		private readonly T[] array;
 
-		public ArrayStream( T[] array )
+		public ArrayStream(T[] array)
 		{
 			this.array = array;
 		}
 
 		public int Position { get; private set; }
-		public int Length => this.array.Length;
+		public int Length   => this.array.Length;
 
-		public void Seek( int position, SeekOrigin origin )
+		public void Seek(int position, SeekOrigin origin)
 		{
 			int newPosition = -1;
 
-			switch ( origin )
+			switch (origin)
 			{
 				case SeekOrigin.Begin:
 					newPosition = position;
 					break;
 				case SeekOrigin.Current:
-					newPosition = this.Position + position;
+					newPosition = Position + position;
 					break;
 				case SeekOrigin.End:
 					newPosition = this.array.Length + position;
 					break;
 			}
 
-			this.AssertStart( newPosition, "seek" );
-			this.AssertEnd( newPosition, "seek" );
+			AssertStart(newPosition, "seek");
+			AssertEnd(newPosition, "seek");
 
-			this.Position = newPosition;
+			Position = newPosition;
 		}
 
-		public T[] Read( int count )
+		public T[] Read(int count)
 		{
-			this.AssertEnd( this.Position + count - 1, "read" );
-			T[] ret = this.array.Skip( this.Position ).Take( count ).ToArray();
-			this.Position += count;
+			AssertEnd(Position + count - 1, "read");
+			T[] ret = this.array.Skip(Position).Take(count).ToArray();
+			Position += count;
 
 			return ret;
 		}
 
-		public void Write( T[] data )
+		public void Write(T[] data)
 		{
-			this.AssertEnd( this.Position + data.Length - 1, "write" );
+			AssertEnd(Position + data.Length - 1, "write");
 
-			data.CopyTo( this.array, this.Position );
+			data.CopyTo(this.array, Position);
 
-			this.Position += data.Length;
+			Position += data.Length;
 		}
 
-		private void AssertStart( int position, string verb )
+		private void AssertStart(int position, string verb)
 		{
-			if ( position < 0 )
+			if (position < 0)
 				// ReSharper disable once NotResolvedInText
-				throw new ArgumentOutOfRangeException( nameof(position), $"Cannot {verb} before the start of the array" );
+				throw new ArgumentOutOfRangeException(nameof(position), $"Cannot {verb} before the start of the array");
 		}
 
-		private void AssertEnd( int position, string verb )
+		private void AssertEnd(int position, string verb)
 		{
-			if ( position >= this.array.Length )
-				throw new ArgumentOutOfRangeException( nameof(position), $"Cannot {verb} past the end of the array" );
+			if (position >= this.array.Length)
+				throw new ArgumentOutOfRangeException(nameof(position), $"Cannot {verb} past the end of the array");
 		}
 	}
 }

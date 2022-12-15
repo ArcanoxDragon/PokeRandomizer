@@ -1,9 +1,9 @@
 {
-    "compileOnSave": false,
-    "compilerOptions": {
-        "lib": [ "es5", "es6", "es2015" ],
-        "target": "es5",
-        "module": "commonjs",
-        "moduleResolution": "node"
-    }
+	"compileOnSave": false,
+	"compilerOptions": {
+		"lib": ["es5", "es6", "es2015"],
+		"target": "es5",
+		"module": "commonjs",
+		"moduleResolution": "node"
+	}
 }

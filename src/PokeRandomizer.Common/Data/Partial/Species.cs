@@ -6,6 +6,6 @@ namespace PokeRandomizer.Common.Data
 {
 	public static partial class Species
 	{
-		public static IEnumerable<SpeciesType> ValidSpecies => Data.Species.AllSpecies.Where( s => s != Data.Species.Egg );
+		public static IEnumerable<SpeciesType> ValidSpecies => AllSpecies.Where(s => s != Egg);
 	}
 }

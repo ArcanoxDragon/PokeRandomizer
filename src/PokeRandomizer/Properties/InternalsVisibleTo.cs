@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[ assembly: InternalsVisibleTo( "PokeRandomizer.Tests" ) ]
+[assembly: InternalsVisibleTo("PokeRandomizer.Tests")]

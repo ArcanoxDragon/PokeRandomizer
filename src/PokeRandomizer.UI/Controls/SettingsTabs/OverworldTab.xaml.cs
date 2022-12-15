@@ -4,7 +4,7 @@
 	{
 		public OverworldTab()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 		}
 	}
 }

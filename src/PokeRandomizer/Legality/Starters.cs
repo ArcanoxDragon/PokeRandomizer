@@ -26,11 +26,11 @@ namespace PokeRandomizer.Legality
 			Species.Chespin, Species.Fennekin, Species.Froakie
 		};
 
-		public static SpeciesType[] StartersForGen( int gen )
+		public static SpeciesType[] StartersForGen(int gen)
 		{
-			Assertions.AssertIn( 1, 6, gen );
+			Assertions.AssertIn(1, 6, gen);
 
-			return AllStarters.Skip( ( gen - 1 ) * 3 ).Take( 3 ).ToArray();
+			return AllStarters.Skip(( gen - 1 ) * 3).Take(3).ToArray();
 		}
 	}
 }

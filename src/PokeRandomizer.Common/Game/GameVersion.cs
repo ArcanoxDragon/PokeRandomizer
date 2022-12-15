@@ -13,7 +13,7 @@
 
 	public static class GameVersionExtensions
 	{
-		public static string GetDisplayName( this GameVersion game ) => game switch {
+		public static string GetDisplayName(this GameVersion game) => game switch {
 			GameVersion.XY          => "X/Y",
 			GameVersion.ORAS        => "Omega Ruby/Alpha Sapphire",
 			GameVersion.ORASDemo    => "Omega Ruby/Alpha Sapphire (Demo)",
@@ -22,7 +22,7 @@
 			_                       => "Unknown"
 		};
 
-		public static GameGeneration GetGeneration( this GameVersion game ) => game switch {
+		public static GameGeneration GetGeneration(this GameVersion game) => game switch {
 			GameVersion.XY          => GameGeneration.Generation6,
 			GameVersion.ORAS        => GameGeneration.Generation6,
 			GameVersion.ORASDemo    => GameGeneration.Generation6,
@@ -31,12 +31,12 @@
 			_                       => GameGeneration.Unknown
 		};
 
-		public static GenerationInfo GetInfo( this GameVersion game ) => game.GetGeneration().GetInfo();
+		public static GenerationInfo GetInfo(this GameVersion game) => game.GetGeneration().GetInfo();
 
-		public static bool IsXY( this GameVersion game ) => game == GameVersion.XY;
-		public static bool IsORAS( this GameVersion game ) => game == GameVersion.ORAS || game == GameVersion.ORASDemo;
-		public static bool IsSunMoon( this GameVersion game ) => game == GameVersion.SunMoon || game == GameVersion.SunMoonDemo;
-		public static bool IsGen6( this GameVersion game ) => game.GetGeneration() == GameGeneration.Generation6;
-		public static bool IsGen7( this GameVersion game ) => game.GetGeneration() == GameGeneration.Generation7;
+		public static bool IsXY(this GameVersion game) => game == GameVersion.XY;
+		public static bool IsORAS(this GameVersion game) => game == GameVersion.ORAS || game == GameVersion.ORASDemo;
+		public static bool IsSunMoon(this GameVersion game) => game == GameVersion.SunMoon || game == GameVersion.SunMoonDemo;
+		public static bool IsGen6(this GameVersion game) => game.GetGeneration() == GameGeneration.Generation6;
+		public static bool IsGen7(this GameVersion game) => game.GetGeneration() == GameGeneration.Generation7;
 	}
 }

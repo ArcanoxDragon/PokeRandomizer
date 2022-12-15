@@ -18,21 +18,21 @@ namespace PokeRandomizer.UI.Controls
 	{
 		public static DependencyProperty MessageProperty = DependencyProperty.Register(
 			nameof(Message),
-			typeof( string ),
-			typeof( PromptDialog ),
-			new PropertyMetadata( defaultValue: "Enter some text: " )
+			typeof(string),
+			typeof(PromptDialog),
+			new PropertyMetadata(defaultValue: "Enter some text: ")
 		);
 
 		public static DependencyProperty TextProperty = DependencyProperty.Register(
 			nameof(Text),
-			typeof( string ),
-			typeof( PromptDialog )
+			typeof(string),
+			typeof(PromptDialog)
 		);
 
 		public static DependencyProperty ValueRequiredProperty = DependencyProperty.Register(
 			nameof(ValueRequired),
-			typeof( bool ),
-			typeof( PromptDialog )
+			typeof(bool),
+			typeof(PromptDialog)
 		);
 
 		public event EventHandler<ValidateEventArgs> Validate;
@@ -41,29 +41,29 @@ namespace PokeRandomizer.UI.Controls
 
 		public PromptDialog()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 		}
 
-		protected override void OnInitialized( EventArgs e )
+		protected override void OnInitialized(EventArgs e)
 		{
-			base.OnInitialized( e );
+			base.OnInitialized(e);
 
 			this.TextBox.Focus();
 		}
 
 		public string Message
 		{
-			get => (string) this.GetValue( MessageProperty );
-			set => this.SetValue( MessageProperty, value );
+			get => (string) GetValue(MessageProperty);
+			set => SetValue(MessageProperty, value);
 		}
 
 		public string Text
 		{
-			get => (string) this.GetValue( TextProperty );
+			get => (string) GetValue(TextProperty);
 			set
 			{
-				this.SetValue( TextProperty, value );
-				this.OnPropertyChanged( nameof(this.OkEnabled) );
+				SetValue(TextProperty, value);
+				OnPropertyChanged(nameof(OkEnabled));
 			}
 		}
 
@@ -73,42 +73,42 @@ namespace PokeRandomizer.UI.Controls
 			set
 			{
 				this.isValid = value;
-				this.OnPropertyChanged();
-				this.OnPropertyChanged( nameof(this.OkEnabled) );
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(OkEnabled));
 			}
 		}
 
 		public bool ValueRequired
 		{
-			get => (bool) this.GetValue( ValueRequiredProperty );
+			get => (bool) GetValue(ValueRequiredProperty);
 			set
 			{
-				this.SetValue( ValueRequiredProperty, value );
-				this.OnPropertyChanged( nameof(this.OkEnabled) );
+				SetValue(ValueRequiredProperty, value);
+				OnPropertyChanged(nameof(OkEnabled));
 			}
 		}
 
-		public bool OkEnabled => this.IsValid && !( this.ValueRequired && string.IsNullOrEmpty( this.Text ) );
+		public bool OkEnabled => IsValid && !( ValueRequired && string.IsNullOrEmpty(Text) );
 
-		private void OkButton_Click( object sender, RoutedEventArgs e ) => this.DialogResult = true;
-		private void CancelButton_Click( object sender, RoutedEventArgs e ) => this.DialogResult = false;
+		private void OkButton_Click(object sender, RoutedEventArgs e) => DialogResult = true;
+		private void CancelButton_Click(object sender, RoutedEventArgs e) => DialogResult = false;
 
-		private void TextBox_TextChanged( object sender, TextChangedEventArgs e )
+		private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			var validateEventArgs = new ValidateEventArgs();
 
-			this.Text = this.TextBox.Text;
-			this.Validate?.Invoke( this, validateEventArgs );
-			this.IsValid = validateEventArgs.IsValid;
+			Text = this.TextBox.Text;
+			Validate?.Invoke(this, validateEventArgs);
+			IsValid = validateEventArgs.IsValid;
 		}
 
 		#region INotifyPropertyChanged
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		protected virtual void OnPropertyChanged( [ CallerMemberName ] string propertyName = null )
+		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
-			this.PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
 		#endregion

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PokeRandomizer.Common.Game;
@@ -9,72 +10,72 @@ namespace PokeRandomizer.Common.Structures.RomFS.Common
 	{
 		#region Static
 
-		public static Learnset New( GameVersion version )
+		public static Learnset New(GameVersion version)
 		{
-			switch ( version.GetGeneration() )
+			switch (version.GetGeneration())
 			{
 				case GameGeneration.Generation7:
-					return new Gen7.Learnset( version );
+					return new Gen7.Learnset(version);
 				default:
-					return new Gen6.Learnset( version );
+					return new Gen6.Learnset(version);
 			}
 		}
 
 		#endregion
 
-		public int Count { get; set; }
-		public ushort[] Moves { get; set; }
+		public int      Count  { get; set; }
+		public ushort[] Moves  { get; set; }
 		public ushort[] Levels { get; set; }
 
-		protected Learnset( GameVersion gameVersion ) : base( gameVersion ) { }
+		protected Learnset(GameVersion gameVersion) : base(gameVersion) { }
 
-		public IEnumerable<ushort> GetPossibleMoves( int level )
+		public IEnumerable<ushort> GetPossibleMoves(int level)
 		{
-			return this.Moves.Where( m => m > 0 ).TakeWhile( ( move, i ) => this.Levels[ i ] <= level ).Distinct();
+			return Moves.Where(m => m > 0).TakeWhile((_, i) => Levels[i] <= level).Distinct();
 		}
 
-		public ushort[] GetMostLikelyMoves( int level )
+		public ushort[] GetMostLikelyMoves(int level)
 		{
-			return this.GetPossibleMoves( level ).Reverse().Take( 4 ).Reverse().ToArray();
+			return GetPossibleMoves(level).Reverse().Take(4).Reverse().ToArray();
 		}
 
-		public override void Read( byte[] data )
+		public override void Read(byte[] data)
 		{
-			if ( data.Length < 4 || data.Length % 4 != 0 )
+			if (data.Length < 4 || data.Length % 4 != 0)
 			{
-				this.Count = 0;
-				this.Levels = new ushort[ 0 ];
-				this.Moves = new ushort[ 0 ];
+				Count = 0;
+				Levels = Array.Empty<ushort>();
+				Moves = Array.Empty<ushort>();
 				return;
 			}
 
-			this.Count = data.Length / 4 - 1;
-			this.Levels = new ushort[ this.Count ];
-			this.Moves = new ushort[ this.Count ];
+			Count = data.Length / 4 - 1;
+			Levels = new ushort[Count];
+			Moves = new ushort[Count];
 
-			base.Read( data );
+			base.Read(data);
 		}
 
-		protected override void ReadData( BinaryReader br )
+		protected override void ReadData(BinaryReader br)
 		{
-			for ( int i = 0; i < this.Count; i++ )
+			for (int i = 0; i < Count; i++)
 			{
-				this.Moves[ i ] = br.ReadUInt16();
-				this.Levels[ i ] = br.ReadUInt16();
+				Moves[i] = br.ReadUInt16();
+				Levels[i] = br.ReadUInt16();
 			}
 		}
 
-		protected override void WriteData( BinaryWriter bw )
+		protected override void WriteData(BinaryWriter bw)
 		{
-			this.Count = (ushort) this.Moves.Length;
+			Count = (ushort) Moves.Length;
 
-			for ( int i = 0; i < this.Count; i++ )
+			for (int i = 0; i < Count; i++)
 			{
-				bw.Write( this.Moves[ i ] );
-				bw.Write( this.Levels[ i ] );
+				bw.Write(Moves[i]);
+				bw.Write(Levels[i]);
 			}
 
-			bw.Write( -1 );
+			bw.Write(-1);
 		}
 	}
 }

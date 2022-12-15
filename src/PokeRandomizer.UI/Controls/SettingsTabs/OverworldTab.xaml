@@ -99,7 +99,7 @@
 					<dependencyProperties:Properties.HintText>
 						When this option is enabled, Dittos will be sure to appear
 						in at least one grass zone in the game. This will guarantee
-						that PokéRadar chaining can be used to get high-IV Dittos 
+						that PokéRadar chaining can be used to get high-IV Dittos
 						for breeding.
 					</dependencyProperties:Properties.HintText>
 				</CheckBox>

@@ -10,20 +10,11 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen6
 	{
 		#region Game-Specific Constants
 
-		private static readonly Dictionary<GameVersion, int> ScriptIdBases = new Dictionary<GameVersion, int> {
-			{ GameVersion.XY, 7000 },
-			{ GameVersion.ORAS, 7000 },
-		};
+		private static readonly Dictionary<GameVersion, int> ScriptIdBases = new() { { GameVersion.XY, 7000 }, { GameVersion.ORAS, 7000 }, };
 
-		private static readonly Dictionary<GameVersion, int> DataPayloadOffsets = new Dictionary<GameVersion, int> {
-			{ GameVersion.XY, 9 },
-			{ GameVersion.ORAS, 9 },
-		};
+		private static readonly Dictionary<GameVersion, int> DataPayloadOffsets = new() { { GameVersion.XY, 9 }, { GameVersion.ORAS, 9 }, };
 
-		private static readonly Dictionary<GameVersion, int> ItemCounts = new Dictionary<GameVersion, int> {
-			{ GameVersion.XY, 207 },
-			{ GameVersion.ORAS, 240 },
-		};
+		private static readonly Dictionary<GameVersion, int> ItemCounts = new() { { GameVersion.XY, 207 }, { GameVersion.ORAS, 240 }, };
 
 		#endregion
 
@@ -31,85 +22,77 @@ namespace PokeRandomizer.Common.Structures.RomFS.Gen6
 
 		private Amx amx;
 
-		public OverworldItems( GameVersion gameVersion )
+		public OverworldItems(GameVersion gameVersion)
 		{
 			this.gameVersion = gameVersion;
 
-			this.ValidateGameVersion();
+			ValidateGameVersion();
 		}
 
 		public int                 ScriptIdBase { get; private set; }
 		public List<OverworldItem> Items        { get; private set; }
 
-		public IEnumerable<uint> ItemData => this.amx.DataPayload.Skip( DataPayloadOffsets[ this.gameVersion ] );
+		public IEnumerable<uint> ItemData => this.amx.DataPayload.Skip(DataPayloadOffsets[this.gameVersion]);
 
 		private void ValidateGameVersion()
 		{
-			if ( !ScriptIdBases.ContainsKey( this.gameVersion ) ||
-				 !DataPayloadOffsets.ContainsKey( this.gameVersion ) ||
-				 !ItemCounts.ContainsKey( this.gameVersion ) )
+			if (!ScriptIdBases.ContainsKey(this.gameVersion) ||
+			    !DataPayloadOffsets.ContainsKey(this.gameVersion) ||
+			    !ItemCounts.ContainsKey(this.gameVersion))
 			{
-				throw new NotSupportedException( $"Overworld item editing is not supported in the game version \"{this.gameVersion}\"" );
+				throw new NotSupportedException($"Overworld item editing is not supported in the game version \"{this.gameVersion}\"");
 			}
 		}
 
-		public void Read( byte[] data )
+		public void Read(byte[] data)
 		{
-			this.amx = new Amx( data );
+			this.amx = new Amx(data);
 
-			var itemData = this.ItemData.ToArray();
+			var itemData = ItemData.ToArray();
 
-			if ( itemData.Length % 3 != 0 )
-				throw new InvalidOperationException( $"Item data in script has invalid length \"{itemData.Length}\". Length must be divisible by 3." );
-			if ( itemData.Length / 3 < ItemCounts[ this.gameVersion ] )
-				throw new InvalidOperationException( $"Item data in script has invalid length \"{itemData.Length}\". Length must be at least {ItemCounts[ this.gameVersion ] * 3}." );
+			if (itemData.Length % 3 != 0)
+				throw new InvalidOperationException($"Item data in script has invalid length \"{itemData.Length}\". Length must be divisible by 3.");
+			if (itemData.Length / 3 < ItemCounts[this.gameVersion])
+				throw new InvalidOperationException($"Item data in script has invalid length \"{itemData.Length}\". Length must be at least {ItemCounts[this.gameVersion] * 3}.");
 
-			this.ScriptIdBase = ScriptIdBases[ this.gameVersion ];
-			this.Items        = new List<OverworldItem>();
+			ScriptIdBase = ScriptIdBases[this.gameVersion];
+			Items = new List<OverworldItem>();
 
-			for ( var i = 0; i < ItemCounts[ this.gameVersion ]; i++ )
+			for (var i = 0; i < ItemCounts[this.gameVersion]; i++)
 			{
-				this.Items.Add( new OverworldItem {
-					ItemId         = itemData[ i * 3 ],
-					Unused1        = itemData[ i * 3 + 1 ],
-					ScriptIdOffset = itemData[ i * 3 + 2 ],
-				} );
+				Items.Add(new OverworldItem { ItemId = itemData[i * 3], Unused1 = itemData[i * 3 + 1], ScriptIdOffset = itemData[i * 3 + 2], });
 			}
 		}
 
 		public byte[] Write()
 		{
-			var dataStart = this.amx.CodeLength / sizeof( uint );
-			var newItemData = this.Items.SelectMany( item => new[] {
-				item.ItemId,
-				item.Unused1,
-				item.ScriptIdOffset,
-			} ).ToArray();
-			var originalItemData = this.ItemData;
+			var dataStart = this.amx.CodeLength / sizeof(uint);
+			var newItemData = Items.SelectMany(item => new[] { item.ItemId, item.Unused1, item.ScriptIdOffset, }).ToArray();
+			var originalItemData = ItemData;
 			var newDataPayload = this.amx.DataPayload
 									 // Original 9 data values before item data
-									 .Take( DataPayloadOffsets[ this.gameVersion ] )
+									 .Take(DataPayloadOffsets[this.gameVersion])
 									 // Plus our new item data
-									 .Concat( newItemData )
+									 .Concat(newItemData)
 									 // Plus the "unused slots" from the original file
-									 .Concat( originalItemData.Skip( newItemData.Length ) );
+									 .Concat(originalItemData.Skip(newItemData.Length));
 			var newInstructions = this.amx.DecompressedInstructions
 									  // Original instructions before the data payload
-									  .Take( dataStart )
+									  .Take(dataStart)
 									  // Our new data payload from above
-									  .Concat( newDataPayload )
+									  .Concat(newDataPayload)
 									  .ToArray();
 
-			var newInstructionData = PawnUtil.CompressScript( newInstructions );
+			var newInstructionData = PawnUtil.CompressScript(newInstructions);
 			var newData = this.amx.Data
 							  // Original file contents before Code section
-							  .Take( this.amx.Header.COD )
+							  .Take(this.amx.Header.COD)
 							  // New compressed code/data from above
-							  .Concat( newInstructionData )
+							  .Concat(newInstructionData)
 							  .ToArray();
 
 			// Write new size to the header
-			BitConverter.GetBytes( newData.Length ).CopyTo( newData, 0 );
+			BitConverter.GetBytes(newData.Length).CopyTo(newData, 0);
 
 			return newData;
 		}

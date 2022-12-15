@@ -6,7 +6,7 @@ using GameVersion = PokeRandomizer.Common.Game.GameVersion;
 
 namespace PokeRandomizer.Tests.ORAS
 {
-	[ TestFixture ]
+	[TestFixture]
 	public class OrasScriptSearchTests : ScriptSearchTestBase
 	{
 		protected override uint[] SearchValues => new uint[] {
@@ -16,14 +16,7 @@ namespace PokeRandomizer.Tests.ORAS
 			0x0A0AF1EF, // Debug
 		};
 
-		protected override byte[] SearchBytes => new byte[] {
-			0x5A,
-			0x4F,
-			0x04,
-			0x00,
-			0x18,
-			0x00,
-		};
+		protected override byte[] SearchBytes => new byte[] { 0x5A, 0x4F, 0x04, 0x00, 0x18, 0x00, };
 
 		protected override string[] SkipGarcs => new[] {
 			@"a\0\0\8", // Really really massive (1+GB) file
@@ -31,18 +24,18 @@ namespace PokeRandomizer.Tests.ORAS
 
 		protected override int MaxGarcIndex => 298;
 
-		[ OneTimeSetUp ]
+		[OneTimeSetUp]
 		public async Task SetUpGame()
 		{
-			this.Game = new GameConfig( GameVersion.ORAS );
+			Game = new GameConfig(GameVersion.ORAS);
 
-			await this.Game.Initialize( Settings.RomPathOras, Language.English );
+			await Game.Initialize(Settings.RomPathOras, Language.English);
 		}
 
-		[ Test ]
+		[Test]
 		public async Task FindGarcScripts()
 		{
-			await this.DoFindGarcScripts( 029, 029 );
+			await DoFindGarcScripts(029, 029);
 		}
 	}
 }

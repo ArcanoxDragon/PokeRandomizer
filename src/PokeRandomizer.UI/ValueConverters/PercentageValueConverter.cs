@@ -6,26 +6,26 @@ namespace PokeRandomizer.UI.ValueConverters
 {
 	public class PercentageValueConverter : IValueConverter
 	{
-		public object Convert( object value, Type targetType, object parameter, CultureInfo culture )
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if ( targetType != typeof( double ) &&
-				 targetType != typeof( float ) &&
-				 targetType != typeof( decimal ) &&
-				 targetType != typeof( int ) &&
-				 targetType != typeof( long ) &&
-				 targetType != typeof( short ) &&
-				 targetType != typeof( byte ) &&
-				 targetType != typeof( double? ) &&
-				 targetType != typeof( float? ) &&
-				 targetType != typeof( decimal? ) &&
-				 targetType != typeof( int? ) &&
-				 targetType != typeof( long? ) &&
-				 targetType != typeof( short? ) &&
-				 targetType != typeof( byte? ) &&
-				 targetType != typeof( object ) )
-				throw new NotSupportedException( $"Converting to type {targetType.Name} is not supported" );
+			if (targetType != typeof(double) &&
+			    targetType != typeof(float) &&
+			    targetType != typeof(decimal) &&
+			    targetType != typeof(int) &&
+			    targetType != typeof(long) &&
+			    targetType != typeof(short) &&
+			    targetType != typeof(byte) &&
+			    targetType != typeof(double?) &&
+			    targetType != typeof(float?) &&
+			    targetType != typeof(decimal?) &&
+			    targetType != typeof(int?) &&
+			    targetType != typeof(long?) &&
+			    targetType != typeof(short?) &&
+			    targetType != typeof(byte?) &&
+			    targetType != typeof(object))
+				throw new NotSupportedException($"Converting to type {targetType.Name} is not supported");
 
-			switch ( value )
+			switch (value)
 			{
 				case decimal d:
 					return d * 100;
@@ -38,26 +38,26 @@ namespace PokeRandomizer.UI.ValueConverters
 			}
 		}
 
-		public object ConvertBack( object value, Type targetType, object parameter, CultureInfo culture )
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if ( targetType != typeof( double ) &&
-				 targetType != typeof( float ) &&
-				 targetType != typeof( decimal ) &&
-				 targetType != typeof( int ) &&
-				 targetType != typeof( long ) &&
-				 targetType != typeof( short ) &&
-				 targetType != typeof( byte ) &&
-				 targetType != typeof( double? ) &&
-				 targetType != typeof( float? ) &&
-				 targetType != typeof( decimal? ) &&
-				 targetType != typeof( int? ) &&
-				 targetType != typeof( long? ) &&
-				 targetType != typeof( short? ) &&
-				 targetType != typeof( byte? ) &&
-				 targetType != typeof( object ) )
-				throw new NotSupportedException( $"Converting to type {targetType.Name} is not supported" );
+			if (targetType != typeof(double) &&
+			    targetType != typeof(float) &&
+			    targetType != typeof(decimal) &&
+			    targetType != typeof(int) &&
+			    targetType != typeof(long) &&
+			    targetType != typeof(short) &&
+			    targetType != typeof(byte) &&
+			    targetType != typeof(double?) &&
+			    targetType != typeof(float?) &&
+			    targetType != typeof(decimal?) &&
+			    targetType != typeof(int?) &&
+			    targetType != typeof(long?) &&
+			    targetType != typeof(short?) &&
+			    targetType != typeof(byte?) &&
+			    targetType != typeof(object))
+				throw new NotSupportedException($"Converting to type {targetType.Name} is not supported");
 
-			switch ( value )
+			switch (value)
 			{
 				case int i:
 					return i / 100.0;

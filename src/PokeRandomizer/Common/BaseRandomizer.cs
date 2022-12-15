@@ -15,13 +15,13 @@ namespace PokeRandomizer.Common
 {
 	public abstract class BaseRandomizer : IRandomizer
 	{
-		protected BaseRandomizer( int seed )
+		protected BaseRandomizer(int seed)
 		{
-			this.RandomSeed = seed;
-			this.Random     = new Random( seed );
+			RandomSeed = seed;
+			Random = new Random(seed);
 		}
 
-		protected BaseRandomizer() : this( Environment.TickCount ) { }
+		protected BaseRandomizer() : this(Environment.TickCount) { }
 
 		public RandomizerConfig Config     { get; set; }
 		public GameConfig       Game       { get; private set; }
@@ -30,82 +30,82 @@ namespace PokeRandomizer.Common
 
 		private Random Random { get; set; }
 
-		internal void Initialize( GameConfig game, RandomizerConfig randomizerConfig )
+		internal void Initialize(GameConfig game, RandomizerConfig randomizerConfig)
 		{
-			this.Game   = game;
-			this.Config = randomizerConfig;
+			Game = game;
+			Config = randomizerConfig;
 		}
 
-		public void Reseed( int seed )
+		public void Reseed(int seed)
 		{
-			this.RandomSeed = seed;
-			this.Random     = new Random( seed );
+			RandomSeed = seed;
+			Random = new Random(seed);
 		}
 
-		public void Reseed() => this.Reseed( Environment.TickCount );
+		public void Reseed() => Reseed(Environment.TickCount);
 
 		protected RandomizerConfig ValidateAndGetConfig()
 		{
-			Validator.ValidateConfig( this.Config );
-			return this.Config;
+			Validator.ValidateConfig(Config);
+			return Config;
 		}
 
-		protected async Task LogAsync( string text = "" )
+		protected async Task LogAsync(string text = "")
 		{
-			if ( this.Logger != null )
-				await this.Logger.WriteLineAsync( text );
+			if (Logger != null)
+				await Logger.WriteLineAsync(text);
 		}
 
-		public async Task RandomizeAll( ProgressNotifier progress, CancellationToken token )
+		public async Task RandomizeAll(ProgressNotifier progress, CancellationToken token)
 		{
-			await this.LogAsync( $"Randomizer started. Using seed: {this.RandomSeed}{Environment.NewLine}" );
+			await LogAsync($"Randomizer started. Using seed: {RandomSeed}{Environment.NewLine}");
 
-			var runner = new TaskRunner( this.GetRandomizationTasks() );
+			var runner = new TaskRunner(GetRandomizationTasks());
 
-			if ( progress != null )
-				runner.ProgressNotifier.ProgressUpdated += ( s, u ) => progress.NotifyUpdate( u );
+			if (progress != null)
+				runner.ProgressNotifier.ProgressUpdated += (_, u) => progress.NotifyUpdate(u);
 
-			await runner.Run( this.Random, token );
+			await runner.Run(Random, token);
 
-			progress?.NotifyUpdate( ProgressUpdate.Completed() );
-			await this.LogAsync( "Randomization has finished." );
+			progress?.NotifyUpdate(ProgressUpdate.Completed());
+			await LogAsync("Randomization has finished.");
 
-			if ( this.Logger != null )
-				await this.Logger.FlushAsync();
+			if (Logger != null)
+				await Logger.FlushAsync();
 		}
 
 		#region Randomization tasks
 
 		protected virtual IEnumerable<TaskRunner.TaskFunction> GetRandomizationTasks()
 		{
-			yield return this.RandomizePokemonInfo;
-			yield return this.RandomizeEggMoves;
-			yield return this.RandomizeLearnsets;
-			yield return this.RandomizeEncounters;
-			yield return this.RandomizeStarters;
-			yield return this.RandomizeTrainers;
+			yield return RandomizePokemonInfo;
+			yield return RandomizeEggMoves;
+			yield return RandomizeLearnsets;
+			yield return RandomizeEncounters;
+			yield return RandomizeStarters;
+			yield return RandomizeTrainers;
 		}
 
-		public abstract Task RandomizePokemonInfo( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		public abstract Task RandomizeEggMoves( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		public abstract Task RandomizeEncounters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		public abstract Task RandomizeLearnsets( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		public abstract Task RandomizeStarters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
-		public abstract Task RandomizeTrainers( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token );
+		public abstract Task RandomizePokemonInfo(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		public abstract Task RandomizeEggMoves(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		public abstract Task RandomizeEncounters(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		public abstract Task RandomizeLearnsets(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		public abstract Task RandomizeStarters(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
+		public abstract Task RandomizeTrainers(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token);
 
 		#endregion
 
 		#region Helpers
 
-		public SpeciesType GetRandomSpecies( Random taskRandom, IEnumerable<SpeciesType> chooseFrom )
+		public SpeciesType GetRandomSpecies(Random taskRandom, IEnumerable<SpeciesType> chooseFrom)
 		{
-			var available = chooseFrom.Where( st => st.Id <= this.Game.Version.GetInfo().SpeciesCount )
+			var available = chooseFrom.Where(st => st.Id <= Game.Version.GetInfo().SpeciesCount)
 									  .ToList();
 
-			if ( available.Count <= 0 )
-				throw new InvalidDataException( "No species available matching the given constraints" );
+			if (available.Count <= 0)
+				throw new InvalidDataException("No species available matching the given constraints");
 
-			return available.GetRandom( taskRandom );
+			return available.GetRandom(taskRandom);
 		}
 
 		#endregion

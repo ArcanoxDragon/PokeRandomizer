@@ -2,7 +2,7 @@
 {
 	public interface IDataStructure
 	{
-		void Read( byte[] data );
+		void Read(byte[] data);
 		byte[] Write();
 	}
 }

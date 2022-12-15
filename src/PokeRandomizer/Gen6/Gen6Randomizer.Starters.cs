@@ -13,40 +13,40 @@ namespace PokeRandomizer.Gen6
 {
 	public abstract partial class Gen6Randomizer
 	{
-		public override async Task RandomizeStarters( Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token )
+		public override async Task RandomizeStarters(Random taskRandom, ProgressNotifier progressNotifier, CancellationToken token)
 		{
-			var config = this.ValidateAndGetConfig().Starters;
+			var config = ValidateAndGetConfig().Starters;
 
-			if ( !config.RandomizeStarters )
+			if (!config.RandomizeStarters)
 				return;
 
-			await this.LogAsync( $"======== Beginning Starter Pokémon randomization ========{Environment.NewLine}" );
-			progressNotifier?.NotifyUpdate( ProgressUpdate.StatusOnly( "Randomizing starter Pokémon..." ) );
+			await LogAsync($"======== Beginning Starter Pokémon randomization ========{Environment.NewLine}");
+			progressNotifier?.NotifyUpdate(ProgressUpdate.StatusOnly("Randomizing starter Pokémon..."));
 
-			var starters     = await this.Game.GetStarters();
-			var species      = Species.ValidSpecies.ToList();
-			var speciesInfo  = await this.Game.GetPokemonInfo( true );
-			var chosen       = new List<SpeciesType>();
-			var speciesNames = ( await this.Game.GetTextFile( TextNames.SpeciesNames ) ).Lines;
+			var starters = await Game.GetStarters();
+			var species = Species.ValidSpecies.ToList();
+			var speciesInfo = await Game.GetPokemonInfo(true);
+			var chosen = new List<SpeciesType>();
+			var speciesNames = ( await Game.GetTextFile(TextNames.SpeciesNames) ).Lines;
 
-			if ( config.StartersOnly )
+			if (config.StartersOnly)
 			{
-				species = species.Intersect( Starters.AllStarters )
+				species = species.Intersect(Starters.AllStarters)
 								 .ToList();
 			}
-			else if ( !config.AllowLegendaries )
+			else if (!config.AllowLegendaries)
 			{
-				species = species.Except( Legendaries.AllLegendaries )
+				species = species.Except(Legendaries.AllLegendaries)
 								 .ToList();
 			}
 
-			foreach ( var gen in starters.Generations )
+			foreach (var gen in starters.Generations)
 			{
-				for ( int i = 0; i < 3; i++ )
+				for (int i = 0; i < 3; i++)
 				{
-					var thisSpecies = new List<SpeciesType>( species );
+					var thisSpecies = new List<SpeciesType>(species);
 
-					if ( config.ElementalTypeTriangle )
+					if (config.ElementalTypeTriangle)
 					{
 						// All starters are ordered by Grass, Fire, Water in all Gen 6 games
 						var requiredType = i switch {
@@ -55,22 +55,22 @@ namespace PokeRandomizer.Gen6
 							_ => PokemonTypes.Water,
 						};
 
-						thisSpecies = species.Where( s => speciesInfo[ s ].HasType( requiredType ) ).ToList();
+						thisSpecies = species.Where(s => speciesInfo[s].HasType(requiredType)).ToList();
 					}
 
-					var ret = this.GetRandomSpecies( taskRandom, thisSpecies.Except( chosen ) );
+					var ret = GetRandomSpecies(taskRandom, thisSpecies.Except(chosen));
 
-					chosen.Add( ret );
-					starters[ gen ][ i ] = (ushort) ret;
+					chosen.Add(ret);
+					starters[gen][i] = (ushort) ret;
 				}
 
-				var generationName = gen == this.MainStarterGen ? "Main" : $"Generation {gen}";
+				var generationName = gen == MainStarterGen ? "Main" : $"Generation {gen}";
 
-				await this.LogAsync( $"{generationName} Starters: {string.Join( ", ", starters[ gen ].Select( s => speciesNames[ s ] ) )}" );
+				await LogAsync($"{generationName} Starters: {string.Join(", ", starters[gen].Select(s => speciesNames[s]))}");
 			}
 
-			await this.Game.SaveStarters( starters );
-			await this.LogAsync( $"{Environment.NewLine}======== Finished Starter Pokémon randomization ========{Environment.NewLine}" );
+			await Game.SaveStarters(starters);
+			await LogAsync($"{Environment.NewLine}======== Finished Starter Pokémon randomization ========{Environment.NewLine}");
 		}
 	}
 }

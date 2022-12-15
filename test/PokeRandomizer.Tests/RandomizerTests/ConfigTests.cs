@@ -6,7 +6,7 @@ using PokeRandomizer.Tests.Utility;
 
 namespace PokeRandomizer.Tests.RandomizerTests
 {
-	[ TestFixture ]
+	[TestFixture]
 	public class ConfigTests
 	{
 		private readonly RandomizerConfig config;
@@ -16,83 +16,83 @@ namespace PokeRandomizer.Tests.RandomizerTests
 			this.config = new RandomizerConfig();
 		}
 
-		[ Test ]
+		[Test]
 		public void TestNullValue()
 		{
 			this.config.PokemonInfo = null;
 
-			Assert.Catch<ArgumentNullException>( () => Validator.ValidateConfig( this.config ), "Null value was not caught by the validator" );
+			Assert.Catch<ArgumentNullException>(() => Validator.ValidateConfig(this.config), "Null value was not caught by the validator");
 
 			this.config.PokemonInfo = new PokemonInfoConfig();
 		}
 
-		[ Test ]
+		[Test]
 		public void TestValidate_Encounters_LevelMultiplier()
 		{
 			this.config.Encounters.LevelMultiplier = 0.4m;
 
-			Assert.Catch<ArgumentOutOfRangeException>( () => Validator.ValidateConfig( this.config ), "Invalid value was not caught by validator" );
+			Assert.Catch<ArgumentOutOfRangeException>(() => Validator.ValidateConfig(this.config), "Invalid value was not caught by validator");
 
 			this.config.Encounters.LevelMultiplier = RandomizerConfig.Default.Encounters.LevelMultiplier;
 		}
 
-		[ Test ]
+		[Test]
 		public void TestValidate_Trainers_LevelMultiplier()
 		{
 			this.config.Trainers.LevelMultiplier = 0.4m;
 
-			Assert.Catch<ArgumentOutOfRangeException>( () => Validator.ValidateConfig( this.config ), "Invalid value was not caught by validator" );
+			Assert.Catch<ArgumentOutOfRangeException>(() => Validator.ValidateConfig(this.config), "Invalid value was not caught by validator");
 
 			this.config.Trainers.LevelMultiplier = RandomizerConfig.Default.Encounters.LevelMultiplier;
 		}
 
-		[ Test ]
+		[Test]
 		public void TestValidate_Learnsets_LearnAllMovesBy()
 		{
 			this.config.Learnsets.LearnAllMovesBy = 5;
 
-			Assert.Catch<ArgumentOutOfRangeException>( () => Validator.ValidateConfig( this.config ), "Invalid value was not caught by validator" );
+			Assert.Catch<ArgumentOutOfRangeException>(() => Validator.ValidateConfig(this.config), "Invalid value was not caught by validator");
 
 			this.config.Learnsets.LearnAllMovesBy = 105;
 
-			Assert.Catch<ArgumentOutOfRangeException>( () => Validator.ValidateConfig( this.config ), "Invalid value was not caught by validator" );
+			Assert.Catch<ArgumentOutOfRangeException>(() => Validator.ValidateConfig(this.config), "Invalid value was not caught by validator");
 
 			this.config.Learnsets.LearnAllMovesBy = RandomizerConfig.Default.Learnsets.LearnAllMovesBy;
 		}
 
-		[ Test ]
+		[Test]
 		public void TestConfigCloning()
 		{
 			var original = new RandomizerConfig();
 
 			// Change everything from the default
-			void ChangeProps( object obj )
+			void ChangeProps(object obj)
 			{
-				foreach ( var prop in obj.GetType().GetProperties( BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly ) )
+				foreach (var prop in obj.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
 				{
-					var value = prop.GetValue( obj );
+					var value = prop.GetValue(obj);
 
-					switch ( value )
+					switch (value)
 					{
 						case bool b:
-							prop.SetValue( obj, !b );
+							prop.SetValue(obj, !b);
 							break;
 						case decimal d:
-							prop.SetValue( obj, d + 0.1m );
+							prop.SetValue(obj, d + 0.1m);
 							break;
 						case var o when !value.GetType().IsPrimitive:
-							ChangeProps( o );
+							ChangeProps(o);
 							break;
 					}
 				}
 			}
 
-			ChangeProps( original );
+			ChangeProps(original);
 
 			var cloned = original.AsEditable();
 
-			Assert.AreNotSame( original, cloned, "Cloned config should not be the same instance as the source!" );
-			AssertEx.DeepPropertiesAreEqual( original, cloned, "Clone config's properties were not equal to source!" );
+			Assert.AreNotSame(original, cloned, "Cloned config should not be the same instance as the source!");
+			AssertEx.DeepPropertiesAreEqual(original, cloned, "Clone config's properties were not equal to source!");
 		}
 	}
 }

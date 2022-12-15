@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using PokeRandomizer.Common.Game;
@@ -13,7 +12,7 @@ using TextFile = PokeRandomizer.Common.Structures.RomFS.Common.TextFile;
 
 namespace PokeRandomizer.Tests.XY
 {
-	[ TestFixture ]
+	[TestFixture]
 	public class XyScriptSearchTests : ScriptSearchTestBase
 	{
 		protected override uint[] SearchValues => new uint[] {
@@ -23,14 +22,7 @@ namespace PokeRandomizer.Tests.XY
 			0x0A0AF1EF, // Debug
 		};
 
-		protected override byte[] SearchBytes => new byte[] {
-			0x5A,
-			0x4F,
-			0x04,
-			0x00,
-			0x18,
-			0x00,
-		};
+		protected override byte[] SearchBytes => new byte[] { 0x5A, 0x4F, 0x04, 0x00, 0x18, 0x00, };
 
 		protected override string[] SkipGarcs => new[] {
 			@"a\0\0\7", // Really really massive (1+GB) file
@@ -38,179 +30,179 @@ namespace PokeRandomizer.Tests.XY
 
 		protected override int MaxGarcIndex => 270;
 
-		[ OneTimeSetUp ]
+		[OneTimeSetUp]
 		public async Task SetUpGame()
 		{
-			this.Game = new GameConfig( GameVersion.XY );
+			Game = new GameConfig(GameVersion.XY);
 
-			await this.Game.Initialize( Settings.RomPathXy, Language.English );
+			await Game.Initialize(Settings.RomPathXy, Language.English);
 		}
 
-		[ Test ]
+		[Test]
 		public async Task FindGarcScripts()
 		{
-			await this.DoFindGarcScripts();
+			await DoFindGarcScripts();
 		}
 
-		[ Test ]
+		[Test]
 		public async Task SearchGarcs()
 		{
-			await this.CleanAndMakeDir( "Garc" );
-			await this.CleanAndMakeDir( "Found" );
+			await CleanAndMakeDir("Garc");
+			await CleanAndMakeDir("Found");
 
-			await this.ForEachGarc( async ( gRef, garc, garcIdx ) => {
-				var garcData    = await garc.Write();
-				var garcOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.bin".Replace( '\\', '_' ) );
+			await ForEachGarc(async (gRef, garc, garcIdx) => {
+				var garcData = await garc.Write();
+				var garcOutPath = Path.Combine("Garc", $"{gRef.RomFsPath}.bin".Replace('\\', '_'));
 
-				await File.WriteAllBytesAsync( garcOutPath, garcData );
+				await File.WriteAllBytesAsync(garcOutPath, garcData);
 
-				if ( DoSearchValues( garcData, new List<byte[]> { this.SearchBytes }, out var matches, out _ ) )
+				if (DoSearchValues(garcData, new List<byte[]> { SearchBytes }, out var matches, out _))
 				{
-					TestContext.Progress.WriteLine( $"\t!!!!!!!!!!!!! FOUND PATTERN: {gRef.RomFsPath} @ 0x{matches[ 0 ]:X} !!!!!!!!!!!!!" );
+					await TestContext.Progress.WriteLineAsync($"\t!!!!!!!!!!!!! FOUND PATTERN: {gRef.RomFsPath} @ 0x{matches[0]:X} !!!!!!!!!!!!!");
 
-					var outFileName = $"{gRef.RomFsPath}.found.bin".Replace( '\\', '_' );
-					var outFilePath = Path.Combine( "Found", outFileName );
+					var outFileName = $"{gRef.RomFsPath}.found.bin".Replace('\\', '_');
+					var outFilePath = Path.Combine("Found", outFileName);
 
-					await File.WriteAllBytesAsync( outFilePath, garcData );
+					await File.WriteAllBytesAsync(outFilePath, garcData);
 				}
 
-				await this.ForEachGarcFile( garc, async ( file, fileIdx ) => {
-					var fileOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.{fileIdx}.bin".Replace( '\\', '_' ) );
+				await ForEachGarcFile(garc, async (file, fileIdx) => {
+					var fileOutPath = Path.Combine("Garc", $"{gRef.RomFsPath}.{fileIdx}.bin".Replace('\\', '_'));
 
-					await File.WriteAllBytesAsync( fileOutPath, file );
+					await File.WriteAllBytesAsync(fileOutPath, file);
 
-					if ( DoSearchValues( file, new List<byte[]> { this.SearchBytes }, out matches, out _ ) )
+					if (DoSearchValues(file, new List<byte[]> { SearchBytes }, out matches, out _))
 					{
-						TestContext.Progress.WriteLine( $"\t!!!!!!!!!!!!! FOUND PATTERN: {gRef.RomFsPath}:{fileIdx} @ 0x{matches[ 0 ]:X} !!!!!!!!!!!!!" );
+						await TestContext.Progress.WriteLineAsync($"\t!!!!!!!!!!!!! FOUND PATTERN: {gRef.RomFsPath}:{fileIdx} @ 0x{matches[0]:X} !!!!!!!!!!!!!");
 
-						var outFileName = $"{gRef.RomFsPath}.{fileIdx}.found.bin".Replace( '\\', '_' );
-						var outFilePath = Path.Combine( "Found", outFileName );
+						var outFileName = $"{gRef.RomFsPath}.{fileIdx}.found.bin".Replace('\\', '_');
+						var outFilePath = Path.Combine("Found", outFileName);
 
-						await File.WriteAllBytesAsync( outFilePath, file );
+						await File.WriteAllBytesAsync(outFilePath, file);
 					}
-				} );
-			} );
+				});
+			});
 		}
 
-		[ Test ]
+		[Test]
 		public async Task FindGarcText()
 		{
-			await this.CleanAndMakeDir( "Garc" );
-			await this.CleanAndMakeDir( "Text" );
+			await CleanAndMakeDir("Garc");
+			await CleanAndMakeDir("Text");
 
-			await this.ForEachGarc( async ( gRef, garc, garcIdx ) => {
-				var garcData    = await garc.Write();
-				var garcOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.bin".Replace( '\\', '_' ) );
+			await ForEachGarc(async (gRef, garc, _) => {
+				var garcData = await garc.Write();
+				var garcOutPath = Path.Combine("Garc", $"{gRef.RomFsPath}.bin".Replace('\\', '_'));
 
-				await File.WriteAllBytesAsync( garcOutPath, garcData );
+				await File.WriteAllBytesAsync(garcOutPath, garcData);
 
-				await this.ForEachGarcFile( garc, async ( file, fileIdx ) => {
-					var fileOutPath = Path.Combine( "Garc", $"{gRef.RomFsPath}.{fileIdx}.bin".Replace( '\\', '_' ) );
+				await ForEachGarcFile(garc, async (file, fileIdx) => {
+					var fileOutPath = Path.Combine("Garc", $"{gRef.RomFsPath}.{fileIdx}.bin".Replace('\\', '_'));
 
-					await File.WriteAllBytesAsync( fileOutPath, file );
+					await File.WriteAllBytesAsync(fileOutPath, file);
 
 					try
 					{
-						var textFile = new TextFile( this.Game.Version );
+						var textFile = new TextFile(Game.Version);
 
-						textFile.Read( file );
+						textFile.Read(file);
 
-						TestContext.Progress.WriteLine( $"Found valid text file: {gRef.RomFsPath}:{fileIdx}" );
+						await TestContext.Progress.WriteLineAsync($"Found valid text file: {gRef.RomFsPath}:{fileIdx}");
 
-						var outFileName = $"{gRef.RomFsPath}.{fileIdx}.txt".Replace( '\\', '_' );
-						var outFilePath = Path.Combine( "Text", outFileName );
+						var outFileName = $"{gRef.RomFsPath}.{fileIdx}.txt".Replace('\\', '_');
+						var outFilePath = Path.Combine("Text", outFileName);
 
-						await File.WriteAllLinesAsync( outFilePath, textFile.Lines );
+						await File.WriteAllLinesAsync(outFilePath, textFile.Lines);
 					}
 					catch
 					{
 						// Ignored
 					}
-				} );
-			} );
+				});
+			});
 		}
 
-		[ Test ]
+		[Test]
 		public async Task FindScripts2()
 		{
-			var searchBytesAmxL    = Encoding.ASCII.GetBytes( "amx" );
-			var searchBytesAmxU    = Encoding.ASCII.GetBytes( "AMX" );
-			var searchBytesFldItem = Encoding.ASCII.GetBytes( "fld_item" );
+			var searchBytesAmxL = "amx"u8.ToArray();
+			var searchBytesAmxU = "AMX"u8.ToArray();
+			var searchBytesFldItem = "fld_item"u8.ToArray();
 
 #pragma warning disable 1998
-			await this.ForEachCro( async ( name, file ) => {
+			await ForEachCro(async (name, file) => {
 #pragma warning restore 1998
-				if ( DoSearchValues( file.Data, new List<byte[]> { searchBytesAmxL, searchBytesAmxU }, out var matches, out _ ) )
+				if (DoSearchValues(file.Data, new List<byte[]> { searchBytesAmxL, searchBytesAmxU }, out var matches, out _))
 				{
-					var addresses = string.Join( ", ", matches.Select( m => $"{m:X4}" ) );
+					var addresses = string.Join(", ", matches.Select(m => $"{m:X4}"));
 
-					TestContext.Progress.WriteLine( $"Found \"amx\" in file {name}: {addresses}" );
+					await TestContext.Progress.WriteLineAsync($"Found \"amx\" in file {name}: {addresses}");
 				}
 
-				if ( DoSearchValues( file.Data, new List<byte[]> { searchBytesFldItem }, out matches, out _ ) )
+				if (DoSearchValues(file.Data, new List<byte[]> { searchBytesFldItem }, out matches, out _))
 				{
-					var addresses = string.Join( ", ", matches.Select( m => $"0x{m:X6}" ) );
+					var addresses = string.Join(", ", matches.Select(m => $"0x{m:X6}"));
 
-					TestContext.Progress.WriteLine( $"Found \"fld_item\" in file {name}: {addresses}" );
+					await TestContext.Progress.WriteLineAsync($"Found \"fld_item\" in file {name}: {addresses}");
 				}
 
-				if ( DoSearchValues( file.Data, this.SearchValues.Select( BitConverter.GetBytes ), out matches, out _ ) )
+				if (DoSearchValues(file.Data, SearchValues.Select(BitConverter.GetBytes), out matches, out _))
 				{
-					var addresses = string.Join( ", ", matches.Select( m => $"0x{m:X6}" ) );
+					var addresses = string.Join(", ", matches.Select(m => $"0x{m:X6}"));
 
-					TestContext.Progress.WriteLine( $"Found AMX header in file {name}: {addresses}" );
+					await TestContext.Progress.WriteLineAsync($"Found AMX header in file {name}: {addresses}");
 				}
-			} );
+			});
 		}
 
-		[ Test ]
+		[Test]
 		public async Task TestCro()
 		{
-			foreach ( var croName in Enum.GetValues( typeof( CroNames ) ).Cast<CroNames>() )
+			foreach (var croName in Enum.GetValues(typeof(CroNames)).Cast<CroNames>())
 			{
 				try
 				{
-					TestContext.Progress.WriteLine( $"Searching CRO {croName}..." );
+					await TestContext.Progress.WriteLineAsync($"Searching CRO {croName}...");
 
-					var cro  = await this.Game.GetCroFile( croName );
+					var cro = await Game.GetCroFile(croName);
 					var code = await cro.GetCodeSection();
 					var data = await cro.GetDataSection();
 
-					if ( DoSearchValues( code, this.SearchValues.Select( BitConverter.GetBytes ), out var matches, out var strides ) )
+					if (DoSearchValues(code, SearchValues.Select(BitConverter.GetBytes), out var matches, out var strides))
 					{
-						TestContext.Progress.WriteLine( $"\t!!!!!!!!!!!!! FOUND MATCH: {croName}.code @ 0x{matches[ 0 ]:X} !!!!!!!!!!!!!" );
-						TestContext.Progress.WriteLine( $"\tStrides: {string.Join( ",", strides )}" );
+						await TestContext.Progress.WriteLineAsync($"\t!!!!!!!!!!!!! FOUND MATCH: {croName}.code @ 0x{matches[0]:X} !!!!!!!!!!!!!");
+						await TestContext.Progress.WriteLineAsync($"\tStrides: {string.Join(",", strides)}");
 
-						File.WriteAllBytes( $"{croName}.code.bin".Replace( '\\', '_' ), code );
+						await File.WriteAllBytesAsync($"{croName}.code.bin".Replace('\\', '_'), code);
 					}
 
-					if ( DoSearchValues( data, this.SearchValues.Select( BitConverter.GetBytes ), out matches, out strides ) )
+					if (DoSearchValues(data, SearchValues.Select(BitConverter.GetBytes), out matches, out strides))
 					{
-						TestContext.Progress.WriteLine( $"\t!!!!!!!!!!!!! FOUND MATCH: {croName}.data @ 0x{matches[ 0 ]:X} !!!!!!!!!!!!!" );
-						TestContext.Progress.WriteLine( $"\tStrides: {string.Join( ",", strides )}" );
+						await TestContext.Progress.WriteLineAsync($"\t!!!!!!!!!!!!! FOUND MATCH: {croName}.data @ 0x{matches[0]:X} !!!!!!!!!!!!!");
+						await TestContext.Progress.WriteLineAsync($"\tStrides: {string.Join(",", strides)}");
 
-						File.WriteAllBytes( $"{croName}.data.bin".Replace( '\\', '_' ), data );
+						await File.WriteAllBytesAsync($"{croName}.data.bin".Replace('\\', '_'), data);
 					}
 				}
-				catch ( Exception ex )
+				catch (Exception ex)
 				{
-					TestContext.Progress.WriteLine( $"Error for {croName}: {ex.Message}" );
+					await TestContext.Progress.WriteLineAsync($"Error for {croName}: {ex.Message}");
 					// Ignored
 				}
 			}
 		}
 
-		[ Test ]
+		[Test]
 		public async Task TestCodeBin()
 		{
-			var codeBin = await this.Game.GetCodeBin();
+			var codeBin = await Game.GetCodeBin();
 
-			if ( DoSearchValues( codeBin.Data, this.SearchValues.Select( BitConverter.GetBytes ), out var matches, out var strides ) )
+			if (DoSearchValues(codeBin.Data, SearchValues.Select(BitConverter.GetBytes), out var matches, out var strides))
 			{
-				TestContext.Progress.WriteLine( $"\t!!!!!!!!!!!!! FOUND MATCH: .code.bin @ 0x{matches[ 0 ]:X} !!!!!!!!!!!!!" );
-				TestContext.Progress.WriteLine( $"\tStrides: {string.Join( ",", strides )}" );
+				await TestContext.Progress.WriteLineAsync($"\t!!!!!!!!!!!!! FOUND MATCH: .code.bin @ 0x{matches[0]:X} !!!!!!!!!!!!!");
+				await TestContext.Progress.WriteLineAsync($"\tStrides: {string.Join(",", strides)}");
 
-				File.WriteAllBytes( ".code.bin".Replace( '\\', '_' ), codeBin.Data );
+				await File.WriteAllBytesAsync(".code.bin".Replace('\\', '_'), codeBin.Data);
 			}
 		}
 	}

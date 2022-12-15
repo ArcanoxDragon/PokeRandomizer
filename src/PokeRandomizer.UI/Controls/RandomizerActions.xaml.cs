@@ -6,32 +6,32 @@ namespace PokeRandomizer.UI.Controls
 	{
 		public static DependencyProperty OutputPathProperty = DependencyProperty.Register(
 			nameof(OutputPath),
-			typeof( string ),
-			typeof( RandomizerActions )
+			typeof(string),
+			typeof(RandomizerActions)
 		);
 
 		public static DependencyProperty CanRandomizeProperty = DependencyProperty.Register(
 			nameof(CanRandomize),
-			typeof( bool ),
-			typeof( RandomizerActions )
+			typeof(bool),
+			typeof(RandomizerActions)
 		);
 
 		public static DependencyProperty SeedDisplayProperty = DependencyProperty.Register(
 			nameof(SeedDisplay),
-			typeof( string ),
-			typeof( RandomizerActions )
+			typeof(string),
+			typeof(RandomizerActions)
 		);
 
 		public static DependencyProperty CanCreatePatchFolderProperty = DependencyProperty.Register(
 			nameof(CanCreatePatchFolder),
-			typeof( string ),
-			typeof( RandomizerActions )
+			typeof(string),
+			typeof(RandomizerActions)
 		);
 
 		public static DependencyProperty CreatePatchFolderProperty = DependencyProperty.Register(
 			nameof(CreatePatchFolder),
-			typeof( string ),
-			typeof( RandomizerActions )
+			typeof(string),
+			typeof(RandomizerActions)
 		);
 
 		public event RoutedEventHandler LoadConfigFileClick;
@@ -43,44 +43,44 @@ namespace PokeRandomizer.UI.Controls
 
 		public RandomizerActions()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 		}
 
 		public string OutputPath
 		{
-			get => this.GetValue( OutputPathProperty ) as string;
-			set => this.SetValue( OutputPathProperty, value );
+			get => GetValue(OutputPathProperty) as string;
+			set => SetValue(OutputPathProperty, value);
 		}
 
 		public bool CanRandomize
 		{
-			get => (bool) this.GetValue( CanRandomizeProperty );
-			set => this.SetValue( CanRandomizeProperty, value );
+			get => (bool) GetValue(CanRandomizeProperty);
+			set => SetValue(CanRandomizeProperty, value);
 		}
 
 		public string SeedDisplay
 		{
-			get => (string) this.GetValue( SeedDisplayProperty );
-			set => this.SetValue( SeedDisplayProperty, value );
+			get => (string) GetValue(SeedDisplayProperty);
+			set => SetValue(SeedDisplayProperty, value);
 		}
 
 		public bool CanCreatePatchFolder
 		{
-			get => (bool) this.GetValue( CanCreatePatchFolderProperty );
-			set => this.SetValue( CanCreatePatchFolderProperty, value );
+			get => (bool) GetValue(CanCreatePatchFolderProperty);
+			set => SetValue(CanCreatePatchFolderProperty, value);
 		}
 
 		public bool CreatePatchFolder
 		{
-			get => (bool) this.GetValue( CreatePatchFolderProperty );
-			set => this.SetValue( CreatePatchFolderProperty, value );
+			get => (bool) GetValue(CreatePatchFolderProperty);
+			set => SetValue(CreatePatchFolderProperty, value);
 		}
 
-		private void LoadConfigFile_Click( object sender, RoutedEventArgs e ) => this.LoadConfigFileClick?.Invoke( this, e );
-		private void SaveConfigFile_Click( object sender, RoutedEventArgs e ) => this.SaveConfigFileClick?.Invoke( this, e );
-		private void ResetConfig_Click( object sender, RoutedEventArgs e ) => this.ResetConfigClick?.Invoke( this, e );
-		private void SetOutputPath_Click( object sender, RoutedEventArgs e ) => this.SetOutputPathClick?.Invoke( this, e );
-		private void SetSeed_Click( object sender, RoutedEventArgs e ) => this.SetSeedClick?.Invoke( this, e );
-		private void Randomize_Click( object sender, RoutedEventArgs e ) => this.RandomizeClick?.Invoke( this, e );
+		private void LoadConfigFile_Click(object sender, RoutedEventArgs e) => LoadConfigFileClick?.Invoke(this, e);
+		private void SaveConfigFile_Click(object sender, RoutedEventArgs e) => SaveConfigFileClick?.Invoke(this, e);
+		private void ResetConfig_Click(object sender, RoutedEventArgs e) => ResetConfigClick?.Invoke(this, e);
+		private void SetOutputPath_Click(object sender, RoutedEventArgs e) => SetOutputPathClick?.Invoke(this, e);
+		private void SetSeed_Click(object sender, RoutedEventArgs e) => SetSeedClick?.Invoke(this, e);
+		private void Randomize_Click(object sender, RoutedEventArgs e) => RandomizeClick?.Invoke(this, e);
 	}
 }

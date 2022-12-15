@@ -14,19 +14,19 @@ namespace PokeRandomizer.Gen6.XY
 
 		public override int MainStarterGen => 6;
 
-		public override (int Slot, int Evolution) GetStarterIndexAndEvolution( int speciesId )
+		public override (int Slot, int Evolution) GetStarterIndexAndEvolution(int speciesId)
 		{
-			if ( speciesId.InRange( Species.Chespin.Id, Species.Chesnaught.Id ) )
+			if (speciesId.InRange(Species.Chespin.Id, Species.Chesnaught.Id))
 				return ( 0, speciesId - Species.Chespin.Id );
-			if ( speciesId.InRange( Species.Fennekin.Id, Species.Delphox.Id ) )
+			if (speciesId.InRange(Species.Fennekin.Id, Species.Delphox.Id))
 				return ( 1, speciesId - Species.Fennekin.Id );
-			if ( speciesId.InRange( Species.Froakie.Id, Species.Greninja.Id ) )
+			if (speciesId.InRange(Species.Froakie.Id, Species.Greninja.Id))
 				return ( 2, speciesId - Species.Froakie.Id );
-			if ( speciesId.InRange( Species.Bulbasaur.Id, Species.Venusaur.Id ) )
+			if (speciesId.InRange(Species.Bulbasaur.Id, Species.Venusaur.Id))
 				return ( 0, speciesId - Species.Bulbasaur.Id );
-			if ( speciesId.InRange( Species.Charmander.Id, Species.Charizard.Id ) )
+			if (speciesId.InRange(Species.Charmander.Id, Species.Charizard.Id))
 				return ( 1, speciesId - Species.Charmander.Id );
-			if ( speciesId.InRange( Species.Squirtle.Id, Species.Blastoise.Id ) )
+			if (speciesId.InRange(Species.Squirtle.Id, Species.Blastoise.Id))
 				return ( 2, speciesId - Species.Squirtle.Id );
 
 			return ( -1, -1 );
@@ -36,16 +36,12 @@ namespace PokeRandomizer.Gen6.XY
 
 		#region Trainers
 
-		private static readonly string[] FriendNames = {
-			"Shauna",
-			"Serena",
-			"Calem",
-		};
+		private static readonly string[] FriendNames = { "Shauna", "Serena", "Calem", };
 
-		public override bool IsTrainerFriend( string trainerName )
-			=> FriendNames.Contains( trainerName, StringComparer.OrdinalIgnoreCase );
+		public override bool IsTrainerFriend(string trainerName)
+			=> FriendNames.Contains(trainerName, StringComparer.OrdinalIgnoreCase);
 
-		public override int GetGymId( string trainerName, int trainerId ) => trainerName switch {
+		public override int GetGymId(string trainerName, int trainerId) => trainerName switch {
 			// Santalune
 			"David"     => 0, // Youngster
 			"Zachary"   => 0, // Youngster
@@ -113,54 +109,54 @@ namespace PokeRandomizer.Gen6.XY
 			_ => -1
 		};
 
-		public override async Task<bool> HandleTrainerSpecificLogicAsync( Random taskRandom, string trainerName, TrainerData trainer )
+		public override async Task<bool> HandleTrainerSpecificLogicAsync(Random taskRandom, string trainerName, TrainerData trainer)
 		{
-			var config = this.ValidateAndGetConfig().Trainers;
+			var config = ValidateAndGetConfig().Trainers;
 
 			// Get already-edited versions of the info so that we get the shuffled version
-			var starters  = await this.Game.GetStarters( edited: true );
-			var pokeInfo  = await this.Game.GetPokemonInfo( edited: true );
-			var learnsets = ( await this.Game.GetLearnsets( edited: true ) ).ToList();
+			var starters = await Game.GetStarters(edited: true);
+			var pokeInfo = await Game.GetPokemonInfo(edited: true);
+			var learnsets = ( await Game.GetLearnsets(edited: true) ).ToList();
 
-			switch ( trainerName )
+			switch (trainerName)
 			{
 				case "Sycamore":
-				{
-					if ( !trainer.Item )
-						trainer.Moves = true;
-
-					foreach ( var pokemon in trainer.Team )
 					{
-						// Professor Sycamore has all three Kanto starters as his battle team.
-						// We synchronize his battle team with the randomized selection of Kanto
-						// starters to match what the unrandomized game does.
+						if (!trainer.Item)
+							trainer.Moves = true;
 
-						var (starterSlot, starterEvo) = this.GetStarterIndexAndEvolution( pokemon.Species );
-						var newStarterBaseSpecies = starters.StarterSpecies[ 0 /* First Gen */ ][ starterSlot ];
-						var newStarter            = await this.GetEvolutionOfAsync( taskRandom, newStarterBaseSpecies, starterEvo );
-						var info                  = pokeInfo[ newStarter ];
-
-						pokemon.Species = newStarter;
-						pokemon.Gender  = info.GetRandomGender();
-						pokemon.Ability = info.Abilities.GetRandom( taskRandom );
-						pokemon.Level   = (ushort) MathUtil.Clamp( (int) ( pokemon.Level * config.LevelMultiplier ), 2, 100 );
-
-						// Fill the Pokemon's available moves with random choices from its learnset (up to its current level)
-						var moveset = learnsets[ pokemon.Species ].GetPossibleMoves( pokemon.Level ).ToList();
-
-						if ( trainer.Moves )
+						foreach (var pokemon in trainer.Team)
 						{
-							pokemon.HasItem  = false;
-							pokemon.HasMoves = true;
-							pokemon.Moves    = new ushort[] { 0, 0, 0, 0 };
+							// Professor Sycamore has all three Kanto starters as his battle team.
+							// We synchronize his battle team with the randomized selection of Kanto
+							// starters to match what the unrandomized game does.
 
-							for ( var m = 0; m < Math.Min( moveset.Count, 4 ); m++ )
-								pokemon.Moves[ m ] = moveset.Except( pokemon.Moves ).ToList().GetRandom( taskRandom );
+							var (starterSlot, starterEvo) = GetStarterIndexAndEvolution(pokemon.Species);
+							var newStarterBaseSpecies = starters.StarterSpecies[0 /* First Gen */][starterSlot];
+							var newStarter = await GetEvolutionOfAsync(taskRandom, newStarterBaseSpecies, starterEvo);
+							var info = pokeInfo[newStarter];
+
+							pokemon.Species = newStarter;
+							pokemon.Gender = info.GetRandomGender();
+							pokemon.Ability = info.Abilities.GetRandom(taskRandom);
+							pokemon.Level = (ushort) MathUtil.Clamp((int) ( pokemon.Level * config.LevelMultiplier ), 2, 100);
+
+							// Fill the Pokemon's available moves with random choices from its learnset (up to its current level)
+							var moveset = learnsets[pokemon.Species].GetPossibleMoves(pokemon.Level).ToList();
+
+							if (trainer.Moves)
+							{
+								pokemon.HasItem = false;
+								pokemon.HasMoves = true;
+								pokemon.Moves = new ushort[] { 0, 0, 0, 0 };
+
+								for (var m = 0; m < Math.Min(moveset.Count, 4); m++)
+									pokemon.Moves[m] = moveset.Except(pokemon.Moves).ToList().GetRandom(taskRandom);
+							}
 						}
-					}
 
-					return true;
-				}
+						return true;
+					}
 				default: return false;
 			}
 		}

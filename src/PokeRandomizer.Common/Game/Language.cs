@@ -19,9 +19,9 @@
 
 	public static class LanguageExtensions
 	{
-		public static string GetDisplayName( this Language lang )
+		public static string GetDisplayName(this Language lang)
 		{
-			switch ( lang )
+			switch (lang)
 			{
 				case Language.JapaneseKana:
 					return "Japanese (Kana)";
